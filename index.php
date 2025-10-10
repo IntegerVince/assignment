@@ -6,13 +6,28 @@ require 'vendor/autoload.php'; # Load in required composer packages, including t
 $loader = new \Twig\Loader\FilesystemLoader('views');
 $twig = new \Twig\Environment($loader);
 
+$loggedIn = true; # Placeholder variable until a login system with detection is implemented.
 
-# Render in the signup/login page
-echo $twig->render("Signup-Login.html", array(
+#Twiggy template variables that never change
+$websiteName = "TrackyTask";
 
-    "WebsiteName" => "TrackyTask - Your To Do List Tracker!",
-    "GreetingMessage" => "Welcome"
-    
-))
+if ($loggedIn){ # User is logged in. Render their task list
+
+    echo $twig->render("Task-List.html", array(
+
+        "websiteName" => $websiteName,
+        "username" => "Nicholai"
+        
+    ));
+   
+} else { # User is not logged in. Render in the signup/login page
+
+     echo $twig->render("Signup-Login.html", array(
+
+        "websiteName" => $websiteName,
+        "greetingMessage" => "Please Signup Or Login"
+        
+    ));
+}
 
 ?>
