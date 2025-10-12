@@ -1,5 +1,7 @@
 <?php
 
+    session_start(); # Starting the session
+
     require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
     if (isset($_POST["fusername"]) and isset($_POST["fpassword"])){
@@ -37,6 +39,8 @@
 
                     if ($row["password"] == $_POST["fpassword"]){
 
+                        # Outcome 1 - Username and Password Valid - Login!
+
                         # Perform Render of task-list as logged in user
 
                             echo $twig->render("task-list-template.php", array(
@@ -55,8 +59,15 @@
             }
 
             if (!$accountFound) {
-                echo "Username not found";
-                # Serve username does not exist login template
+
+                # Outcome 2 - Username Not Found!
+
+                $_SESSION["errorMessage"] = "Username_Error";
+
+                header('Location: ../'); # Redirect to index.php for rendering
+                
+                die();
+
                 
             } else {
                 echo "Wrong password";

@@ -6,6 +6,28 @@ require 'required/twig-loader.php'; # Shortcut to load composer, twig & its temp
 
 $loggedIn = false; # Placeholder variable until a login system with detection is implemented.
 
+if (isset($_SESSION['errorMessage'])) { # Index.php was redirecte with an error from another place
+
+    if ($_SESSION['errorMessage'] == 'Username_Error'){ # Wrong username error
+
+        $_SESSION['errorMessage'] = ""; # Reset error message
+
+        # Redirect to login page with error message
+
+        echo $twig->render("signup-login-template.php", array(
+
+            "websiteName" => $websiteName,
+            "templateType" => "Login",
+            "errorMessage" => "That username does not exist, please try again."
+        
+        ));
+
+        die(); # Kill the current PHP script since it was served
+
+    }
+
+}
+
 if ($loggedIn){ # User is logged in. Render their task list with login session details
 
     echo $twig->render("task-list-template.php", array(
