@@ -1,10 +1,6 @@
 <?php
 
-require 'vendor/autoload.php'; # Load in required composer packages, including twig
-
-# Load in Twig templates, located in the 'views' folder
-$loader = new \Twig\Loader\FilesystemLoader('pages');
-$twig = new \Twig\Environment($loader);
+require 'required/twig-loader.php'; # Shortcut to load twig & its templates
 
 $loggedIn = false; # Placeholder variable until a login system with detection is implemented.
 
