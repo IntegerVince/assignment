@@ -4,8 +4,6 @@ session_start(); # Starting the session
 
 require 'required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
-$loggedIn = false; # Placeholder variable until a login system with detection is implemented.
-
 if (isset($_SESSION['errorMessage'])) { # Index.php was redirected with an error from another place
 
     if ($_SESSION['errorMessage'] == 'Username_Error'){ # Wrong username error
@@ -61,25 +59,18 @@ if (isset($_SESSION['errorMessage'])) { # Index.php was redirected with an error
 }
 
 if (isset($_SESSION["username"]) and isset($_SESSION["password"])){ # Check if login details are saved in a session to automatically login
-    
+            
     if ($_SESSION["username"] != "" and $_SESSION["password"] != ""){ # Check if they are set with actual values, and not just reset
 
-        # We have account data stored - will be checked with database & processed accordingly
+        # We have account data stored
 
-        echo "data is set!";
+        header('Location: pages/task-list.php'); # Redirect to task-list.php so it can be proccessed
+
+        die(); # Kill the current PHP script since it was served
     }
 }
-
-if ($loggedIn){ # User is logged in. Render their task list with login session details
-
-    echo $twig->render("task-list-template.php", array(
-
-        "websiteName" => $websiteName,
-        "username" => "Nicholai" # Placeholder. data will be fetched from session in this case.
-        
-    ));
    
-} else { # User is not logged in. Render in the signup/login page
+# User is not logged in. Render in the signup/login page
 
     if (isset($_SESSION["signupRequested"])) { # Checking if session is set which could mean a signup redirect was called
 
@@ -114,6 +105,5 @@ if ($loggedIn){ # User is logged in. Render their task list with login session d
         ));
 
     }
-}
 
 ?>

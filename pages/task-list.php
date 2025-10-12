@@ -10,6 +10,54 @@
 
     $accountsQueryResult = mysqli_query($connection, $getAccountQuery); # Data from query. This will be used below.
 
+    if (isset($_SESSION["username"]) and isset($_SESSION["password"])){ # Check if login details are saved in a session to automatically login
+            
+        if ($_SESSION["username"] != "" and $_SESSION["password"] != ""){ # Check if they are set with actual values, and not just reset
+
+            # We have account data stored - will be checked with database & processed accordingly
+
+            if (mysqli_num_rows($accountsQueryResult) > 0) { # There is at least 1 account in the database
+                
+                while($row = mysqli_fetch_assoc($accountsQueryResult)) {
+
+                    # Iterate through the accounts until the account is found
+
+                    if ($row["username"] == $_SESSION["username"]){
+
+                        if ($row["password"] == $_SESSION["password"]){
+
+                            # Outcome 1 - Username and Password From Session Valid - Login!
+
+                            echo $twig->render("task-list-template.php", array(
+
+                                "websiteName" => $websiteName,
+                                "username" => $_SESSION["username"]
+                                
+                            ));
+
+                            die(); # Kill the current PHP script since it was served
+                        }
+                    }
+                }
+                # If the code is still operating at this stage, it means that the sessions were invalid.
+
+                # Reset the invalid Sessions
+                $_SESSION["username"] = "";
+                $_SESSION["password"] = "";
+
+                header('Location: ../'); # Redirect to index.php for processing without invalid sessions
+                die();
+
+            } else {
+                # No accounts in database
+
+                header('Location: ../'); # Redirect to index.php for processing without invalid sessions
+                die();
+
+            }
+        }
+    }
+
     if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         # Username and password provided for login. Check whether or not the credentials exist from the query result that was processed.
