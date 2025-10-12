@@ -15,9 +15,9 @@
 
             <form action="pages/task-list.php" method="post">
                 <label for="fname">Username:</label>
-                <input type="text" id="fname" name="fusername" placeholder="exampleUser">
+                <input type="text" id="fname" name="fusername_login" placeholder="exampleUser">
                 <label for="fpass">Password:</label>
-                <input type="password" id="fpass" name="fpassword">
+                <input type="password" id="fpass" name="fpassword_login">
                 <input type="submit" value="Submit">
             </form>
 
@@ -30,9 +30,9 @@
 
             <form action="pages/task-list.php" method="post">
                 <label for="fname">Username:</label>
-                <input type="text" id="fname" name="fusername" placeholder="exampleUser">
+                <input type="text" id="fname" name="fusername_signup" placeholder="exampleUser">
                 <label for="fpass">Password:</label>
-                <input type="password" id="fpass" name="fpassword">
+                <input type="password" id="fpass" name="fpassword_signup">
                 <input type="submit" value="Submit">
             </form>
 

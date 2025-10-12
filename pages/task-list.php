@@ -4,40 +4,27 @@
 
     require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
-    if (isset($_POST["fusername"]) and isset($_POST["fpassword"])){
+    require '../required/database-connector.php'; # Shortcut to connect to database
 
-        # Username and password provided. Connect to database to check whether or not the credentials exist.
+    $getAccountQuery = "SELECT id, username, password FROM account"; # Query to fetch all accounts
+
+    $accountsQueryResult = mysqli_query($connection, $getAccountQuery); # Data from query. This will be used below.
+
+    if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
+
+        # Username and password provided for login. Check whether or not the credentials exist from the query result that was processed.
         
-        $server = "localhost";
-        $username = "root";
-        $password = "";  # By default, XAMPP password is empty
-        $database = "trackytaskdb";
-
-        # Variable for connection
-        $connection = new mysqli($server, $username, $password, $database);
-
-        #  Check if connection is good, if not, terminate the PHP script and give the error
-        if (mysqli_connect_error()) {
-            die($connection->connect_error);
-        }
-
-        # Good connection
-        
-        $getAccountQuery = "SELECT id, username, password FROM account"; # Query to fetch all accounts
-
-        $queryResult = mysqli_query($connection, $getAccountQuery); # Data from query
-
-        if (mysqli_num_rows($queryResult) > 0) { # There is at least 1 account in the databse
+        if (mysqli_num_rows($accountsQueryResult) > 0) { # There is at least 1 account in the database
             
             $accountFound = false; # Breaks the while loop if an account is found
 
-            while($row = mysqli_fetch_assoc($queryResult) and !$accountFound) {
+            while($row = mysqli_fetch_assoc($accountsQueryResult) and !$accountFound) {
 
                 # Iterate through the accounts until the account is found
 
-                if ($row["username"] == $_POST["fusername"]){
+                if ($row["username"] == $_POST["fusername_login"]){
 
-                    if ($row["password"] == $_POST["fpassword"]){
+                    if ($row["password"] == $_POST["fpassword_login"]){
 
                         # Outcome 1 - Username and Password Valid - Login!
 
@@ -84,10 +71,38 @@
             echo "Error: No accounts in database"; # Serve this error directly
         }
 
-    } else {
+    } else if (isset($_POST["fusername_signup"]) and isset($_POST["fpassword_signup"])) {
+
+        # Username and password provided for signup. Check whether or not there is already an account with that username.
         
+        if (mysqli_num_rows($accountsQueryResult) > 0) { # There is at least 1 account in the database
+            
+            $accountFound = false; # Breaks the while loop if an account is found
+
+            while($row = mysqli_fetch_assoc($accountsQueryResult) and !$accountFound) {
+
+                # Iterate through the accounts until the account is found (if it exists)
+
+                if ($row["username"] == $_POST["fusername_signup"]){
+                    $accountFound = true;
+                }
+            }
+
+            if (!$accountFound) { # The username is unique, so it can be created
+                echo "Can create account";
+            } else {
+                echo "Error! Account already exists";
+            }
+
+        }  else {
+            echo "Error: No accounts in database"; # Serve this error directly
+        }
+        
+    } else {
+
         # Check if login session is stored, otherwise serve the signup-login-template.php
-            print("session check and serve 'please login' or logged in task list recursively");
+        print("session check and serve 'please login' or logged in task list recursively");
+
     }
     
 ?>
