@@ -90,6 +90,16 @@
 
             if (!$accountFound) { # The username is unique, so it can be created
                 echo "Can create account";
+
+                $accountCreationSQL = "INSERT INTO account (username, password) VALUES ('" . $_POST["fusername_signup"] . "', '" . $_POST["fpassword_signup"] . "')";
+
+                if ($connection->query($accountCreationSQL)) {
+                    echo "New record created successfully";
+                } else {
+                    echo "Error! Record could not be created";
+                }
+
+
             } else {
                 echo "Error! Account already exists";
             }
