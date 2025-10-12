@@ -184,8 +184,11 @@
         
     } else {
 
-        # Check if login session is stored, otherwise serve the signup-login-template.php
-        print("session check and serve 'please login' or logged in task list recursively");
+        # This was accessed directly which isn't allowed, redirect to index.php for processing
+
+        header('Location: ../'); # Redirect to index.php
+        
+        die();
 
     }
     
