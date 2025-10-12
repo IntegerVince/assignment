@@ -24,6 +24,22 @@ if (isset($_SESSION['errorMessage'])) { # Index.php was redirecte with an error 
 
         die(); # Kill the current PHP script since it was served
 
+    } else if ($_SESSION["errorMessage"] == "Password_Error"){
+
+        $_SESSION['errorMessage'] = ""; # Reset error message
+
+        # Redirect to login page with error message
+
+        echo $twig->render("signup-login-template.php", array(
+
+            "websiteName" => $websiteName,
+            "templateType" => "Login",
+            "errorMessage" => "The password is incorrect, please try again."
+        
+        ));
+
+        die(); # Kill the current PHP script since it was served
+
     }
 
 }

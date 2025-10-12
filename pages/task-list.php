@@ -70,11 +70,18 @@
 
                 
             } else {
-                echo "Wrong password";
-                # Serve wrong password login template
+                
+                # Outcome 3 - Password Not Found!
+
+                $_SESSION["errorMessage"] = "Password_Error";
+
+                header('Location: ../'); # Redirect to index.php for rendering
+                
+                die();
+
             }
         } else {
-            echo "Error: No accounts in database";
+            echo "Error: No accounts in database"; # Serve this error directly
         }
 
     } else {

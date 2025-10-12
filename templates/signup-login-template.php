@@ -6,7 +6,7 @@
 
     <body>
 
-        {% if templateType == "Login" %}
+        {% if templateType == "Login" %} <!-- Login Template -->
 
             <h1>{{ websiteName }}, Your To Do List Tracker</h1>
             <h2>Login</h2>
@@ -23,7 +23,7 @@
 
             <a href="redirect/signup-redirector.php"><p>No account? Signup</p></a>
 
-        {% elseif templateType == "Signup" %}
+        {% elseif templateType == "Signup" %} <!-- Signup Template -->
 
             <h1>{{ websiteName }}, Your To Do List Tracker</h1>
             <h2>Signup</h2>
