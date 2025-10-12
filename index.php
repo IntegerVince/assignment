@@ -6,7 +6,7 @@ require 'required/twig-loader.php'; # Shortcut to load composer, twig & its temp
 
 $loggedIn = false; # Placeholder variable until a login system with detection is implemented.
 
-if (isset($_SESSION['errorMessage'])) { # Index.php was redirecte with an error from another place
+if (isset($_SESSION['errorMessage'])) { # Index.php was redirected with an error from another place
 
     if ($_SESSION['errorMessage'] == 'Username_Error'){ # Wrong username error
 
@@ -18,7 +18,7 @@ if (isset($_SESSION['errorMessage'])) { # Index.php was redirecte with an error 
 
             "websiteName" => $websiteName,
             "templateType" => "Login",
-            "errorMessage" => "That username does not exist, please try again."
+            "errorMessage" => "That username does not exist, please check and try again."
         
         ));
 
@@ -40,8 +40,34 @@ if (isset($_SESSION['errorMessage'])) { # Index.php was redirecte with an error 
 
         die(); # Kill the current PHP script since it was served
 
+    } else if ($_SESSION["errorMessage"] == "UsernameCreation_Error"){
+
+        $_SESSION['errorMessage'] = ""; # Reset error message
+
+        # Redirect to signup page with error message
+
+        echo $twig->render("signup-login-template.php", array(
+
+            "websiteName" => $websiteName,
+            "templateType" => "Signup",
+            "errorMessage" => "There is already an account with that username, please try something else."
+        
+        ));
+
+        die(); # Kill the current PHP script since it was served
+
     }
 
+}
+
+if (isset($_SESSION["username"]) and isset($_SESSION["password"])){ # Check if login details are saved in a session to automatically login
+    
+    if ($_SESSION["username"] != "" and $_SESSION["password"] != ""){ # Check if they are set with actual values, and not just reset
+
+        # We have account data stored - will be checked with database & processed accordingly
+
+        echo "data is set!";
+    }
 }
 
 if ($loggedIn){ # User is logged in. Render their task list with login session details

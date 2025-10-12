@@ -28,6 +28,8 @@
             <h1>{{ websiteName }}, Your To Do List Tracker</h1>
             <h2>Signup</h2>
 
+            <p>{{errorMessage}}</p> <!-- If error message exists, it will be shown. -->
+
             <form action="pages/task-list.php" method="post">
                 <label for="fname">Username:</label>
                 <input type="text" id="fname" name="fusername_signup" placeholder="exampleUser">

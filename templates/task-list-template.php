@@ -7,7 +7,9 @@
     <body>
 
         <h1>{{ websiteName }}, Your To Do List Tracker</h1>
-        <h2>Welcome Back, {{ username }}</h2>
-        
+        <h2>Hello, {{ username }}</h2>
+
+        <a href="../redirect/logout-redirector.php"><button>Logout</button></a>
+
     </body>
 </html>

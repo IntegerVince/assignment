@@ -28,6 +28,11 @@
 
                         # Outcome 1 - Username and Password Valid - Login!
 
+
+                        # Save the data to sessions so that the user will stay logged in
+                        $_SESSION["username"] = $_POST["fusername_login"];
+                        $_SESSION["password"] = $_POST["fpassword_login"];
+
                         # Perform Render of task-list as logged in user
 
                             echo $twig->render("task-list-template.php", array(
@@ -89,19 +94,40 @@
             }
 
             if (!$accountFound) { # The username is unique, so it can be created
-                echo "Can create account";
 
+                # Outcome 1 - Username Unique! Create account
+
+                # Save the data to sessions so that the user will stay logged in with this new account
+                $_SESSION["username"] = $_POST["fusername_signup"];
+                $_SESSION["password"] = $_POST["fpassword_signup"];
+
+                # Query to create account
                 $accountCreationSQL = "INSERT INTO account (username, password) VALUES ('" . $_POST["fusername_signup"] . "', '" . $_POST["fpassword_signup"] . "')";
 
-                if ($connection->query($accountCreationSQL)) {
-                    echo "New record created successfully";
-                } else {
-                    echo "Error! Record could not be created";
-                }
+                # Create account with the query
+                $connection->query($accountCreationSQL);
 
+                # Perform Render of task-list as logged in user
+
+                    echo $twig->render("task-list-template.php", array(
+
+                        "websiteName" => $websiteName,
+                        "username" => $_POST["fusername_signup"]
+                    
+                    ));
+
+                    die(); # Logged in - kill the PHP script
 
             } else {
-                echo "Error! Account already exists";
+
+                # Outcome 2 - Username already exists!
+
+                $_SESSION["errorMessage"] = "UsernameCreation_Error";
+
+                header('Location: ../'); # Redirect to index.php for rendering
+                
+                die(); # Redirected - kill the PHP script
+
             }
 
         }  else {
