@@ -7,7 +7,8 @@
     <body>
 
         <?php
-            # Data fetched here will be connected to a database, processed, and depending on results, serve either an incorrect template or authorise the user
+
+            require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
             if (isset($_POST["fusername"]) and isset($_POST["fpassword"])){
 
@@ -43,10 +44,17 @@
                         if ($row["username"] == $_POST["fusername"]){
 
                             if ($row["password"] == $_POST["fpassword"]){
-                                
-                                echo "Authenticated";
-                                # Perform Render which kills the current PHP script
 
+                                # Perform Render of task-list as logged in user
+
+                                    echo $twig->render("task-list-template.php", array(
+
+                                        "websiteName" => $websiteName,
+                                        "username" => $row["username"]
+                                    
+                                    ));
+
+                                    die(); # Logged in - kill the PHP script
                             }
 
                             $accountFound = true;
@@ -73,8 +81,5 @@
             }
             
         ?>
-
-        <h1>{{ websiteName }}, Your To Do List Tracker</h1>
-        <h2>Welcome Back, {{ username }}</h2>
     </body>
 </html>
