@@ -1,5 +1,7 @@
 <?php
 
+session_start(); # Starting the session
+
 require 'required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
 $loggedIn = false; # Placeholder variable until a login system with detection is implemented.
@@ -15,12 +17,39 @@ if ($loggedIn){ # User is logged in. Render their task list with login session d
    
 } else { # User is not logged in. Render in the signup/login page
 
-     echo $twig->render("signup-login-template.php", array(
+    if (isset($_SESSION["signupRequested"])) { # Checking if session is set which could mean a signup redirect was called
 
-        "websiteName" => $websiteName,
-        "greetingMessage" => "Please Signup Or Login"
+        if ($_SESSION["signupRequested"]) { # A signup redirect was indeed called, signupRequested is true. Serving signup page.
+
+            echo $twig->render("signup-login-template.php", array(
+
+                "websiteName" => $websiteName,
+                "templateType" => "Signup"
         
-    ));
+            ));
+
+            $_SESSION["signupRequested"] = false; # Reset it for future redirections.
+
+        } else { # Session exists but signup redirect was not called, serving login
+
+            echo $twig->render("signup-login-template.php", array(
+
+                "websiteName" => $websiteName,
+                "templateType" => "Login"
+        
+            ));
+        }
+
+    } else { # Session was never set because the user never used the redirect feature, serving login as default
+
+        echo $twig->render("signup-login-template.php", array(
+
+            "websiteName" => $websiteName,
+            "templateType" => "Login"
+        
+        ));
+
+    }
 }
 
 ?>
