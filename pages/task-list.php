@@ -45,14 +45,13 @@
                 $_SESSION["username"] = "";
                 $_SESSION["password"] = "";
 
-                header('Location: ../'); # Redirect to index.php for processing without invalid sessions
-                die();
+                require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
 
             } else {
+
                 # No accounts in database
 
-                header('Location: ../'); # Redirect to index.php for processing without invalid sessions
-                die();
+                require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
 
             }
         }
@@ -104,9 +103,7 @@
 
                 $_SESSION["errorMessage"] = "Username_Error";
 
-                header('Location: ../'); # Redirect to index.php for rendering
-                
-                die();
+                require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
                 
             } else {
@@ -115,9 +112,7 @@
 
                 $_SESSION["errorMessage"] = "Password_Error";
 
-                header('Location: ../'); # Redirect to index.php for rendering
-                
-                die();
+                require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
             }
         } else {
@@ -172,9 +167,7 @@
 
                 $_SESSION["errorMessage"] = "UsernameCreation_Error";
 
-                header('Location: ../'); # Redirect to index.php for rendering
-                
-                die(); # Redirected - kill the PHP script
+                require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
             }
 
@@ -186,9 +179,7 @@
 
         # This was accessed directly which isn't allowed, redirect to index.php for processing
 
-        header('Location: ../'); # Redirect to index.php
-        
-        die();
+        require '../required/redirect-to-index.php'; # Redirect to index.php
 
     }
     

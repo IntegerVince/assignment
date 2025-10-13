@@ -6,7 +6,6 @@ session_start(); # Starting the session
 $_SESSION["username"] = "";
 $_SESSION["password"] = "";
 
-header('Location: ../'); # Redirect to index.php for rendering
-die();
+require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
 ?>
