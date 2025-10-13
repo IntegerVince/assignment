@@ -30,7 +30,14 @@
 
         
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
-            <p>Add</p>
+            <p>Add a Task</p>
+            <form action="../redirect/add-task.php" method="post">
+                <label for="fname">Task:</label>
+                <input type="text" id="fname" name="ftask_add" placeholder="exampleUser" required>
+                <label for="fpass">Due Date:</label>
+                <input type="date" id="fpass" name="fdate_add">
+                <input type="submit" value="Submit">
+            </form>
         </template>
 
         <template id="modifyTaskMenuTemplate"> <!-- Modify Task Menu-->
