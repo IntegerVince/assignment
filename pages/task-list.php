@@ -35,9 +35,15 @@ if (checkSessionStatus() == "Valid") {
 
 if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
+    # Explode is used to seperate status message from user ID
+    # Index 0 = Status
+    # Index 1 = UserID (If Valid)
+
+    $receivedAccountStatus = explode("-", checkDatabaseAccount($_POST["fusername_login"], $_POST["fpassword_login"]));
+
     # Username and password provided for login.
 
-    if (checkDatabaseAccount($_POST["fusername_login"], $_POST["fpassword_login"]) == "Valid"){
+    if ($receivedAccountStatus[0] == "Valid"){
 
         # Outcome 1 - Username and Password Valid - Login!
 
@@ -56,7 +62,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
             die(); # Logged in - kill the PHP script
 
-    } else if (checkDatabaseAccount($_POST["fusername_login"], $_POST["fpassword_login"]) == "InvalidUsername"){
+    } else if ($receivedAccountStatus[0] == "InvalidUsername"){
 
         # Outcome 2 - Username Not Found!
 
@@ -64,7 +70,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
-    } else if (checkDatabaseAccount($_POST["fusername_login"], $_POST["fpassword_login"]) == "InvalidPassword") {
+    } else if ($receivedAccountStatus[0] == "InvalidPassword") {
 
         # Outcome 3 - Password Not Found!
 
@@ -72,7 +78,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
 
-    } else if (checkDatabaseAccount($_POST["fusername_login"], $_POST["fpassword_login"]) == "NoAccounts") {
+    } else if ($receivedAccountStatus[0] == "NoAccounts") {
 
         echo "Error: No accounts in database"; # Serve this error directly
 
@@ -82,9 +88,11 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
 } else if (isset($_POST["fusername_signup"]) and isset($_POST["fpassword_signup"])) {
 
+    $receivedAccountStatus = explode("-", checkDatabaseAccount($_POST["fusername_signup"], $_POST["fpassword_signup"]));
+
     # Username and password provided for signup. Check whether or not there is already an account with that username.
     
-    if (checkDatabaseAccount($_POST["fusername_signup"], $_POST["fpassword_signup"]) == "InvalidUsername") {
+    if ($receivedAccountStatus[0] == "InvalidUsername") {
 
         require '../required/database-connector.php'; # Shortcut to connect to database
 

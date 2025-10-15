@@ -18,7 +18,7 @@ function checkSessionStatus() {
 
             # We have account data stored - will be checked with database & processed accordingly
 
-            if (checkDatabaseAccount($_SESSION["username"], $_SESSION["password"]) == "Valid"){
+            if (explode("-",checkDatabaseAccount($_SESSION["username"], $_SESSION["password"]))[0] == "Valid"){
 
                 # Username and Password From Session Valid
 
@@ -52,10 +52,10 @@ function checkSessionStatus() {
 
 # Given a username and password, goes through the database and returns a status
 #
-# Valid - Username and password valid
-# InvalidPassword - Account password is incorrect
-# InvalidUsername - Account username does not exist
-# NoAccounts - No accounts were found
+# Valid-UserID (Example: Valid-5) - Username and password valid + UserID of the account
+# InvalidPassword-null - Account password is incorrect
+# InvalidUsername-null - Account username does not exist
+# NoAccounts-null - No accounts were found
 
 function checkDatabaseAccount($accountUsername, $accountPassword){
 
@@ -78,24 +78,47 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 
                     # Username and Password Valid
                     
-                    return "Valid";
+                    return "Valid-".(string)$row["id"]; # Return ID data too as it might be needed from the caller
 
                 } else {
 
                     # An account was found but password did not match
 
-                    return "InvalidPassword"; # returning that the password was invalid
+                    return "InvalidPassword-null"; # returning that the password was invalid
 
                 }
             }
         }
 
-        return "InvalidUsername"; # returning that the username was not found
+        return "InvalidUsername-null"; # returning that the username was not found
 
     } else {
 
-        return "NoAccounts"; # Returning that there are no accounts
+        return "NoAccounts-null"; # Returning that there are no accounts
 
     }
 }
+
+
+function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate){
+
+
+    # Fetch account status with explode for seperation of status and UserID
+    
+    $accountData = explode("-",checkDatabaseAccount($accountUsername, $accountPassword));
+
+    if ($accountData[0] == "Valid"){ # Account username and password were valid, authenticated
+
+        $userID = $accountData[1];
+
+        return $userID;
+
+    } else {
+
+        return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller
+        
+    }
+
+}
+
 ?>

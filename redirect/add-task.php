@@ -6,7 +6,10 @@ require '../required/database-functions.php'; # Connection to database & returns
 
 if (checkSessionStatus() == "Valid" and isset($_POST["ftask_add"])){ # User is currenly logged in with valid data + mandatory POST data
 
-    # Continue here
+   # Process recieved information
+
+   echo(addTaskToUser($_SESSION["username"], $_SESSION["password"],"temp1","temp2"));
+
 
 } else {
 
