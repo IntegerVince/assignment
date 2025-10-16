@@ -13,15 +13,31 @@
 
         <!-- Task list table -->
         <table>
-            <tr>
-                <th>Task</th>
-                <th>Due Date</th>
-                <th>Status</th>
-            </tr>
-
-            <?php
-
-            ?>
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in taskList %}
+                    <tr>
+                        
+                        <td> {{ task.taskName }}</td>
+                        {% if task.taskDeadline == "0000-00-00" %}
+                            <td> No Deadline </td>
+                        {% else %}
+                            <td> {{ task.taskDeadline }}</td>
+                        {% endif %}
+                        <td>[Pending]</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3">No tasks yet</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
 
         </table>
 
@@ -32,7 +48,6 @@
         <div id="menuContainer"></div>
 
         <!-- Template content for menuContainer which is controlled with javascript -->
-
         
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
             <p>Add a Task</p>

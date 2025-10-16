@@ -4,7 +4,7 @@ session_start(); # Starting the session
 
 require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
-require '../required/database-functions.php'; # Connection to database & returns data on account session status
+require '../required/database-functions.php'; # Connection to database & database functions
 
 # Check if login details are saved in a session to automatically login
 
@@ -15,7 +15,8 @@ if (checkSessionStatus() == "Valid") {
     echo $twig->render("task-list-template.php", array(
 
         "websiteName" => $websiteName,
-        "username" => $_SESSION["username"]
+        "username" => $_SESSION["username"],
+        "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
         
     ));
 
@@ -56,7 +57,8 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
             echo $twig->render("task-list-template.php", array(
 
                 "websiteName" => $websiteName,
-                "username" => $_POST["fusername_login"]
+                "username" => $_POST["fusername_login"],
+                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
             
             ));
 
@@ -109,7 +111,8 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
         echo $twig->render("task-list-template.php", array(
 
             "websiteName" => $websiteName,
-            "username" => $_POST["fusername_signup"]
+            "username" => $_POST["fusername_signup"],
+            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
         
         ));
 

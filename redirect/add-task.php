@@ -9,7 +9,6 @@ if (checkSessionStatus() == "Valid" and isset($_POST["ftask_add"])){ # User is c
    # Call function to add task - date handling is done at the function's end
 
     addTaskToUserAndReload($_SESSION["username"], $_SESSION["password"],$_POST["ftask_add"],$_POST["fdate_add"]);
-   
 
 } else {
 

@@ -99,6 +99,7 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
     }
 }
 
+# Function to create a new user in the database
 function createNewUser($usernameSignup, $passwordSignup){
 
     require '../required/database-connector.php'; # Shortcut to connect to database
@@ -111,6 +112,7 @@ function createNewUser($usernameSignup, $passwordSignup){
 
 }
 
+# Function to add a task linked to a user and go back to index.php which reloads the list of tasks, given the user stays logged in
 
 function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $taskDate){
 
@@ -149,7 +151,46 @@ function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $
 
     } else {
 
-        return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller
+        return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
+        
+    }
+
+}
+
+# Given a username and password, authenticates the user, and returns all tasks relating to that userID.
+
+function fetchTasks($accountUsername, $accountPassword) {
+
+    # Fetch account status with explode for seperation of status and UserID
+    
+    $accountData = explode("-",checkDatabaseAccount($accountUsername, $accountPassword));
+
+    if ($accountData[0] == "Valid"){ # Account username and password were valid, authenticated
+
+        $userID = $accountData[1];
+
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        $userTaskListQuery = "SELECT userID, task, deadline FROM task WHERE userID=".$userID;
+
+        $userTaskListResult = mysqli_query($connection, $userTaskListQuery); # Data from query.
+
+        $returnList = [];
+
+        # Iterate through the list, append all fetched data into the array, and then return the array for the caller to handle
+
+        while($row = mysqli_fetch_assoc($userTaskListResult)) {
+
+            array_push($returnList, ["taskName" => $row["task"], "taskDeadline" => $row["deadline"]]);
+            
+
+        }
+
+        return $returnList;
+
+    } else {
+
+        return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
         
     }
 
