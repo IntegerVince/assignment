@@ -99,6 +99,18 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
     }
 }
 
+function createNewUser($usernameSignup, $passwordSignup){
+
+    require '../required/database-connector.php'; # Shortcut to connect to database
+
+    # Query to create account
+    $accountCreationSQL = "INSERT INTO account (username, password) VALUES ('" . $usernameSignup . "', '" . $passwordSignup . "')";
+
+    # Create account with the query
+    $connection->query($accountCreationSQL);
+
+}
+
 
 function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $taskDate){
 

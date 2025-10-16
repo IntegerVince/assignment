@@ -18,6 +18,11 @@
                 <th>Due Date</th>
                 <th>Status</th>
             </tr>
+
+            <?php
+
+            ?>
+
         </table>
 
         <button id="addTask">Add Task</button>

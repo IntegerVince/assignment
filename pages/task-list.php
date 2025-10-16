@@ -94,8 +94,6 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
     
     if ($receivedAccountStatus[0] == "InvalidUsername") {
 
-        require '../required/database-connector.php'; # Shortcut to connect to database
-
         # Invalid username status means that the username does not exist, so we can proceed
 
         # Outcome 1 - Username Unique! Create account
@@ -104,11 +102,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
         $_SESSION["username"] = $_POST["fusername_signup"];
         $_SESSION["password"] = $_POST["fpassword_signup"];
 
-        # Query to create account
-        $accountCreationSQL = "INSERT INTO account (username, password) VALUES ('" . $_POST["fusername_signup"] . "', '" . $_POST["fpassword_signup"] . "')";
-
-        # Create account with the query
-        $connection->query($accountCreationSQL);
+        createNewUser($_POST["fusername_signup"],$_POST["fpassword_signup"]);
 
         # Perform Render of task-list as logged in user
 
