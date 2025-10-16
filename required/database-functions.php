@@ -100,8 +100,7 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 }
 
 
-function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate){
-
+function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $taskDate){
 
     # Fetch account status with explode for seperation of status and UserID
     
@@ -111,7 +110,30 @@ function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate)
 
         $userID = $accountData[1];
 
-        return $userID;
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        # Query to insert task - build query according to whether or not task deadline was specified
+
+        echo $taskDate;
+        
+        if ($taskDate == ""){
+
+            # Task Date Not Specified
+
+            $taskInsertSQL = "INSERT INTO task (userID, task) VALUES ('" . $userID . "', '" . $taskName . "')";
+
+        } else {
+
+            # Task Date Specified
+
+            $taskInsertSQL = "INSERT INTO task (userID, task, deadline) VALUES ('" . $userID . "', '" . $taskName . "', '" . $taskDate . "')";
+
+        }
+      
+        # Create task with the query
+        $connection->query($taskInsertSQL);
+
+        require '../required/redirect-to-index.php'; # Redirect to index.php for reloading the task list
 
     } else {
 
