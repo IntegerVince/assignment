@@ -15,6 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Code which triggers with the 'click' event listener
 
+            
+            if (currentIndexSelection != -1){ // There was a previous selection
+
+                tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+            }
+
+            this.style.backgroundColor = "red"; // Set current selection to red
+
             currentTaskName = this.childNodes[1].textContent; // childNodes[1] is the first table row data index
             currentIndexSelection = indexValue;
 
