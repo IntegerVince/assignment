@@ -62,10 +62,13 @@
 
         <template id="modifyTaskMenuTemplate"> <!-- Modify Task Menu-->
             <p>Modify</p>
+            <p>Current Selection:</p>
+            <p id="selection">[None]</p>
         </template>
 
         <template id="deleteTaskMenuTemplate"> <!-- Delete Task Menu-->
             <p>Delete</p>
+            <p id="selection">[None]</p>
         </template>
     </body>
 </html>
