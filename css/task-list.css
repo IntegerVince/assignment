@@ -1,0 +1,14 @@
+.task:hover {
+    
+    background-color: yellow;
+    
+}
+
+table {
+    border-collapse: collapse; /* Remove the unclickable space between tables */
+}
+
+table td {
+    width: 500px;
+    text-align: center;
+}

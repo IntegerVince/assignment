@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" href="../css/task-list.css">
         <script src="../javascript/task-list.js" type="text/javascript"></script>
     </head>
 
@@ -22,9 +23,8 @@
             </thead>
             <tbody>
                 {% for task in taskList %}
-                    <tr>
-                        
-                        <td> {{ task.taskName }}</td>
+                    <tr class="task">
+                            <td> {{ task.taskName }} </td>
                         {% if task.taskDeadline == "0000-00-00" %}
                             <td> No Deadline </td>
                         {% else %}

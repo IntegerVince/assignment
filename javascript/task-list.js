@@ -41,4 +41,16 @@ document.addEventListener("DOMContentLoaded", () => {
         injectMenuToDiv("menuContainer", "deleteTaskMenuTemplate");
 
     }
+    
+    const tasks = document.getElementsByClassName("task"); // Select all tasks
+
+    for (let i = 0; i < tasks.length; i++) {
+
+        tasks[i].addEventListener("click", selectTask); // attach a click listener event to all tasks which enables 'Clicking' them
+
+    }
+
+    function selectTask(){
+        alert("you have clicked a task!");
+    }
 });
