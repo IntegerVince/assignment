@@ -171,7 +171,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         require '../required/database-connector.php'; # Shortcut to connect to database
 
-        $userTaskListQuery = "SELECT userID, task, deadline FROM task WHERE userID=".$userID;
+        $userTaskListQuery = "SELECT userID, task, deadline, taskID FROM task WHERE userID=".$userID;
 
         $userTaskListResult = mysqli_query($connection, $userTaskListQuery); # Data from query.
 
@@ -181,7 +181,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         while($row = mysqli_fetch_assoc($userTaskListResult)) {
 
-            array_push($returnList, ["taskName" => $row["task"], "taskDeadline" => $row["deadline"]]);
+            array_push($returnList, ["taskName" => $row["task"], "taskDeadline" => $row["deadline"], "taskID" => $row["taskID"]]);
             
 
         }
@@ -194,6 +194,32 @@ function fetchTasks($accountUsername, $accountPassword) {
         
     }
 
+}
+
+# Function to delete a task linked to a user by index and go back to index.php which reloads the list of tasks, given the user stays logged in
+
+function deleteTaskAndReload($accountUsername, $accountPassword, $taskIndex){
+
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        # Query to delete task
+        $deleteTaskQuery = "DELETE FROM task WHERE taskID='" . $taskIndex . "';";
+
+        # Delete task
+        $connection->query($deleteTaskQuery);
+
+        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+
+    } else {
+
+        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+
+    }
+    
 }
 
 ?>

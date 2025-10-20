@@ -19,18 +19,20 @@
                     <th>Task</th>
                     <th>Due Date</th>
                     <th>Status</th>
+                    <th hidden>taskID</th>
                 </tr>
             </thead>
             <tbody>
                 {% for task in taskList %}
                     <tr class="task">
-                            <td> {{ task.taskName }} </td>
+                            <td>{{ task.taskName }}</td>
                         {% if task.taskDeadline == "0000-00-00" %}
                             <td> No Deadline </td>
                         {% else %}
-                            <td> {{ task.taskDeadline }}</td>
+                            <td>{{ task.taskDeadline }}</td>
                         {% endif %}
                         <td>[Pending]</td>
+                        <td hidden>{{ task.taskID }}</td> <!-- Hidden task ID is used for handling selection -->
                     </tr>
                 {% else %}
                     <tr>
@@ -50,13 +52,13 @@
         <!-- Template content for menuContainer which is controlled with javascript -->
         
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
-            <p>Add a Task</p>
+            <p>Add A Task</p>
             <form action="../redirect/add-task.php" method="post">
                 <label for="fname">Task:</label>
                 <input type="text" id="fname" name="ftask_add" placeholder="exampleUser" required>
                 <label for="fpass">Due Date:</label>
                 <input type="date" id="fpass" name="fdate_add">
-                <input type="submit" value="Submit">
+                <input type="submit" value="Add Task">
             </form>
         </template>
 
@@ -67,8 +69,13 @@
         </template>
 
         <template id="deleteTaskMenuTemplate"> <!-- Delete Task Menu-->
-            <p>Delete</p>
+            <p>Delete A Task</p>
+            <p>Current Selection:</p>
             <p id="selection">[None]</p>
+            <form action="../redirect/delete-task.php" method="post">
+                <input type='hidden' id="taskID" name='taskID' value=""> 
+                <input type="submit" value="Delete Selected Task">
+            </form>
         </template>
     </body>
 </html>

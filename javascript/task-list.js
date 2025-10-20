@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     var currentIndexSelection = -1; // Will store the current index of task to be modified if the modify task command is executed
     var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
+    var currentTaskID = -1; // Will store the database taskID
     
     const tasks = document.querySelectorAll(".task"); // all the tasks, fetched throuh the class they share
 
@@ -14,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
         task.addEventListener("click", function() { 
 
             // Code which triggers with the 'click' event listener
-
             
             if (currentIndexSelection != -1){ // There was a previous selection
 
@@ -27,12 +27,20 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTaskName = this.childNodes[1].textContent; // childNodes[1] is the first table row data index
             currentIndexSelection = indexValue;
 
-            // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+            currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
 
-            var modifySelection = document.getElementById("selection"); // If it doesn't exist, it returns null
+            // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+            
+            // If they don't exist, it returns null
+            var modifySelection = document.getElementById("selection");
+            var taskIDContainer = document.getElementById("taskID");
 
             if (modifySelection != null){
-                modifySelection.innerHTML = currentTaskName; // Only set the data if the 'modifySelection' container exists
+                modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+            }
+
+            if (taskIDContainer != null){
+                taskIDContainer.value = currentTaskID;
             }
 
         });
@@ -59,9 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
             if (currentTaskName != ""){ // There is a valid selection right now
 
-                // Fetch the container and add the current selection
+                // Fetch the containers and add the current data
                 var modifySelection = document.getElementById("selection");
                 modifySelection.innerHTML = currentTaskName;
+
+                var taskIDContainer = document.getElementById("taskID");
+                taskIDContainer.value = currentTaskID;
 
             }
         }
