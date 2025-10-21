@@ -12,6 +12,8 @@
 
         <a href="../redirect/logout-redirector.php"><button>Logout</button></a>
 
+        <p>{{errorMessage}}</p> <!-- If error message exists, it will be shown. -->
+
         <!-- Task list table -->
         <table>
             <thead>
