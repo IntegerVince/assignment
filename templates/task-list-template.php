@@ -66,6 +66,20 @@
             <p>Modify</p>
             <p>Current Selection:</p>
             <p id="selection">[None]</p>
+            <form action="../redirect/modify-task.php" method="post">
+                <input type='hidden' id="taskID" name='taskID' value="">
+                <label for="modificationType">Choose what to modify:</label>
+                <select id="modificationType" name="modificationType">
+                    <option value="taskDescription">Task Description</option>
+                    <option value="dueDate">Due Date</option>
+                    <option value="status">Status</option>
+                </select>
+                <div id="modifyTypeContainer"> <!-- Stores a menu (injected through javascript) depending on menu type. Default of Task Desc -->
+                    <label for="taskDescription">Change to:</label>
+                    <input type='text' id="taskDescription" name='taskDescription' value="" required>
+                    <input type="submit" value="Modify Selected Task">
+                </div>
+            </form>
         </template>
 
         <template id="deleteTaskMenuTemplate"> <!-- Delete Task Menu-->
@@ -76,6 +90,22 @@
                 <input type='hidden' id="taskID" name='taskID' value=""> 
                 <input type="submit" value="Delete Selected Task">
             </form>
+        </template>
+
+        <template id="modifyTypeContainer-taskDescription">
+            <label for="taskDescription">Change to:</label>
+            <input type='text' id="taskDescription" name='taskDescription' value="" required>
+            <input type="submit" value="Modify Selected Task">
+        </template>
+
+        <template id="modifyTypeContainer-dueDate">
+            <label for="taskDueDate">Change to:</label>
+            <input type='date' id="taskDueDate" name='taskDueDate' value="" required>
+            <input type="submit" value="Modify Selected Task">
+        </template>
+
+        <template id="modifyTypeContainer-status">
+            <input type="submit" value="Change Status">
         </template>
     </body>
 </html>

@@ -75,6 +75,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 taskIDContainer.value = currentTaskID;
 
             }
+
+            if (templateID == "modifyTaskMenuTemplate"){
+
+                // Fetch the modify dropdown menu
+                var modificationType = document.getElementById("modificationType");
+
+                modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
+
+                    var chosenValue = this.value;
+                    
+                    if (chosenValue == "taskDescription"){
+                        
+                         injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
+
+                    }  else if  (chosenValue == "dueDate"){
+                        
+                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
+
+                    } else if  (chosenValue == "status"){
+                        
+                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
+                        
+                    }
+                    
+                });
+
+            }
         }
     }
 
