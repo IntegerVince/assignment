@@ -107,6 +107,7 @@
         </template>
 
         <template id="modifyTypeContainer-status">
+            <input type='hidden' id="taskStatusAction" name='taskStatusAction' value="true">
             <input type="submit" value="Change Status">
         </template>
     </body>

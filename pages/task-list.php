@@ -37,6 +37,37 @@ if (isset($_SESSION["errorMessage"])){ # task-list.php was redirected with an er
             require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
                 
         }
+
+    } else if ($_SESSION["errorMessage"] == "Modify_Task_Failure") {
+
+        $_SESSION["errorMessage"] = ""; # Reset error message
+
+        if (checkSessionStatus() == "Valid") {  # Validate that the sessions are real and the session was not injected
+
+            # The session is also real, which means that the error message is genuine
+
+            echo $twig->render("task-list-template.php", array(
+
+                "websiteName" => $websiteName,
+                "username" => $_SESSION["username"],
+                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
+                "errorMessage" => "Task could not be modified - you accessed the link directly or did not choose a task.."
+                
+            ));
+
+            die(); # Kill the current PHP script since it was served
+
+
+        }  else if (checkSessionStatus() == "Invalid") { 
+
+            # Reset the invalid Sessions
+            $_SESSION["username"] = "";
+            $_SESSION["password"] = "";
+
+            require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
+                
+        }
+
     }
     
 }
