@@ -263,4 +263,99 @@ function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
     }
 }
 
+function modifyTaskDescription($accountUsername, $accountPassword, $taskIndex, $description){
+
+    # Query to fetch task's current status
+    
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        # Query to update the task name per the description
+
+        $updateQuery = "UPDATE task SET task = '" . $description . "' WHERE taskID='" . $taskIndex . "';";
+
+        # Take action on the query
+        $connection->query($updateQuery);
+
+        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+
+    } else {
+
+        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+
+    }
+}
+
+// Validates dates and returns the result. used in some database functions.
+function dateValid($date){
+
+    $splitDate = explode("-",$date);
+
+    $splitCount = count($splitDate);
+
+    if ($splitCount == 3) { // The date format is correct, split into 3 pieces of format X-X-X
+
+        if (strlen($splitDate[0]) == 4 && strlen($splitDate[1]) == 2 && strlen($splitDate[2]) == 2){
+
+            // The lengths of the format is current, being YYYY-MM-DD
+
+            if (ctype_digit($splitDate[0]) && ctype_digit($splitDate[1]) && ctype_digit($splitDate[2])){
+
+                return true; // Each character is also a valid integer. This is a correct date!
+
+            } else {
+
+                return false; // Wrong Format
+
+            }
+
+        } else {
+
+            return false; // Wrong Format
+
+        }
+
+    } else {
+
+        return false; // Wrong Format
+
+    }
+
+}
+function modifyTaskDate($accountUsername, $accountPassword, $taskIndex, $date){
+
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        if(dateValid($date)){
+
+            require '../required/database-connector.php'; # Shortcut to connect to database
+
+            # Query to update the task deadline
+
+            $updateQuery = "UPDATE task SET deadline = '" . $date . "' WHERE taskID='" . $taskIndex . "';";
+
+            # Take action on the query
+
+            $connection->query($updateQuery);
+
+            require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+
+        } else {
+
+            require '../required/redirect-to-index.php'; # Invalid date, redirecting..
+
+        }
+
+    } else {
+
+        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+
+    }
+}
+
 ?>

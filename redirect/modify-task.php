@@ -8,19 +8,29 @@ if (isset($_POST['taskDescription']) && $_POST['taskDescription'] != "" && isset
 
     // Task Description Data & taskID Data Recieved - Can Proceed
 
-    echo 'Description Change';
+    modifyTaskDescription($_SESSION['username'], $_SESSION['password'], $_POST['taskID'], $_POST['taskDescription']);
 
-} else if (isset($_POST['taskDueDate']) && $_POST['taskDueDate'] != "" && isset($_POST['taskID']) && $_POST['taskID'] != "") {
+} else if (isset($_POST['taskDueDateModification']) && $_POST['taskDueDateModification'] == "true" && isset($_POST['taskID']) && $_POST['taskID'] != "") {
 
-    // Task Due Date taskID Data Recieved - Can Proceed
+     // Task Due Date Modification Called & taskID Data Recieved - Can Proceed
 
-    echo 'Due Date Change';
+    if (isset($_POST['taskDueDate']) and $_POST["taskDueDate"] != ""){
+
+        // Date was not left as blank - update new date value
+
+        modifyTaskDate($_SESSION['username'], $_SESSION['password'], $_POST['taskID'], $_POST['taskDueDate']);
+
+    } else {
+
+        // Date was left as blank - update to have no due date (0000-00-00)
+        
+        modifyTaskDate($_SESSION['username'], $_SESSION['password'], $_POST['taskID'], "0000-00-00");
+
+    }
 
 } else if (isset($_POST['taskStatusAction']) && $_POST['taskStatusAction'] == "true" && isset($_POST['taskID']) && $_POST['taskID'] != "") {
 
     // Task Swap Called & taskID Data Recieved - Can Proceed
-
-    echo 'Status Swap';
 
     modifyTaskStatus($_SESSION['username'], $_SESSION['password'], $_POST['taskID']);
 

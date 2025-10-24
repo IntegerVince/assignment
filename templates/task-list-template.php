@@ -109,7 +109,8 @@
 
         <template id="modifyTypeContainer-dueDate">
             <label for="taskDueDate">Change to:</label>
-            <input type='date' id="taskDueDate" name='taskDueDate' value="" required>
+            <input type='hidden' id="taskDueDateModification" name='taskDueDateModification' value="true"> <!-- In case date is left blank -->
+            <input type='date' id="taskDueDate" name='taskDueDate' value="">
             <input type="submit" value="Modify Selected Task">
         </template>
 
