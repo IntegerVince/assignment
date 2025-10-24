@@ -171,7 +171,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         require '../required/database-connector.php'; # Shortcut to connect to database
 
-        $userTaskListQuery = "SELECT userID, task, deadline, taskID FROM task WHERE userID=".$userID;
+        $userTaskListQuery = "SELECT taskID, userID, task, deadline, pending FROM task WHERE userID=".$userID;
 
         $userTaskListResult = mysqli_query($connection, $userTaskListQuery); # Data from query.
 
@@ -181,7 +181,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         while($row = mysqli_fetch_assoc($userTaskListResult)) {
 
-            array_push($returnList, ["taskName" => $row["task"], "taskDeadline" => $row["deadline"], "taskID" => $row["taskID"]]);
+            array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"]]);
             
 
         }
@@ -220,6 +220,47 @@ function deleteTaskAndReload($accountUsername, $accountPassword, $taskIndex){
 
     }
     
+}
+
+function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
+    
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        # Query to fetch task's current status
+
+        $fetchStatusQuery = "SELECT pending FROM task WHERE taskID='" . $taskIndex . "';";
+
+        $statusResult = mysqli_fetch_assoc(mysqli_query($connection, $fetchStatusQuery))["pending"]; # Data from query.
+
+        if ($statusResult == 1) {
+
+            // Currently 'Pending' -> Change To 'Completed'
+
+            $updateQuery = "UPDATE task SET pending = FALSE WHERE taskID='" . $taskIndex . "';"; // Set Pending To False
+
+        } else {
+
+            // Currently 'Completed' -> Change To 'Pending'
+
+            $updateQuery = "UPDATE task SET pending = TRUE WHERE taskID='" . $taskIndex . "';"; // Set Pending To True
+
+            echo "not pending";
+        }
+
+        # Take action on the query
+        $connection->query($updateQuery);
+
+        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+
+    } else {
+
+        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+
+    }
 }
 
 ?>

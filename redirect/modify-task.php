@@ -22,6 +22,8 @@ if (isset($_POST['taskDescription']) && $_POST['taskDescription'] != "" && isset
 
     echo 'Status Swap';
 
+    modifyTaskStatus($_SESSION['username'], $_SESSION['password'], $_POST['taskID']);
+
 } else {
 
     $_SESSION['errorMessage'] = "Modify_Task_Failure";

@@ -27,13 +27,20 @@
             <tbody>
                 {% for task in taskList %}
                     <tr class="task">
-                            <td>{{ task.taskName }}</td>
+                        <td>{{ task.taskName }}</td>
+                        
                         {% if task.taskDeadline == "0000-00-00" %}
                             <td> No Deadline </td>
                         {% else %}
                             <td>{{ task.taskDeadline }}</td>
                         {% endif %}
-                        <td>[Pending]</td>
+
+                        {% if task.pending == 1 %}
+                            <td> Pending </td>
+                        {% else %}
+                            <td> Completed </td>
+                        {% endif %}
+
                         <td hidden>{{ task.taskID }}</td> <!-- Hidden task ID is used for handling selection -->
                     </tr>
                 {% else %}
