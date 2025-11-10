@@ -44,8 +44,10 @@
                         <td hidden>{{ task.taskID }}</td> <!-- Hidden task ID is used for handling selection -->
                     </tr>
                 {% else %}
-                    <tr>
-                        <td colspan="3">No tasks yet</td>
+                    <tr id="noTasks">
+                        <td>N/A</td>
+                        <td>No tasks yet</td>
+                        <td>N/A</td>
                     </tr>
                 {% endfor %}
             </tbody>

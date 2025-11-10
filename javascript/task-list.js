@@ -222,6 +222,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
+                        noTasksView = document.getElementById("noTasks");
+
+                        if (noTasksView != null){
+
+                            // There were no previous tasks. Now that there is, this preview (which is a table row) needs to be removed
+
+                            taskTableBody.deleteRow(0);
+
+                        }
+
                         latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
 
                         // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
@@ -675,6 +685,26 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Reset selection preview
                         document.getElementById("selection").innerHTML = "[None]";
 
+                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+
+                            // Inject the 'No Tasks' preview again
+
+                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                            // Inject cells in this new row
+                            taskTableBody.rows[0].insertCell(0); 
+                            taskTableBody.rows[0].insertCell(1);
+                            taskTableBody.rows[0].insertCell(2);
+
+                            // Inject the preview spanning across the entire table
+
+                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                        }
 
                     } else if (data == "Mismatch"){
 

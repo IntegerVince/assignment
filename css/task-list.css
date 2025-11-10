@@ -6,9 +6,9 @@
 
 table {
     border-collapse: collapse; /* Remove the unclickable space between tables */
+    width: 100%;
 }
 
 table td {
-    width: 500px;
     text-align: center;
 }
