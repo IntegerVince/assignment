@@ -112,9 +112,9 @@ function createNewUser($usernameSignup, $passwordSignup){
 
 }
 
-# Function to add a task linked to a user and go back to index.php which reloads the list of tasks, given the user stays logged in
+# Function to add a task linked to a user
 
-function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $taskDate){
+function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate){
 
     # Fetch account status with explode for seperation of status and UserID
     
@@ -127,8 +127,6 @@ function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $
         require '../required/database-connector.php'; # Shortcut to connect to database
 
         # Query to insert task - build query according to whether or not task deadline was specified
-
-        echo $taskDate;
         
         if ($taskDate == ""){
 
@@ -143,11 +141,9 @@ function addTaskToUserAndReload($accountUsername, $accountPassword, $taskName, $
             $taskInsertSQL = "INSERT INTO task (userID, task, deadline) VALUES ('" . $userID . "', '" . $taskName . "', '" . $taskDate . "')";
 
         }
-      
+        
         # Create task with the query
         $connection->query($taskInsertSQL);
-
-        require '../required/redirect-to-index.php'; # Redirect to index.php for reloading the task list
 
     } else {
 
@@ -188,39 +184,56 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         return $returnList;
 
-    } else {
-
-        return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
-        
     }
 
+    return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
 }
 
-# Function to delete a task linked to a user by index and go back to index.php which reloads the list of tasks, given the user stays logged in
+# Function to delete a task linked to a user by taskID
 
-function deleteTaskAndReload($accountUsername, $accountPassword, $taskIndex){
+function deleteTask($accountUsername, $accountPassword, $taskIndex){
 
     $result = fetchTasks($accountUsername, $accountPassword);
 
     if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
 
-        require '../required/database-connector.php'; # Shortcut to connect to database
+        $foundMatch = false;
 
-        # Query to delete task
-        $deleteTaskQuery = "DELETE FROM task WHERE taskID='" . $taskIndex . "';";
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
 
-        # Delete task
-        $connection->query($deleteTaskQuery);
+                $foundMatch = true; // The taskID in the function is of the authenticed user
 
-        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+            }
+        }
 
+        if ($foundMatch){
+            
+            require '../required/database-connector.php'; # Shortcut to connect to database
+
+            # Query to delete task
+            $deleteTaskQuery = "DELETE FROM task WHERE taskID='" . $taskIndex . "';";
+
+            # Delete task
+            $connection->query($deleteTaskQuery);
+
+            return "Success"; // The task was successfully deleted
+
+        } else {
+
+            return "Mismatch"; // the TaskID does not correspond to the user
+
+        }
+        
     } else {
 
-        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+        return "AuthFailure"; // Could not authenticate user
 
     }
     
 }
+
+# Function to modify a task linked to a user by taskID's status
 
 function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
     
@@ -228,41 +241,63 @@ function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
 
     if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
 
-        require '../required/database-connector.php'; # Shortcut to connect to database
+        $foundMatch = false;
 
-        # Query to fetch task's current status
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
 
-        $fetchStatusQuery = "SELECT pending FROM task WHERE taskID='" . $taskIndex . "';";
+                $foundMatch = true; // The taskID in the function is of the authenticed user
 
-        $statusResult = mysqli_fetch_assoc(mysqli_query($connection, $fetchStatusQuery))["pending"]; # Data from query.
+            }
+        }
 
-        if ($statusResult == 1) {
+        if ($foundMatch){
 
-            // Currently 'Pending' -> Change To 'Completed'
+            require '../required/database-connector.php'; # Shortcut to connect to database
 
-            $updateQuery = "UPDATE task SET pending = FALSE WHERE taskID='" . $taskIndex . "';"; // Set Pending To False
+            # Query to fetch task's current status
+
+            $fetchStatusQuery = "SELECT pending FROM task WHERE taskID='" . $taskIndex . "';";
+
+            $statusResult = mysqli_fetch_assoc(mysqli_query($connection, $fetchStatusQuery))["pending"]; # Data from query.
+
+            if ($statusResult == 1) {
+
+                // Currently 'Pending' -> Change To 'Completed'
+
+                $updateQuery = "UPDATE task SET pending = FALSE WHERE taskID='" . $taskIndex . "';"; // Set Pending To False
+
+                # Take action on the query
+                $connection->query($updateQuery);
+
+                return "Completed"; // Return the value for the caller to know what it was changed to
+
+            } else {
+
+                // Currently 'Completed' -> Change To 'Pending'
+
+                $updateQuery = "UPDATE task SET pending = TRUE WHERE taskID='" . $taskIndex . "';"; // Set Pending To True
+
+                # Take action on the query
+                $connection->query($updateQuery);
+
+                return "Pending"; // Return the value for the caller to know what it was changed to
+
+            }
 
         } else {
 
-            // Currently 'Completed' -> Change To 'Pending'
-
-            $updateQuery = "UPDATE task SET pending = TRUE WHERE taskID='" . $taskIndex . "';"; // Set Pending To True
-
-            echo "not pending";
+            return "Mismatch"; // the TaskID does not correspond to the user
+        
         }
-
-        # Take action on the query
-        $connection->query($updateQuery);
-
-        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
-
     } else {
 
-        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+        return "AuthFailure"; // The user was not authenticated
 
     }
 }
 
+# Function to modify a task linked to a user by taskID's name
 function modifyTaskDescription($accountUsername, $accountPassword, $taskIndex, $description){
 
     # Query to fetch task's current status
@@ -271,22 +306,49 @@ function modifyTaskDescription($accountUsername, $accountPassword, $taskIndex, $
 
     if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
 
-        require '../required/database-connector.php'; # Shortcut to connect to database
+        $foundMatch = false;
 
-        # Query to update the task name per the description
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
 
-        $updateQuery = "UPDATE task SET task = '" . $description . "' WHERE taskID='" . $taskIndex . "';";
+                $foundMatch = true; // The taskID in the function is of the authenticed user
 
-        # Take action on the query
-        $connection->query($updateQuery);
+            }
+        }
 
-        require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+        if ($foundMatch){
+
+            if ($description != ""){ // New task name was not left blank
+
+                require '../required/database-connector.php'; # Shortcut to connect to database
+
+                # Query to update the task name per the description
+
+                $updateQuery = "UPDATE task SET task = '" . $description . "' WHERE taskID='" . $taskIndex . "';";
+
+                # Take action on the query
+                $connection->query($updateQuery);
+
+                return "Success"; // The task name was successfully updated
+
+            } else {
+
+                return "Blank"; // The task name was left blank
+
+            }     
+
+        } else {
+
+            return "Mismatch"; // the TaskID does not correspond to the user
+
+        }
 
     } else {
 
-        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+        return "AuthFailure"; // The user was not authenticated
 
     }
+
 }
 
 // Validates dates and returns the result. used in some database functions.
@@ -325,35 +387,55 @@ function dateValid($date){
     }
 
 }
+
+# Function to modify a task linked to a user by taskID's date
+
 function modifyTaskDate($accountUsername, $accountPassword, $taskIndex, $date){
 
     $result = fetchTasks($accountUsername, $accountPassword);
 
     if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
 
-        if(dateValid($date)){
+        $foundMatch = false;
 
-            require '../required/database-connector.php'; # Shortcut to connect to database
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
 
-            # Query to update the task deadline
+                $foundMatch = true; // The taskID in the function is of the authenticed user
 
-            $updateQuery = "UPDATE task SET deadline = '" . $date . "' WHERE taskID='" . $taskIndex . "';";
+            }
+        }
 
-            # Take action on the query
+        if ($foundMatch){ // Task to be modified is of the authenticated user
 
-            $connection->query($updateQuery);
+            if(dateValid($date)){ // Check if the date passed is valid
 
-            require '../required/redirect-to-index.php'; # Refreshing page to update tasks..
+                require '../required/database-connector.php'; # Shortcut to connect to database
 
+                # Query to update the task deadline
+
+                $updateQuery = "UPDATE task SET deadline = '" . $date . "' WHERE taskID='" . $taskIndex . "';";
+
+                # Take action on the query
+
+                $connection->query($updateQuery);
+
+                return "ValidDate";
+
+            } else {
+
+                return "InvalidDate";
+
+            }
         } else {
 
-            require '../required/redirect-to-index.php'; # Invalid date, redirecting..
+            return "Mismatch"; // the TaskID does not correspond to the user
 
         }
 
     } else {
 
-        require '../required/redirect-to-index.php'; # User authentication failure, redirecting to home page..
+        return "AuthFailure";
 
     }
 }

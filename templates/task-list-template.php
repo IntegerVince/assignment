@@ -2,7 +2,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="../css/task-list.css">
-        <script src="../javascript/task-list.js" type="text/javascript"></script>
+        <script src="../javascript/task-list.js" type="text/javascript"></script> <!-- Includes Ajax Logic -->
     </head>
 
     <body>
@@ -12,7 +12,7 @@
 
         <a href="../redirect/logout-redirector.php"><button>Logout</button></a>
 
-        <p>{{errorMessage}}</p> <!-- If error message exists, it will be shown. -->
+        <p id="message"></p> <!-- If error message exists, it will be shown. -->
 
         <!-- Task list table -->
         <table>
@@ -24,7 +24,7 @@
                     <th hidden>taskID</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="taskTableBody">
                 {% for task in taskList %}
                     <tr class="task">
                         <td>{{ task.taskName }}</td>
@@ -62,11 +62,11 @@
         
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
             <p>Add A Task</p>
-            <form action="../redirect/add-task.php" method="post">
+            <form id="submitForm">
                 <label for="fname">Task:</label>
-                <input type="text" id="fname" name="ftask_add" placeholder="exampleUser" required>
+                <input type="text" id="ftask" name="ftask_add" placeholder="exampleTask" required>
                 <label for="fpass">Due Date:</label>
-                <input type="date" id="fpass" name="fdate_add">
+                <input type="date" id="fdate" name="fdate_add">
                 <input type="submit" value="Add Task">
             </form>
         </template>
@@ -75,7 +75,7 @@
             <p>Modify</p>
             <p>Current Selection:</p>
             <p id="selection">[None]</p>
-            <form action="../redirect/modify-task.php" method="post">
+            <form id="submitForm">
                 <input type='hidden' id="taskID" name='taskID' value="">
                 <label for="modificationType">Choose what to modify:</label>
                 <select id="modificationType" name="modificationType">
@@ -95,7 +95,7 @@
             <p>Delete A Task</p>
             <p>Current Selection:</p>
             <p id="selection">[None]</p>
-            <form action="../redirect/delete-task.php" method="post">
+            <form id="submitForm">
                 <input type='hidden' id="taskID" name='taskID' value=""> 
                 <input type="submit" value="Delete Selected Task">
             </form>

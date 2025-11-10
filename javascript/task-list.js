@@ -2,14 +2,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Code which handles task selection
 
-    var currentIndexSelection = -1; // Will store the current index of task to be modified if the modify task command is executed
+    var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
     var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
     var currentTaskID = -1; // Will store the database taskID
-    
-    const tasks = document.querySelectorAll(".task"); // all the tasks, fetched throuh the class they share
+    var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
+
+    tasks = document.querySelectorAll(".task"); // all the tasks, fetched through the class they share
 
     // Iterate through all the 'tasks' with foreach, also passing in the 'indexValue' of the current 'task' element
-    tasks.forEach(function(task, indexValue) {  
+    tasks.forEach(function(task) {  
         
         // Add an event listener for each task which will enable 'Clicking them'.
         task.addEventListener("click", function() { 
@@ -18,21 +19,24 @@ document.addEventListener("DOMContentLoaded", () => {
             
             if (currentIndexSelection != -1){ // There was a previous selection
 
+                tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
                 tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
 
             }
 
             this.style.backgroundColor = "red"; // Set current selection to red
 
-            currentTaskName = this.childNodes[1].textContent; // childNodes[1] is the first table row data index
-            currentIndexSelection = indexValue;
+            currentTaskName = this.childNodes[1].textContent; // childNodes[0] is the task name row
 
             currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
+
+            currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
             // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
             
             // If they don't exist, it returns null
-            var modifySelection = document.getElementById("selection");
+            var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
             var taskIDContainer = document.getElementById("taskID");
 
             if (modifySelection != null){
@@ -65,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
         if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
+
             if (currentTaskName != ""){ // There is a valid selection right now
 
                 // Fetch the containers and add the current data
@@ -83,17 +88,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
 
-                    var chosenValue = this.value;
+                    modificationMenuChosenValue = this.value;
                     
-                    if (chosenValue == "taskDescription"){
+                    if (modificationMenuChosenValue == "taskDescription"){
                         
                          injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
 
-                    }  else if  (chosenValue == "dueDate"){
+                    }  else if  (modificationMenuChosenValue == "dueDate"){
                         
                         injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
 
-                    } else if  (chosenValue == "status"){
+                    } else if  (modificationMenuChosenValue == "status"){
                         
                         injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
                         
@@ -133,5 +138,568 @@ document.addEventListener("DOMContentLoaded", () => {
         injectMenuToDiv("menuContainer", "deleteTaskMenuTemplate");
 
     }
+
+    // ==================================================================================
+
+    // Functions used throughout the script
+
+    function getTableIndexFromTaskID(taskID){ // Function which converts the database taskID to the task table row index
+        
+        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where tasks are stored
+        
+        // Iterate through the table to find the taskID
+        for (index = 0; index < taskTableBody.rows.length; index++){
+
+            // Fetch the current taskID iteration
+            var currentMatchedTaskID = taskTableBody.rows[index].cells[3].innerHTML;
+
+            if (currentMatchedTaskID == taskID){ // There is a match in taskID - the row has been found!
+
+                return index; // Give the table index
+
+            }
+
+        }
+
+        return -1; // At this stage, it means it was not found - return a -1 to inform the caller
+
+    }
+
+    // ==================================================================================
+
+    // Ajax logic code for add, modify and delete button
+
+    // Add Task Logic
+    document.getElementById("addTask").addEventListener("click", function(){ 
+
+        // Any submit form currently loaded (only 1 at a time is loaded) has the respective event listener attached
+        document.getElementById("submitForm").addEventListener("submit", function(buttonEvent){
+
+            buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
+
+            // Fetch the data from the form
+            var taskName = document.getElementById("ftask").value;
+            var taskDate = document.getElementById("fdate").value;
+
+            if (taskName != ""){ // Task name is not blank which is good - can proceed
+
+                fetch("../ajax/add-task.php", { // Send a fetch request where to send the data in for validation
+
+                    "method": "POST", // // Specify that the data will be passed as POST
+
+                    "headers": {
+
+                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                    },
+
+                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                        // The actual data being passed [A JSON Object]
+
+                        {
+                            "taskName": taskName,
+                            "taskDate": taskDate
+                        }
+                    )
+                }).then(function(response){ // Catch the response
+
+                    return response.text(); // Return the response
+
+                }).then(function(data){ // // Fetch the result and pass it into data
+
+                    if (data == "Fail"){
+
+                        message = document.getElementById("message");
+
+                        message.innerHTML = "Error! Task name cannot be blank!";
+
+                    } else {
+
+                        message.innerHTML = "Task has been added!";
+
+                        // Inject the new data without refreshing the page
+
+                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                        latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
+
+                        // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                        latestTableRow.classList.add("task");
+
+                        // Create the cells of the task to be injected
+                        cellTaskName = latestTableRow.insertCell(0);
+                        cellDueDate = latestTableRow.insertCell(1);
+                        cellStatus = latestTableRow.insertCell(2);
+                        cellTaskID = latestTableRow.insertCell(3);
+
+                        // Hide the cell given taskID shouldn't be visible.
+                        cellTaskID.style.display = "none";  // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                        // Inject the data into the cells
+                        
+                        cellTaskName.innerHTML = taskName;
+
+                        // Correctly inject deadline if none was specified
+                        if (taskDate == ""){
+
+                            cellDueDate.innerHTML = "No Deadline";
+
+                        } else {
+
+                            cellDueDate.innerHTML = taskDate;
+
+                        }
+                        
+                        cellStatus.innerHTML = "Pending"; // Default status when a task is first added is always 'Pending'
+
+                        cellTaskID.innerHTML = data; // 'Data' variable is the passed taskID from the ajax
+
+                        // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                        latestTableRow.addEventListener("click", function() { 
+
+                            // Code which triggers with the 'click' event listener
+                            
+                            if (currentIndexSelection != -1){ // There was a previous selection
+
+                                tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                            }
+
+                            this.style.backgroundColor = "red"; // Set current selection to red
+
+                            currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                            currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                            currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                            // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                            
+                            // If they don't exist, it returns null
+                            var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                            var taskIDContainer = document.getElementById("taskID");
+
+                            if (modifySelection != null){
+                                modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                            }
+
+                            if (taskIDContainer != null){
+                                taskIDContainer.value = currentTaskID;
+                            }
+
+                        });
+
+                        // Reset the values of the input fields
+                        document.getElementById("ftask").value = "";
+                        document.getElementById("fdate").value = "";
+
+                    }
+
+                })
+            } else { // Task name is blank
+                message = document.getElementById("message");
+
+                message.innerHTML = "Error! Task name cannot be blank!";
+            }
+        });
+    });
+
+    // Modify Task Logic
+    document.getElementById("modifyTask").addEventListener("click", function(){
+        
+        // Any submit form currently loaded (only 1 at a time is loaded) has the respective event listener attached
+        document.getElementById("submitForm").addEventListener("submit", function(buttonEvent){
+
+            buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
+
+            // Check on the modification request submitted and act accordingly
+
+            if (modificationMenuChosenValue == "taskDescription"){  // The submit form was for task name change
+
+                // Fetch the data from the form
+                var newTaskName = document.getElementById("taskDescription").value;
+
+                if (newTaskName != "" && currentTaskID != -1){ // The provided task name is not blank, we can proceed
+
+                    fetch("../ajax/modify-task-name.php", { // Send a fetch request where to send the data in for modification
+
+                        "method": "POST", // Specify that the data will be passed as POST
+
+                        "headers": {
+
+                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                        },
+
+                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                            // The actual data being passed [A JSON Object]
+
+                            {
+                                "taskID": currentTaskID,
+                                "taskName": newTaskName
+                            }
+                        )
+                    }).then(function(response){ // Catch the response
+
+                        return response.text(); // Return the response
+
+                    }).then(function(data){ // Fetch the result and pass it into data
+
+                        if (data == "Success"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Sucess! Task name has been modified!";
+
+                            // Update task name without refreshing the page
+
+                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                            taskTableBody.rows[taskIndex].cells[0].innerHTML = newTaskName; // Inject the new task name
+
+                            document.getElementById("selection").innerHTML = newTaskName; // Update the task name in the selection preview
+
+                            // Reset the value of the input field
+
+                            document.getElementById("taskDescription").value = ""; 
+
+
+                        } else if (data == "Blank"){
+                            
+                            // This check is made if the user modified the javascript and it passed data to the ajax php script
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! The new task name cannot be blank!";
+
+
+                        } else if (data == "BlankTaskID"){
+
+                            // This check is made if the user modified the javascript and it passed data to the ajax php script
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Please make a selection first";
+
+
+                        } else if (data == "Mismatch"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task ID user mismatch!";
+
+                        } else {
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "An unexpected error has occured! " + data;
+
+                        }
+                    })
+
+                } else { // Task name is blank or task not selected, cannot proceed
+
+                    message = document.getElementById("message");
+
+                    if (currentTaskID == -1){
+
+                        message.innerHTML = "Error! Please make a selection first";
+
+                    } else {
+
+                        message.innerHTML = "Error! The new task name cannot be blank!";
+
+                    }
+
+                }
+
+            } else if (modificationMenuChosenValue == "dueDate"){ // The submit form was for task due date change
+
+                if (currentTaskID == -1){
+
+                    // No task was selected
+
+                    message = document.getElementById("message");
+
+                    message.innerHTML = "Error! Please select a task first!";
+
+                } else { // Task is selected
+
+                    // Fetch the data from the form
+                    var newDate = document.getElementById("taskDueDate").value;
+
+                    fetch("../ajax/modify-task-date.php", { // Send a fetch request where to send the data in for modification
+
+                        "method": "POST", // Specify that the data will be passed as POST
+
+                        "headers": {
+
+                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                        },
+
+                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                            // The actual data being passed [A JSON Object]
+
+                            {
+                                "taskID": currentTaskID,
+                                "taskDueDate": newDate
+                            }
+                        )
+                    }).then(function(response){ // Catch the response
+
+                        return response.text(); // Return the response
+
+                    }).then(function(data){ // Fetch the result and pass it into data
+
+                        if (data == "Fail"){ // Blank Task ID
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task ID cannot be blank!";
+
+                        } else if (data == "ValidDate"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Task date has been updated!";
+
+                            // Update date without refreshing page
+
+                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                            if (newDate == ""){
+
+                                // Blank date means no deadline is to be done
+
+                                taskTableBody.rows[taskIndex].cells[1].innerHTML = "No Deadline";
+                                
+                            } else {
+
+                                // Inject the deadline date
+
+                                taskTableBody.rows[taskIndex].cells[1].innerHTML = newDate;
+
+                            }
+
+                            // Reset the value of the date field
+                            
+                            document.getElementById("taskDueDate").value = ""; 
+
+                        } else if (data == "InvalidDate"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task Date Is Invalid!";
+
+                        } else if (data == "Mismatch"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task ID user mismatch!";
+
+                        } else {
+
+                            // Tackling other error instances which shouldn't occur unless the user messed with the javascript code
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "An unexpected error has occured! " + data;
+
+                        }
+                    })
+
+                }
+
+            } else if (modificationMenuChosenValue == "status"){ // The submit form was for status change
+
+                if (currentTaskID == -1){
+
+                    // No task was selected
+
+                    message = document.getElementById("message");
+
+                    message.innerHTML = "Error! Please select a task first!";
+
+                } else { // Task is selected
+
+                    fetch("../ajax/modify-task-status.php", { // Send a fetch request where to send the data in for modification
+
+                        "method": "POST", // Specify that the data will be passed as POST
+
+                        "headers": {
+
+                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                        },
+
+                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                            // The actual data being passed [A JSON Object]
+
+                            {
+                                "taskID": currentTaskID,
+                            }
+                        )
+                    }).then(function(response){ // Catch the response
+
+                        return response.text(); // Return the response
+
+                    }).then(function(data){ // // Fetch the result and pass it into data
+
+                        if (data == "Fail"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task ID cannot be blank!";
+
+                        } else if (data == "Completed"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Task has been changed to 'Completed'";
+
+                            // Update to show as 'Completed' without refreshing the page
+
+                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                            taskTableBody.rows[taskIndex].cells[2].innerHTML = "Completed";
+
+
+                        } else if (data == "Pending"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Task has been changed to 'Pending'";
+
+                            // Update to show as 'Pending' without refreshing the page
+
+                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                            taskTableBody.rows[taskIndex].cells[2].innerHTML = "Pending";
+
+                        } else if (data == "Mismatch"){
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Task ID user mismatch!";
+
+                        } else {
+
+                            // Tackling other error instances which shouldn't occur unless the user messed with the javascript code
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "An unexpected error has occured! " + data;
+
+                        }
+                    })
+
+                }
+
+                
+            }
+        });
+    });
+
+    // Delete Task Logic
+    document.getElementById("deleteTask").addEventListener("click", function(){
+        // Any submit form currently loaded (only 1 at a time is loaded) has the respective event listener attached
+        document.getElementById("submitForm").addEventListener("submit", function(buttonEvent){
+
+            buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
+
+            if (currentTaskID != -1){ // A Task is Selected
+
+                fetch("../ajax/delete-task.php", { // Send a fetch request where to send the data in for deletion
+
+                    "method": "POST", // Specify that the data will be passed as POST
+
+                    "headers": {
+
+                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                    },
+
+                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                        // The actual data being passed [A JSON Object]
+
+                        {
+                            "taskID": currentTaskID,
+                        }
+                    )
+                }).then(function(response){ // Catch the response
+
+                    return response.text(); // Return the response
+
+                }).then(function(data){ // // Fetch the result and pass it into data
+
+                    if (data == "Fail"){
+
+                        message = document.getElementById("message");
+
+                        message.innerHTML = "Error! Task ID cannot be blank!";
+
+                    } else if (data == "Success"){
+
+                        message = document.getElementById("message");
+
+                        message.innerHTML = "Task has been successfully deleted!";
+
+                        // Update to show deleted task without refreshing the page
+
+                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where deletion will take place
+
+                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+
+                        // Reset the selection since the selection was removed
+                        currentIndexSelection = -1;
+                        currentTaskID = -1;
+                        
+                        // Reset selection preview
+                        document.getElementById("selection").innerHTML = "[None]";
+
+
+                    } else if (data == "Mismatch"){
+
+                        message = document.getElementById("message");
+
+                        message.innerHTML = "Error! Task ID user mismatch!";
+
+                    } else {
+
+                        // Tackling other error instances which shouldn't occur unless the user messed with the javascript code
+
+                        message = document.getElementById("message");
+
+                        message.innerHTML = "An unexpected error has occured! " + data;
+
+                    }
+                })
+
+            } else { // No Task Is Selected
+
+                message = document.getElementById("message");
+
+                message.innerHTML = "Error! Please select a task first!";
+            }
+        });
+    });
 
 });

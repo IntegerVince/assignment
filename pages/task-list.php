@@ -6,99 +6,31 @@ require '../required/twig-loader.php'; # Shortcut to load composer, twig & its t
 
 require '../required/database-functions.php'; # Connection to database & database functions
 
-if (isset($_SESSION["errorMessage"])){ # task-list.php was redirected with an error
+# First step is to check if there are valid sessions stored - if so, template can be served directly
 
-    if ($_SESSION["errorMessage"] == "Delete_Task_Failure"){
+if (checkSessionStatus() == "Valid") {
 
-        $_SESSION["errorMessage"] = ""; # Reset error message
-
-        if (checkSessionStatus() == "Valid") {  # Validate that the sessions are real and the session was not injected
-
-            # The session is also real, which means that the error message is genuine
-
-            echo $twig->render("task-list-template.php", array(
-
-                "websiteName" => $websiteName,
-                "username" => $_SESSION["username"],
-                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
-                "errorMessage" => "Task could not be deleted - you accessed the link directly or did not choose a task.."
-                
-            ));
-
-            die(); # Kill the current PHP script since it was served
-
-
-        }  else if (checkSessionStatus() == "Invalid") { 
-
-            # Reset the invalid Sessions
-            $_SESSION["username"] = "";
-            $_SESSION["password"] = "";
-
-            require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
-                
-        }
-
-    } else if ($_SESSION["errorMessage"] == "Modify_Task_Failure") {
-
-        $_SESSION["errorMessage"] = ""; # Reset error message
-
-        if (checkSessionStatus() == "Valid") {  # Validate that the sessions are real and the session was not injected
-
-            # The session is also real, which means that the error message is genuine
-
-            echo $twig->render("task-list-template.php", array(
-
-                "websiteName" => $websiteName,
-                "username" => $_SESSION["username"],
-                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
-                "errorMessage" => "Task could not be modified - you accessed the link directly or did not choose a task.."
-                
-            ));
-
-            die(); # Kill the current PHP script since it was served
-
-
-        }  else if (checkSessionStatus() == "Invalid") { 
-
-            # Reset the invalid Sessions
-            $_SESSION["username"] = "";
-            $_SESSION["password"] = "";
-
-            require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
-                
-        }
-
-    }
-    
-}
-
-# Check if login details are saved in a session to automatically login
-
-if (checkSessionStatus() == "Valid") { 
-
-    # Valid session data, login
+    # We have valid account data stored in sessions - render in the logged in template
 
     echo $twig->render("task-list-template.php", array(
 
         "websiteName" => $websiteName,
         "username" => $_SESSION["username"],
-        "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
+        "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
         
     ));
 
-    die(); # Kill the current PHP script since it was served
-    
-} else if (checkSessionStatus() == "Invalid") { 
+    die(); # Kill The PHP Script since template was served
+
+} else if (checkSessionStatus() == "Invalid") { // Invalid Sessions Are Stored - this link was accessed directly
 
     # Reset the invalid Sessions
     $_SESSION["username"] = "";
     $_SESSION["password"] = "";
 
-    require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions
-        
 }
 
-# At this stage, it means session was not stored, so proceeding with checking if login was called
+# At this stage, it means no sessions were stored - checking if a login was called
 
 if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
@@ -120,38 +52,20 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         # Perform Render of task-list as logged in user
 
-            echo $twig->render("task-list-template.php", array(
+        echo $twig->render("task-list-template.php", array(
 
-                "websiteName" => $websiteName,
-                "username" => $_POST["fusername_login"],
-                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
-            
-            ));
+            "websiteName" => $websiteName,
+            "username" => $_POST["fusername_login"],
+            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
+        
+        ));
 
-            die(); # Logged in - kill the PHP script
+        die(); # Logged in - kill the PHP script
 
-    } else if ($receivedAccountStatus[0] == "InvalidUsername"){
+    } # Other scenarios (Invalid password, etc.. are checked in the signup/login pages, not here)
 
-        # Outcome 2 - Username Not Found!
 
-        $_SESSION["errorMessage"] = "Username_Error";
 
-        require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
-
-    } else if ($receivedAccountStatus[0] == "InvalidPassword") {
-
-        # Outcome 3 - Password Not Found!
-
-        $_SESSION["errorMessage"] = "Password_Error";
-
-        require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
-
-    } else if ($receivedAccountStatus[0] == "NoAccounts") {
-
-        echo "Error: No accounts in database"; # Serve this error directly
-
-    }
-    
 # At this stage, it means session was not stored and login wasn't called, so proceeding with checking if signup was called
 
 } else if (isset($_POST["fusername_signup"]) and isset($_POST["fpassword_signup"])) {
@@ -184,22 +98,11 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         die(); # Logged in - kill the PHP script
 
-    } else {
-
-        # Outcome 2 - Username already exists!
-
-        $_SESSION["errorMessage"] = "UsernameCreation_Error";
-
-        require '../required/redirect-to-index.php'; # Redirect to index.php for rendering
-        
-    }
-
-} else {
-
-    # This was accessed directly which isn't allowed, redirect to index.php for processing
-
-    require '../required/redirect-to-index.php'; # Redirect to index.php
-
+    } # Other scenarios (Invalid password, etc.. are checked in the signup/login pages, not here)
 }
-    
+
+# If script is still running here, it means something was invalid and the user did not login or signup+login
+
+require '../required/redirect-to-index.php'; # Redirect to index.php for processing without invalid sessions or direct access
+
 ?>
