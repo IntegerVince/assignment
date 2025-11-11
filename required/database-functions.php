@@ -189,6 +189,50 @@ function fetchTasks($accountUsername, $accountPassword) {
     return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
 }
 
+function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, $nameFilter, $dateStartFilter, $dateEndFilter) {
+
+    # Fetch account status with explode for seperation of status and UserID
+    
+    $accountData = explode("-",checkDatabaseAccount($accountUsername, $accountPassword));
+
+    if ($accountData[0] == "Valid"){ # Account username and password were valid, authenticated
+
+        $userID = $accountData[1];
+
+        require '../required/database-connector.php'; # Shortcut to connect to database
+
+        // Filters will be constructed to this query according to what was provided
+        $taskListQueryFiltered = "SELECT taskID, userID, task, deadline, pending FROM task WHERE userID=".$userID;
+
+        if ($statusFilter == "Pending Only"){
+
+            $taskListQueryFiltered = $taskListQueryFiltered . " AND pending=TRUE"; // Append Filter To Only Catch Pending
+
+        } else if ($statusFilter == "Completed Only"){
+
+            $taskListQueryFiltered = $taskListQueryFiltered . " AND pending=FALSE"; // Append Filter To Only Catch Completed
+
+        } // else it is set to 'Any Status' which has no additional filter requirements
+
+        $userTaskListResult = mysqli_query($connection, $taskListQueryFiltered); # Data from query.
+
+        $returnList = [];
+
+        # Iterate through the list, append all fetched data into the array, and then return the array for the caller to handle
+
+        while($row = mysqli_fetch_assoc($userTaskListResult)) {
+
+            array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"]]);
+
+        }
+
+        return $returnList;
+
+    }
+
+    return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
+}
+
 # Function to delete a task linked to a user by taskID
 
 function deleteTask($accountUsername, $accountPassword, $taskIndex){

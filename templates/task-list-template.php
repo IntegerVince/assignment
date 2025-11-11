@@ -14,7 +14,41 @@
 
         <p id="message"></p> <!-- If error message exists, it will be shown. -->
 
+        <!-- Filter Container -->
+        <div>
+
+            <!-- Status Search Filters --> 
+            <div>
+                <h3>Status Filter</h3>
+                <button id="pendingStatusFilter">Filter By Pending</button>
+                <button id="completedStatusFilter">Filter By Completed</button>
+                <button id="anyStatusFilter">Clear Status Filter</button>
+                <p>Current Selection:</p>
+                <p id="statusFilterSelection">Any Status</p>
+            </div>
+
+            <!-- Name Filter --> 
+            <div>
+                <h3>Filter Tasks By Name</h3>
+                <input type="text" id="nameFilter" name="nameFilter"></input>
+            </div>
+
+            <!-- Date Filter --> 
+            <div>
+                <h3>Filter Tasks By Date Range</h3>
+                <label for="dateStartFilter">Date From:</label>
+                <input type="date" id="dateStartFilter" name="dateStartFilter"></input>
+                <label for="dateEndFilter">Date To:</label>
+                <input type="date" id="dateEndFilter" name="dateStartFilter"></input>
+            </div>
+
+            <button id="applyFilterButton">Apply Filter</button>
+            <button>Clear All Filters</button>
+
+        </div>
+
         <!-- Task list table -->
+        <h3>Task List</h3>
         <table>
             <thead>
                 <tr>
@@ -27,21 +61,21 @@
             <tbody id="taskTableBody">
                 {% for task in taskList %}
                     <tr class="task">
-                        <td>{{ task.taskName }}</td>
+                        <td>{{task.taskName}}</td>
                         
                         {% if task.taskDeadline == "0000-00-00" %}
-                            <td> No Deadline </td>
+                            <td>No Deadline</td>
                         {% else %}
-                            <td>{{ task.taskDeadline }}</td>
+                            <td>{{task.taskDeadline}}</td>
                         {% endif %}
 
                         {% if task.pending == 1 %}
-                            <td> Pending </td>
+                            <td>Pending</td>
                         {% else %}
-                            <td> Completed </td>
+                            <td>Completed</td>
                         {% endif %}
 
-                        <td hidden>{{ task.taskID }}</td> <!-- Hidden task ID is used for handling selection -->
+                        <td hidden>{{task.taskID}}</td> <!-- Hidden task ID is used for handling selection -->
                     </tr>
                 {% else %}
                     <tr id="noTasks">

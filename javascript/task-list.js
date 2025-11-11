@@ -319,6 +319,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Modify Task Logic
     document.getElementById("modifyTask").addEventListener("click", function(){
+
+        modificationMenuChosenValue = "taskDescription"; // When the 'Modify' button is pressed, it goes back to the default menu
         
         // Any submit form currently loaded (only 1 at a time is loaded) has the respective event listener attached
         document.getElementById("submitForm").addEventListener("submit", function(buttonEvent){
@@ -731,6 +733,170 @@ document.addEventListener("DOMContentLoaded", () => {
                 message.innerHTML = "Error! Please select a task first!";
             }
         });
+    });
+
+    // ==================================================================================
+
+    // Code that handles filters
+
+    // Status Filter Logic
+
+    // Pending Status Filter
+    document.getElementById("pendingStatusFilter").addEventListener("click", function(){
+
+        document.getElementById("statusFilterSelection").innerHTML = "Pending Only";
+
+    });
+
+    // Completed Status Filter
+
+    document.getElementById("completedStatusFilter").addEventListener("click", function(){
+
+        document.getElementById("statusFilterSelection").innerHTML = "Completed Only";
+
+    });
+
+    // Clear Status Filter
+
+    document.getElementById("anyStatusFilter").addEventListener("click", function(){
+
+        document.getElementById("statusFilterSelection").innerHTML = "Any Status";
+
+    });
+
+    document.getElementById("applyFilterButton").addEventListener("click", function(){
+
+        // Fetch All Filter Settings
+
+        statusFilter = document.getElementById("statusFilterSelection").innerHTML;
+        nameFilter = document.getElementById("nameFilter").value;
+        dateStartFilter = document.getElementById("dateStartFilter").value;
+        dateEndFilter = document.getElementById("dateEndFilter").value;
+
+        fetch("../ajax/filter-tasks.php", { // Send a fetch request where to send the data in for filtration
+
+                    "method": "POST", // // Specify that the data will be passed as POST
+
+                    "headers": {
+
+                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                    },
+
+                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                        // The actual data being passed [A JSON Object]
+
+                        {
+                            "statusFilter": statusFilter,
+                            "nameFilter": nameFilter,
+                            "dateStartFilter": dateStartFilter,
+                            "dateEndFilter": dateEndFilter
+                        }
+                    )
+                }).then(function(response){ // Catch the response
+
+                    return response.text(); // Return the response
+
+                }).then(function(data){ // // Fetch the result and pass it into data
+
+                    if (data != "Fail"){ // Filter Was A Success
+
+                        // Since filter will be applied, reset selection
+                        currentIndexSelection = -1;
+                        currentTaskID = -1;
+                        currentTaskName = "[None]";
+
+                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                        taskTableBody.innerHTML = ""; // Clear all Previous Entries
+
+                        parsedData = JSON.parse(data); // Parse JSON data to turn it form a string into an object we can use
+
+                        for (index = 0; index != parsedData.length; index++){ // Iterate through the filtered tasks
+
+                            newTableRow = taskTableBody.insertRow(-1); // Create a new row at the end where the injected task will be placed
+
+                            // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                            newTableRow.classList.add("task");
+
+                            // Create cells for the injected task's values
+                            newTableRow.insertCell(0);
+                            newTableRow.insertCell(1);
+                            newTableRow.insertCell(2);
+                            newTableRow.insertCell(3);
+
+                            newTableRow.cells[0].innerHTML = parsedData[index]["taskName"]; // Inject Task Name
+
+                            // Check If Deadline Is Set & Inject
+
+                            if (parsedData[index]["taskDeadline"] == "0000-00-00"){
+
+                                newTableRow.cells[1].innerHTML = "No Deadline";
+
+                            } else {
+
+                                newTableRow.cells[1].innerHTML = parsedData[index]["taskDeadline"];
+
+                            }
+
+                            // Check Status & Inject
+
+                            if (parsedData[index]["pending"] == 1){
+
+                                newTableRow.cells[2].innerHTML = "Pending";
+
+                            } else {
+
+                                newTableRow.cells[2].innerHTML = "Completed";
+
+                            }
+
+                            newTableRow.cells[3].innerHTML = parsedData[index]["taskID"]; // Inject Task ID
+
+                            newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                            // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                            newTableRow.addEventListener("click", function() { 
+
+                                // Code which triggers with the 'click' event listener
+                                
+                                if (currentIndexSelection != -1){ // There was a previous selection
+
+                                    tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                    tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                                }
+
+                                this.style.backgroundColor = "red"; // Set current selection to red
+
+                                currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                                currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                                // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                                
+                                // If they don't exist, it returns null
+                                var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                                var taskIDContainer = document.getElementById("taskID");
+
+                                if (modifySelection != null){
+                                    modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                }
+
+                                if (taskIDContainer != null){
+                                    taskIDContainer.value = currentTaskID;
+                                }
+
+                            });
+                        }
+                        
+                    }
+                }
+            )
     });
 
 });
