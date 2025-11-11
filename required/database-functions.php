@@ -189,6 +189,7 @@ function fetchTasks($accountUsername, $accountPassword) {
     return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
 }
 
+// Function to return tasks list with the passed filters
 function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, $nameFilter, $dateStartFilter, $dateEndFilter) {
 
     # Fetch account status with explode for seperation of status and UserID
@@ -216,9 +217,11 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
         if ($nameFilter != ""){
 
+            $lowerNameFilter = strtolower($nameFilter);
+
             // A name filter needs to be applied too.
 
-            $taskListQueryFiltered = $taskListQueryFiltered . " AND LOWER(task) LIKE '%" . $nameFilter . "%'";
+            $taskListQueryFiltered = $taskListQueryFiltered . " AND LOWER(task) LIKE '%" . $lowerNameFilter . "%'";
 
         }
 
@@ -301,6 +304,130 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
     }
 
     return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
+}
+
+// function which, given a task and the current filter settings, returns whether or not it matches the current filter settings
+function matchWithFilter($taskName, $taskDate, $taskStatus, $statusFilter, $nameFilter, $dateStartFilter, $dateEndFilter){
+
+    // Name Filter Checking
+    
+    if ($nameFilter != ""){
+
+        // A name filter is active
+
+        $lowerTaskName = strtolower($taskName);
+        $lowerNameFilter = strtolower($nameFilter);
+
+        if (str_contains($lowerTaskName, $lowerNameFilter) != true){ // Check for substring in string
+            
+            return false; // Name criteria is not met - return mismatch
+
+        }
+
+    }
+
+    // Status Filter Checking
+
+    if ($statusFilter == "Pending Only"){
+
+        if ($taskStatus != "Pending"){
+
+            return false; // Status criteria is not met - return mismatch
+
+        }
+
+    } else if ($statusFilter == "Completed Only"){
+
+        if ($taskStatus != "Completed"){
+
+            return false; // Status criteria is not met - return mismatch
+
+        }
+
+    } // else it is set to 'any status' so it cannot be a mismatch
+
+    if ($dateStartFilter != "" and $dateEndFilter != ""){
+
+        if (dateValid($dateStartFilter) and dateValid($dateEndFilter)) {
+
+            if ($dateStartFilter < $dateEndFilter){
+
+                // Check if the date is within range
+
+                if ($taskDate < $dateStartFilter or $taskDate > $dateEndFilter){
+
+                    return false; // Date is out of range - reject
+
+                }
+
+            } else if ($dateStartFilter > $dateEndFilter){
+
+                // The End Date is before the start date which doesn't make sense -> reject
+
+                return false;
+                
+            } else if ($dateStartFilter == $dateEndFilter){
+
+                // Check if the task falls under that specific date
+
+                if ($taskDate != $dateStartFilter){
+
+                    return false; // Does not fall under that specific date - reject
+
+                }
+
+            }
+
+        } else {
+
+            return false; // The date is invalid which means that the user injected another date format - reject
+
+        }
+
+    } else if ($dateStartFilter != ""){
+
+        if (dateValid($dateStartFilter)){
+
+            if ($taskDate < $dateStartFilter){
+                
+                return false; // Out of range
+
+            }
+
+        } else {
+
+            return false; // The date is invalid which means that the user injected another date format - reject
+
+        }
+ 
+    } else if ($dateEndFilter != ""){
+
+        if (dateValid($dateEndFilter)){
+
+            if ($taskDate > $dateEndFilter){
+
+                return false; // Out of range
+
+            } else {
+
+                if ($taskDate == "0000-00-00"){
+
+                    return false; // Task has no deadline so it shouldn't be displayed
+
+                }
+
+            }
+            
+        } else {
+
+            return false; // The date is invalid which means that the user injected another date format - reject
+
+        }
+
+    }
+
+    return true; // All possible scenarios leading to a filter mismatch were checked - returning true
+
 }
 
 # Function to delete a task linked to a user by taskID

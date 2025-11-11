@@ -99,9 +99,9 @@
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
             <p>Add A Task</p>
             <form id="submitForm">
-                <label for="fname">Task:</label>
+                <label for="ftask">Task:</label>
                 <input type="text" id="ftask" name="ftask_add" placeholder="exampleTask" required>
-                <label for="fpass">Due Date:</label>
+                <label for="fdate">Due Date:</label>
                 <input type="date" id="fdate" name="fdate_add">
                 <input type="submit" value="Add Task">
             </form>

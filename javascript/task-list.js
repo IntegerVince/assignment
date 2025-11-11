@@ -1,11 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Code which handles task selection
+    
 
+    // Global Variables
     var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
     var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
     var currentTaskID = -1; // Will store the database taskID
     var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
+    
+    // Filters will be updated through events
+    var statusFilter = document.getElementById("statusFilterSelection").innerHTML;
+    var nameFilter = document.getElementById("nameFilter").value;
+    var dateStartFilter = document.getElementById("dateStartFilter").value;
+    var dateEndFilter = document.getElementById("dateEndFilter").value;
+
+    // Will store changes from the actual filter which get 'published' to the actual global variable once filter is applied
+    // This avoids relying on the input field form in real time for changes since the fields might be different than what was submitted
+    var draftStatusFilter = statusFilter;
+    var draftNameFilter = nameFilter;
+    var draftDateStartFilter = dateStartFilter;
+    var draftDateEndFilter = dateEndFilter;
+
+    // Code which handles task selection
 
     tasks = document.querySelectorAll(".task"); // all the tasks, fetched through the class they share
 
@@ -206,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     return response.text(); // Return the response
 
-                }).then(function(data){ // // Fetch the result and pass it into data
+                }).then(function(data){ // Fetch the result and pass it into data
 
                     if (data == "Fail"){
 
@@ -218,96 +234,138 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message.innerHTML = "Task has been added!";
 
-                        // Inject the new data without refreshing the page
+                        // Check with the database if the newly added task respects the current filters in place for injection
 
-                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                        fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                        noTasksView = document.getElementById("noTasks");
+                            "method": "POST", // // Specify that the data will be passed as POST
 
-                        if (noTasksView != null){
+                            "headers": {
 
-                            // There were no previous tasks. Now that there is, this preview (which is a table row) needs to be removed
+                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                            taskTableBody.deleteRow(0);
+                            },
 
-                        }
+                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                        latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
+                                // The actual data being passed [A JSON Object]
 
-                        // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
-                        latestTableRow.classList.add("task");
+                                {
+                                    "taskName": taskName,
+                                    "taskDate": taskDate,
+                                    "taskStatus": "Pending",
+                                    "nameFilter": nameFilter,
+                                    "statusFilter": statusFilter,
+                                    "dateStartFilter": dateStartFilter,
+                                    "dateEndFilter": dateEndFilter
+                                }
 
-                        // Create the cells of the task to be injected
-                        cellTaskName = latestTableRow.insertCell(0);
-                        cellDueDate = latestTableRow.insertCell(1);
-                        cellStatus = latestTableRow.insertCell(2);
-                        cellTaskID = latestTableRow.insertCell(3);
+                            )
+                        }).then(function(response){ // Catch the response
 
-                        // Hide the cell given taskID shouldn't be visible.
-                        cellTaskID.style.display = "none";  // style.visibility = "hidden" is not used because it breaks the table alignment
+                            return response.text(); // Return the response
 
-                        // Inject the data into the cells
-                        
-                        cellTaskName.innerHTML = taskName;
+                        }).then(function(data){ // // Fetch the result and pass it into data
 
-                        // Correctly inject deadline if none was specified
-                        if (taskDate == ""){
+                            if (data != "Fail"){ // A filter check was applied
 
-                            cellDueDate.innerHTML = "No Deadline";
+                                if (data){
 
-                        } else {
+                                    console.log(nameFilter);
 
-                            cellDueDate.innerHTML = taskDate;
+                                    // Matches current filter - can inject the task
 
-                        }
-                        
-                        cellStatus.innerHTML = "Pending"; // Default status when a task is first added is always 'Pending'
+                                    // Inject the new data without refreshing the page
 
-                        cellTaskID.innerHTML = data; // 'Data' variable is the passed taskID from the ajax
+                                    taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                        // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
-                        latestTableRow.addEventListener("click", function() { 
+                                    noTasksView = document.getElementById("noTasks");
 
-                            // Code which triggers with the 'click' event listener
-                            
-                            if (currentIndexSelection != -1){ // There was a previous selection
+                                    if (noTasksView != null){
 
-                                tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+                                        // There were no previous tasks. Now that there is, this preview (which is a table row) needs to be removed
 
-                                tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+                                        taskTableBody.deleteRow(0);
 
+                                    }
+
+                                    latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
+
+                                    // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                                    latestTableRow.classList.add("task");
+
+                                    // Create the cells of the task to be injected
+                                    cellTaskName = latestTableRow.insertCell(0);
+                                    cellDueDate = latestTableRow.insertCell(1);
+                                    cellStatus = latestTableRow.insertCell(2);
+                                    cellTaskID = latestTableRow.insertCell(3);
+
+                                    // Hide the cell given taskID shouldn't be visible.
+                                    cellTaskID.style.display = "none";  // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                                    // Inject the data into the cells
+                                    
+                                    cellTaskName.innerHTML = taskName;
+
+                                    // Correctly inject deadline if none was specified
+                                    if (taskDate == ""){
+
+                                        cellDueDate.innerHTML = "No Deadline";
+
+                                    } else {
+
+                                        cellDueDate.innerHTML = taskDate;
+
+                                    }
+                                    
+                                    cellStatus.innerHTML = "Pending"; // Default status when a task is first added is always 'Pending'
+
+                                    cellTaskID.innerHTML = data; // 'Data' variable is the passed taskID from the ajax
+
+                                    // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                                    latestTableRow.addEventListener("click", function() { 
+
+                                        // Code which triggers with the 'click' event listener
+                                        
+                                        if (currentIndexSelection != -1){ // There was a previous selection
+
+                                            tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                            tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                                        }
+
+                                        this.style.backgroundColor = "red"; // Set current selection to red
+
+                                        currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                                        currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                        currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                                        // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                                        
+                                        // If they don't exist, it returns null
+                                        var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                                        var taskIDContainer = document.getElementById("taskID");
+
+                                        if (modifySelection != null){
+                                            modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                        }
+
+                                        if (taskIDContainer != null){
+                                            taskIDContainer.value = currentTaskID;
+                                        }
+
+                                    });
+                                }
+
+                                // Reset the values of the input fields
+                                document.getElementById("ftask").value = "";
+                                document.getElementById("fdate").value = "";
                             }
-
-                            this.style.backgroundColor = "red"; // Set current selection to red
-
-                            currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
-
-                            currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
-
-                            currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
-
-                            // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
-                            
-                            // If they don't exist, it returns null
-                            var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
-                            var taskIDContainer = document.getElementById("taskID");
-
-                            if (modifySelection != null){
-                                modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
-                            }
-
-                            if (taskIDContainer != null){
-                                taskIDContainer.value = currentTaskID;
-                            }
-
-                        });
-
-                        // Reset the values of the input fields
-                        document.getElementById("ftask").value = "";
-                        document.getElementById("fdate").value = "";
-
+                        })
                     }
-
                 })
             } else { // Task name is blank
                 message = document.getElementById("message");
@@ -739,12 +797,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Code that handles filters
 
+    // =====================================
+
+    // Filter Change Event Triggers To Update Global Variables & Previews
+
+    // =====================================
+
     // Status Filter Logic
 
     // Pending Status Filter
     document.getElementById("pendingStatusFilter").addEventListener("click", function(){
 
         document.getElementById("statusFilterSelection").innerHTML = "Pending Only";
+
+        draftStatusFilter = "Pending Only";
 
     });
 
@@ -754,6 +820,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("statusFilterSelection").innerHTML = "Completed Only";
 
+        draftStatusFilter = "Completed Only";
+
     });
 
     // Clear Status Filter
@@ -762,16 +830,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("statusFilterSelection").innerHTML = "Any Status";
 
+        draftStatusFilter = "Any Status";
+
     });
+
+    // Name Filter
+
+    document.getElementById("nameFilter").addEventListener("input", function(){
+        
+        draftNameFilter = document.getElementById("nameFilter").value;
+        
+    });
+
+    // Date Start Filter
+
+    document.getElementById("dateStartFilter").addEventListener("input", function(){
+        
+        draftDateStartFilter = document.getElementById("dateStartFilter").value;
+
+    });
+
+    // Date End Filter
+
+    document.getElementById("dateEndFilter").addEventListener("input", function(){
+        
+        draftDateEndFilter = document.getElementById("dateEndFilter").value;
+
+    });
+
+    // =====================================
+
+    // Apply And Clear Filter Buttons Logic
+
+    // =====================================
+
+    // Apply Filter Logic
 
     document.getElementById("applyFilterButton").addEventListener("click", function(){
 
-        // Fetch All Filter Settings
-
-        statusFilter = document.getElementById("statusFilterSelection").innerHTML;
-        nameFilter = document.getElementById("nameFilter").value;
-        dateStartFilter = document.getElementById("dateStartFilter").value;
-        dateEndFilter = document.getElementById("dateEndFilter").value;
+        // Merge the drafted values with the global variables
+        statusFilter = draftStatusFilter;
+        nameFilter = draftNameFilter;
+        dateStartFilter = draftDateStartFilter;
+        dateEndFilter = draftDateEndFilter;
 
         fetch("../ajax/filter-tasks.php", { // Send a fetch request where to send the data in for filtration
 
@@ -922,7 +1023,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // Clear all filters button logic
     document.getElementById("clearFilterButton").addEventListener("click", function(){
 
-        fetch("../ajax/fetch-tasks.php", { // Send a fetch request where to send the data in for filtration
+        // Reset All Filter Settings
+
+        statusFilter = "Any Status";
+        draftStatusFilter = "Any Status";
+        document.getElementById("statusFilterSelection").innerHTML = "Any Status";
+
+        nameFilter =  "";
+        draftNameFilter = "";
+        document.getElementById("nameFilter").value = "";
+
+
+        dateStartFilter = "";
+        draftDateStartFilter = "";
+        document.getElementById("dateStartFilter").value = "";
+
+        dateEndFilter = "";
+        draftDateEndFilter = "";
+        document.getElementById("dateEndFilter").value = "";
+
+        fetch("../ajax/fetch-tasks.php", { // Send a fetch request to get all the tasks of the user
 
             "method": "POST", // // Specify that the data will be passed as POST
 
