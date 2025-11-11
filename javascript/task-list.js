@@ -800,7 +800,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 }).then(function(data){ // // Fetch the result and pass it into data
 
-                    if (data != "Fail"){ // Filter Was A Success
+                    // The data passed is being checked with double quotations marks because it was passed as a JSON string
+
+                    if (data != '"Fail"' && data != '"InvalidDates"' && data != '"InvalidDateRange"'){ // Filter Was A Success
 
                         // Since filter will be applied, reset selection
                         currentIndexSelection = -1;
@@ -894,6 +896,24 @@ document.addEventListener("DOMContentLoaded", () => {
                             });
                         }
                         
+                    } else {
+                        if (data == '"InvalidDates"'){
+
+                            // Display the error to the user
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! Invalid dates provided";
+
+                        } else if (data == '"InvalidDateRange"'){
+
+                            // Display the error to the user
+
+                            message = document.getElementById("message");
+
+                            message.innerHTML = "Error! The start date should be before the end date";
+
+                        }
                     }
                 }
             )
@@ -926,7 +946,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         }).then(function(data){ // // Fetch the result and pass it into data
 
-            if (data != "Fail"){ // Filter Was A Success
+            // The data passed is being checked with double quotations marks because it was passed as a JSON string
+
+            if (data != '"Fail"'){ // Data recieved successfully
 
                 parsedData = JSON.parse(data); // Convert JSON String to Object for handling
 

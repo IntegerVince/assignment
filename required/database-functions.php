@@ -214,6 +214,46 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
         } // else it is set to 'Any Status' which has no additional filter requirements
 
+        if ($nameFilter != ""){
+
+            // A name filter needs to be applied too.
+
+            $taskListQueryFiltered = $taskListQueryFiltered . " AND LOWER(task) LIKE '%" . $nameFilter . "%'";
+
+        }
+
+        if ($dateStartFilter != "" and $dateEndFilter != ""){
+
+            if (dateValid($dateStartFilter) and dateValid($dateEndFilter)){
+
+                if ($dateStartFilter < $dateEndFilter){
+
+                    // Get all tasks within range
+
+                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>='" . $dateStartFilter . "' AND deadline<='" . $dateEndFilter . "'";
+
+                } else if ($dateStartFilter > $dateEndFilter){
+
+                    // The End Date is before the start date which doesn't make sense -> pass the error to be handled by the caller
+
+                    return "InvalidDateRange";
+                    
+                } else if ($dateStartFilter == $dateEndFilter){
+
+                    // Get all tasks on that specific date
+
+                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline='" . $dateStartFilter . "'";
+
+                }
+
+            } else {
+
+                return "InvalidDates"; // The dates were injected by the user and are in an invalid format - pass on an error
+
+            }
+
+        }
+
         $userTaskListResult = mysqli_query($connection, $taskListQueryFiltered); # Data from query.
 
         $returnList = [];
