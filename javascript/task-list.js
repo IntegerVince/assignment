@@ -681,6 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Reset the selection since the selection was removed
                         currentIndexSelection = -1;
                         currentTaskID = -1;
+                        currentTaskName = "[None]";
                         
                         // Reset selection preview
                         document.getElementById("selection").innerHTML = "[None]";
