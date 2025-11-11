@@ -309,123 +309,135 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 // function which, given a task and the current filter settings, returns whether or not it matches the current filter settings
 function matchWithFilter($taskName, $taskDate, $taskStatus, $statusFilter, $nameFilter, $dateStartFilter, $dateEndFilter){
 
-    // Name Filter Checking
+    if ($taskName != "N/A"){ // Task name needs to be checked as it is a new task or it was the modified value
+
+        // Name Filter Checking
     
-    if ($nameFilter != ""){
+        if ($nameFilter != ""){
 
-        // A name filter is active
+            // A name filter is active
 
-        $lowerTaskName = strtolower($taskName);
-        $lowerNameFilter = strtolower($nameFilter);
+            $lowerTaskName = strtolower($taskName);
+            $lowerNameFilter = strtolower($nameFilter);
 
-        if (str_contains($lowerTaskName, $lowerNameFilter) != true){ // Check for substring in string
-            
-            return false; // Name criteria is not met - return mismatch
+            if (str_contains($lowerTaskName, $lowerNameFilter) != true){ // Check for substring in string
+                
+                return false; // Name criteria is not met - return mismatch
+
+            }
 
         }
 
     }
 
-    // Status Filter Checking
+    if ($taskStatus != "N/A"){ // Task status needs to be checked as it was the modified value
 
-    if ($statusFilter == "Pending Only"){
+        // Status Filter Checking
 
-        if ($taskStatus != "Pending"){
+        if ($statusFilter == "Pending Only"){
 
-            return false; // Status criteria is not met - return mismatch
+            if ($taskStatus != "Pending"){
 
-        }
-
-    } else if ($statusFilter == "Completed Only"){
-
-        if ($taskStatus != "Completed"){
-
-            return false; // Status criteria is not met - return mismatch
-
-        }
-
-    } // else it is set to 'any status' so it cannot be a mismatch
-
-    if ($dateStartFilter != "" and $dateEndFilter != ""){
-
-        if (dateValid($dateStartFilter) and dateValid($dateEndFilter)) {
-
-            if ($dateStartFilter < $dateEndFilter){
-
-                // Check if the date is within range
-
-                if ($taskDate < $dateStartFilter or $taskDate > $dateEndFilter){
-
-                    return false; // Date is out of range - reject
-
-                }
-
-            } else if ($dateStartFilter > $dateEndFilter){
-
-                // The End Date is before the start date which doesn't make sense -> reject
-
-                return false;
-                
-            } else if ($dateStartFilter == $dateEndFilter){
-
-                // Check if the task falls under that specific date
-
-                if ($taskDate != $dateStartFilter){
-
-                    return false; // Does not fall under that specific date - reject
-
-                }
+                return false; // Status criteria is not met - return mismatch
 
             }
 
-        } else {
+        } else if ($statusFilter == "Completed Only"){
 
-            return false; // The date is invalid which means that the user injected another date format - reject
+            if ($taskStatus != "Completed"){
 
-        }
-
-    } else if ($dateStartFilter != ""){
-
-        if (dateValid($dateStartFilter)){
-
-            if ($taskDate < $dateStartFilter){
-                
-                return false; // Out of range
+                return false; // Status criteria is not met - return mismatch
 
             }
 
-        } else {
+        } // else it is set to 'any status' so it cannot be a mismatch
 
-            return false; // The date is invalid which means that the user injected another date format - reject
+    }
+    
+    if ($taskDate != "N/A"){ // Task date needs to be checked as it is a new task or it was the modified value
 
-        }
- 
-    } else if ($dateEndFilter != ""){
+        // Date Filter Checking
 
-        if (dateValid($dateEndFilter)){
+        if ($dateStartFilter != "" and $dateEndFilter != ""){
 
-            if ($taskDate > $dateEndFilter){
+            if (dateValid($dateStartFilter) and dateValid($dateEndFilter)) {
 
-                return false; // Out of range
+                if ($dateStartFilter < $dateEndFilter){
+
+                    // Check if the date is within range
+
+                    if ($taskDate < $dateStartFilter or $taskDate > $dateEndFilter){
+
+                        return false; // Date is out of range - reject
+
+                    }
+
+                } else if ($dateStartFilter > $dateEndFilter){
+
+                    // The End Date is before the start date which doesn't make sense -> reject
+
+                    return false;
+                    
+                } else if ($dateStartFilter == $dateEndFilter){
+
+                    // Check if the task falls under that specific date
+
+                    if ($taskDate != $dateStartFilter){
+
+                        return false; // Does not fall under that specific date - reject
+
+                    }
+
+                }
 
             } else {
 
-                if ($taskDate == "0000-00-00"){
+                return false; // The date is invalid which means that the user injected another date format - reject
 
-                    return false; // Task has no deadline so it shouldn't be displayed
+            }
+
+        } else if ($dateStartFilter != ""){
+
+            if (dateValid($dateStartFilter)){
+
+                if ($taskDate < $dateStartFilter){
+                    
+                    return false; // Out of range
 
                 }
 
-            }
-            
-        } else {
+            } else {
 
-            return false; // The date is invalid which means that the user injected another date format - reject
+                return false; // The date is invalid which means that the user injected another date format - reject
+
+            }
+    
+        } else if ($dateEndFilter != ""){
+
+            if (dateValid($dateEndFilter)){
+
+                if ($taskDate > $dateEndFilter){
+
+                    return false; // Out of range
+
+                }
+                
+            } else {
+
+                return false; // The date is invalid which means that the user injected another date format - reject
+
+            }
+
+        }
+
+        if ($taskDate == "" and ($dateStartFilter != "" or $dateEndFilter != "")){
+
+            return false; // No date was specified so it shouldn't be shown here
 
         }
 
     }
-
+    
     return true; // All possible scenarios leading to a filter mismatch were checked - returning true
 
 }

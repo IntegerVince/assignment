@@ -267,11 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         }).then(function(data){ // // Fetch the result and pass it into data
 
-                            if (data != "Fail"){ // A filter check was applied
+                            if (data != "Fail"){ // A filter check was applied without issues
 
                                 if (data){
-
-                                    console.log(nameFilter);
 
                                     // Matches current filter - can inject the task
 
@@ -425,20 +423,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.innerHTML = "Sucess! Task name has been modified!";
 
-                            // Update task name without refreshing the page
+                            // Check with the database if the modified task name respects the current filters in place
 
-                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                "method": "POST", // // Specify that the data will be passed as POST
 
-                            taskTableBody.rows[taskIndex].cells[0].innerHTML = newTaskName; // Inject the new task name
+                                "headers": {
 
-                            document.getElementById("selection").innerHTML = newTaskName; // Update the task name in the selection preview
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                            // Reset the value of the input field
+                                },
 
-                            document.getElementById("taskDescription").value = ""; 
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
+                                    // The actual data being passed [A JSON Object]
+
+                                    {
+                                        "taskName": newTaskName,
+                                        "taskDate": "N/A", // Not Needed For Check
+                                        "taskStatus": "N/A", // Not Needed For Check
+                                        "nameFilter": nameFilter,
+                                        "statusFilter": statusFilter,
+                                        "dateStartFilter": dateStartFilter,
+                                        "dateEndFilter": dateEndFilter
+                                    }
+
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(data){ // // Fetch the result and pass it into data
+
+                                if (data != "Fail"){ // A filter check was applied without issues
+
+                                    if (data){
+
+                                        // Matches current filter - can update the task
+                                        
+                                        // Update task name without refreshing the page
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.rows[taskIndex].cells[0].innerHTML = newTaskName; // Inject the new task name
+
+                                        document.getElementById("selection").innerHTML = newTaskName; // Update the task name in the selection preview
+
+                                    } else {
+
+                                        // No Longer matches the task name filter criteria - delete the task
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+
+                                        // Reset the selection since the selection was removed
+                                        currentIndexSelection = -1;
+                                        currentTaskID = -1;
+                                        currentTaskName = "[None]";
+                                        
+                                        // Reset selection preview
+                                        document.getElementById("selection").innerHTML = "[None]";
+
+                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+
+                                            // Inject the 'No Tasks' preview again
+
+                                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                                            // Inject cells in this new row
+                                            taskTableBody.rows[0].insertCell(0); 
+                                            taskTableBody.rows[0].insertCell(1);
+                                            taskTableBody.rows[0].insertCell(2);
+
+                                            // Inject the preview spanning across the entire table
+
+                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                        }
+
+                                    }
+
+                                    // Reset the value of the input field
+
+                                    document.getElementById("taskDescription").value = ""; 
+                                }
+                            })
 
                         } else if (data == "Blank"){
                             
@@ -541,29 +620,111 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.innerHTML = "Task date has been updated!";
 
-                            // Update date without refreshing page
+                            // Check with the database if the modified task date respects the current filters in place
 
-                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                "method": "POST", // // Specify that the data will be passed as POST
 
-                            if (newDate == ""){
+                                "headers": {
 
-                                // Blank date means no deadline is to be done
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                taskTableBody.rows[taskIndex].cells[1].innerHTML = "No Deadline";
-                                
-                            } else {
+                                },
 
-                                // Inject the deadline date
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                                taskTableBody.rows[taskIndex].cells[1].innerHTML = newDate;
+                                    // The actual data being passed [A JSON Object]
 
-                            }
+                                    {
+                                        "taskName": "N/A", // Not Needed For Check
+                                        "taskDate": newDate,
+                                        "taskStatus": "N/A", // Not Needed For Check
+                                        "nameFilter": nameFilter,
+                                        "statusFilter": statusFilter,
+                                        "dateStartFilter": dateStartFilter,
+                                        "dateEndFilter": dateEndFilter
+                                    }
 
-                            // Reset the value of the date field
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(data){ // // Fetch the result and pass it into data
+
+                                if (data != "Fail"){ // A filter check was applied without issues
+
+                                    if (data){
+
+                                        // Matches current filter - can update the task
+
+                                        // Update date without refreshing page
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        if (newDate == ""){
+
+                                            // Blank date means no deadline is to be done
+
+                                            taskTableBody.rows[taskIndex].cells[1].innerHTML = "No Deadline";
+                                            
+                                        } else {
+
+                                            // Inject the deadline date
+
+                                            taskTableBody.rows[taskIndex].cells[1].innerHTML = newDate;
+
+                                        }
+
+                                    } else {
+
+                                        // No Longer matches the task name filter criteria - delete the task
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+
+                                        // Reset the selection since the selection was removed
+                                        currentIndexSelection = -1;
+                                        currentTaskID = -1;
+                                        currentTaskName = "[None]";
+                                        
+                                        // Reset selection preview
+                                        document.getElementById("selection").innerHTML = "[None]";
+
+                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+
+                                            // Inject the 'No Tasks' preview again
+
+                                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                                            // Inject cells in this new row
+                                            taskTableBody.rows[0].insertCell(0); 
+                                            taskTableBody.rows[0].insertCell(1);
+                                            taskTableBody.rows[0].insertCell(2);
+
+                                            // Inject the preview spanning across the entire table
+
+                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                        }
+
+                                    }
+
+                                    // Reset the value of the date field
                             
-                            document.getElementById("taskDueDate").value = ""; 
+                                    document.getElementById("taskDueDate").value = ""; 
+                                }
+                            })
 
                         } else if (data == "InvalidDate"){
 
@@ -638,14 +799,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.innerHTML = "Task has been changed to 'Completed'";
 
-                            // Update to show as 'Completed' without refreshing the page
+                            // Check with the database if the modified task status respects the current filters in place
 
-                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                "method": "POST", // // Specify that the data will be passed as POST
 
-                            taskTableBody.rows[taskIndex].cells[2].innerHTML = "Completed";
+                                "headers": {
 
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                },
+
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                    // The actual data being passed [A JSON Object]
+
+                                    {
+                                        "taskName": "N/A", // Not Needed For Check
+                                        "taskDate": "N/A", // Not Needed For Check
+                                        "taskStatus": "Completed", 
+                                        "nameFilter": nameFilter,
+                                        "statusFilter": statusFilter,
+                                        "dateStartFilter": dateStartFilter,
+                                        "dateEndFilter": dateEndFilter
+                                    }
+
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(data){ // // Fetch the result and pass it into data
+
+                                if (data != "Fail"){ // A filter check was applied without issues
+
+                                    if (data){
+
+                                        // Matches current filter - can update the task
+
+                                        // Update to show as 'Completed' without refreshing the page
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.rows[taskIndex].cells[2].innerHTML = "Completed";
+
+                                    } else {
+
+                                        // No Longer matches the task name filter criteria - delete the task
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+
+                                        // Reset the selection since the selection was removed
+                                        currentIndexSelection = -1;
+                                        currentTaskID = -1;
+                                        currentTaskName = "[None]";
+                                        
+                                        // Reset selection preview
+                                        document.getElementById("selection").innerHTML = "[None]";
+
+                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+
+                                            // Inject the 'No Tasks' preview again
+
+                                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                                            // Inject cells in this new row
+                                            taskTableBody.rows[0].insertCell(0); 
+                                            taskTableBody.rows[0].insertCell(1);
+                                            taskTableBody.rows[0].insertCell(2);
+
+                                            // Inject the preview spanning across the entire table
+
+                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                        }
+
+                                    }
+                                }
+                            })
 
                         } else if (data == "Pending"){
 
@@ -653,13 +895,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.innerHTML = "Task has been changed to 'Pending'";
 
-                            // Update to show as 'Pending' without refreshing the page
+                            // Check with the database if the modified task status respects the current filters in place
 
-                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                            taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                "method": "POST", // // Specify that the data will be passed as POST
 
-                            taskTableBody.rows[taskIndex].cells[2].innerHTML = "Pending";
+                                "headers": {
+
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                },
+
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                    // The actual data being passed [A JSON Object]
+
+                                    {
+                                        "taskName": "N/A", // Not Needed For Check
+                                        "taskDate": "N/A", // Not Needed For Check
+                                        "taskStatus": "Pending", 
+                                        "nameFilter": nameFilter,
+                                        "statusFilter": statusFilter,
+                                        "dateStartFilter": dateStartFilter,
+                                        "dateEndFilter": dateEndFilter
+                                    }
+
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(data){ // // Fetch the result and pass it into data
+
+                                if (data != "Fail"){ // A filter check was applied without issues
+
+                                    if (data){
+
+                                        // Matches current filter - can update the task
+
+                                        // Update to show as 'Pending' without refreshing the page
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.rows[taskIndex].cells[2].innerHTML = "Pending";
+
+                                    } else {
+
+                                        // No Longer matches the task name filter criteria - delete the task
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+
+                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+
+                                        // Reset the selection since the selection was removed
+                                        currentIndexSelection = -1;
+                                        currentTaskID = -1;
+                                        currentTaskName = "[None]";
+                                        
+                                        // Reset selection preview
+                                        document.getElementById("selection").innerHTML = "[None]";
+
+                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+
+                                            // Inject the 'No Tasks' preview again
+
+                                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                                            // Inject cells in this new row
+                                            taskTableBody.rows[0].insertCell(0); 
+                                            taskTableBody.rows[0].insertCell(1);
+                                            taskTableBody.rows[0].insertCell(2);
+
+                                            // Inject the preview spanning across the entire table
+
+                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                        }
+
+                                    }
+                                }
+                            })
 
                         } else if (data == "Mismatch"){
 
@@ -677,10 +1001,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         }
                     })
-
                 }
-
-                
             }
         });
     });
