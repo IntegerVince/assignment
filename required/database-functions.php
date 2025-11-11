@@ -252,6 +252,36 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
             }
 
+        } else if ($dateStartFilter != ""){
+
+            if (dateValid(date($dateStartFilter))){
+
+                // Get all tasks following the provided Start Date
+
+                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>='" . $dateStartFilter . "'";
+
+            } else {
+                
+                return "InvalidDates"; // The dates were injected by the user and are in an invalid format - pass on an error
+
+            }
+
+        } else if ($dateEndFilter != ""){
+
+            if (dateValid(date($dateEndFilter))){
+
+                // Get all tasks prior to the provided End Date
+
+                // Eliminate those with date set to 0000-00-00 since that means no deadline
+
+                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>'0000-00-00' AND deadline<='" . $dateEndFilter . "'";
+
+            } else {
+                
+                return "InvalidDates"; // The dates were injected by the user and are in an invalid format - pass on an error
+
+            }
+
         }
 
         $userTaskListResult = mysqli_query($connection, $taskListQueryFiltered); # Data from query.
