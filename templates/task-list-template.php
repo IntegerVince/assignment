@@ -43,7 +43,7 @@
             </div>
 
             <button id="applyFilterButton">Apply Filter</button>
-            <button>Clear All Filters</button>
+            <button id="clearFilterButton">Clear All Filters</button>
 
         </div>
 
