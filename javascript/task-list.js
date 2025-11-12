@@ -1317,6 +1317,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             });
                         }
+
+                        // Check if there are any tasks after the filter was applied
+
+                        if (taskTableBody.rows.length == 0){  // No tasks visible
+
+                            // Inject the 'No Tasks' preview again
+
+                            taskTableBody.insertRow(); // Inject a row since there are none
+
+                            // Inject cells in this new row
+                            taskTableBody.rows[0].insertCell(0); 
+                            taskTableBody.rows[0].insertCell(1);
+                            taskTableBody.rows[0].insertCell(2);
+
+                            // Inject the preview spanning across the entire table
+
+                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
+                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
+                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+
+                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                        }
                         
                     } else {
                         if (data == '"InvalidDates"'){
