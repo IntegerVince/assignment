@@ -1234,7 +1234,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
                         taskTableBody.innerHTML = ""; // Clear all Previous Entries
-
                         parsedData = JSON.parse(data); // Parse JSON data to turn it form a string into an object we can use
 
                         for (index = 0; index != parsedData.length; index++){ // Iterate through the filtered tasks

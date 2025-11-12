@@ -56,11 +56,11 @@ function checkSessionStatus() {
 # InvalidPassword-null - Account password is incorrect
 # InvalidUsername-null - Account username does not exist
 # NoAccounts-null - No accounts were found
-
 function checkDatabaseAccount($accountUsername, $accountPassword){
 
     require '../required/database-connector.php'; # Shortcut to connect to database
 
+    // No SQL Injection Can Take Place Since User Input Is Not Involved
     $getAccountQuery = "SELECT id, username, password FROM account"; # Query to fetch all accounts
 
     $accountsQueryResult = mysqli_query($connection, $getAccountQuery); # Data from query.
@@ -103,12 +103,18 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 function createNewUser($usernameSignup, $passwordSignup){
 
     require '../required/database-connector.php'; # Shortcut to connect to database
+    
+    $statement = $connection->prepare("INSERT INTO account (username, password) VALUES (?, ?)");
 
-    # Query to create account
-    $accountCreationSQL = "INSERT INTO account (username, password) VALUES ('" . $usernameSignup . "', '" . $passwordSignup . "')";
+    $statement->bind_param("ss", $userSignup, $passSignup); // Specify the statement parameters
 
-    # Create account with the query
-    $connection->query($accountCreationSQL);
+    // Specify the parameter values for the prepared statement
+    $userSignup = $usernameSignup;
+    $passSignup = $passwordSignup;
+
+    $statement->execute(); // Execute the prepared statement
+
+    $statement->close(); // Close the statement
 
 }
 
@@ -132,19 +138,33 @@ function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate)
 
             # Task Date Not Specified
 
-            $taskInsertSQL = "INSERT INTO task (userID, task) VALUES ('" . $userID . "', '" . $taskName . "')";
+            $taskInsertStatement = $connection->prepare("INSERT INTO task (userID, task) VALUES (?, ?)");
+
+            $taskInsertStatement->bind_param("is", $userIDstatement, $taskNameStatement); // Specify the statement parameters
+
+            // Specify the parameter values for the prepared statement
+            $userIDstatement = $userID;
+            $taskNameStatement = $taskName;
 
         } else {
 
             # Task Date Specified
 
-            $taskInsertSQL = "INSERT INTO task (userID, task, deadline) VALUES ('" . $userID . "', '" . $taskName . "', '" . $taskDate . "')";
+            $taskInsertStatement = $connection->prepare("INSERT INTO task (userID, task, deadline) VALUES (?, ?, ?)");
+
+            $taskInsertStatement->bind_param("iss", $userIDstatement, $taskNameStatement, $deadlineStatement); // Specify the statement parameters
+
+            // Specify the parameter values for the prepared statement
+            $userIDstatement = $userID;
+            $taskNameStatement = $taskName;
+            $deadlineStatement = $taskDate;
 
         }
-        
-        # Create task with the query
-        $connection->query($taskInsertSQL);
 
+        $taskInsertStatement->execute(); // Execute the prepared statement
+
+        $taskInsertStatement->close(); // Close the statement
+        
     } else {
 
         return "Fail"; # Return information that the execution was a failure (for any reason) for proper handling from the caller if needed
@@ -167,20 +187,28 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         require '../required/database-connector.php'; # Shortcut to connect to database
 
-        $userTaskListQuery = "SELECT taskID, userID, task, deadline, pending FROM task WHERE userID=".$userID;
+        $userTaskListStatement = $connection->prepare("SELECT taskID, userID, task, deadline, pending FROM task WHERE userID = ?");
 
-        $userTaskListResult = mysqli_query($connection, $userTaskListQuery); # Data from query.
+        $userTaskListStatement->bind_param("i", $userIDstatement); // Specify the statement parameters
+
+        // Specify the parameter values for the prepared statement
+        $userIDstatement = $userID;
+
+        $userTaskListStatement->execute(); // Execute the prepared statement
+
+        $userTaskListResult = $userTaskListStatement->get_result(); // Fetch result of the prepared statement
 
         $returnList = [];
 
         # Iterate through the list, append all fetched data into the array, and then return the array for the caller to handle
 
-        while($row = mysqli_fetch_assoc($userTaskListResult)) {
+        while($row = $userTaskListResult->fetch_assoc()) {
 
             array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"]]);
             
-
         }
+
+        $userTaskListStatement->close(); // Close the statement
 
         return $returnList;
 
@@ -203,7 +231,10 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
         require '../required/database-connector.php'; # Shortcut to connect to database
 
         // Filters will be constructed to this query according to what was provided
-        $taskListQueryFiltered = "SELECT taskID, userID, task, deadline, pending FROM task WHERE userID=".$userID;
+        $taskListQueryFiltered = "SELECT taskID, userID, task, deadline, pending FROM task WHERE userID=?";
+
+        $parameterTypes = "i"; // parameter types will be added here on prepared statement construction and injected into the bind_param
+        // Expecting userID (integer)
 
         if ($statusFilter == "Pending Only"){
 
@@ -221,7 +252,10 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
             // A name filter needs to be applied too.
 
-            $taskListQueryFiltered = $taskListQueryFiltered . " AND LOWER(task) LIKE '%" . $lowerNameFilter . "%'";
+            $taskListQueryFiltered = $taskListQueryFiltered . " AND LOWER(task) LIKE ?";
+
+            $parameterTypes = $parameterTypes . "s";
+            // Expecting nameFilter (string)
 
         }
 
@@ -233,7 +267,10 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
                     // Get all tasks within range
 
-                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>='" . $dateStartFilter . "' AND deadline<='" . $dateEndFilter . "'";
+                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>=? AND deadline<=?";
+
+                    $parameterTypes = $parameterTypes . "ss";
+                    // Expecting two dates (strings)
 
                 } else if ($dateStartFilter > $dateEndFilter){
 
@@ -245,7 +282,10 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
                     // Get all tasks on that specific date
 
-                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline='" . $dateStartFilter . "'";
+                    $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline=?";
+
+                    $parameterTypes = $parameterTypes . "s";
+                    // Expecting a date (string)
 
                 }
 
@@ -257,11 +297,14 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
         } else if ($dateStartFilter != ""){
 
-            if (dateValid(date($dateStartFilter))){
+            if (dateValid($dateStartFilter)){
 
                 // Get all tasks following the provided Start Date
 
-                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>='" . $dateStartFilter . "'";
+                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>=?";
+
+                $parameterTypes = $parameterTypes . "s";
+                // Expecting a date (string)
 
             } else {
                 
@@ -271,13 +314,16 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
         } else if ($dateEndFilter != ""){
 
-            if (dateValid(date($dateEndFilter))){
+            if (dateValid($dateEndFilter)){
 
                 // Get all tasks prior to the provided End Date
 
                 // Eliminate those with date set to 0000-00-00 since that means no deadline
 
-                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>'0000-00-00' AND deadline<='" . $dateEndFilter . "'";
+                $taskListQueryFiltered = $taskListQueryFiltered . " AND deadline>'0000-00-00' AND deadline<=?";
+
+                $parameterTypes = $parameterTypes . "s";
+                // Expecting a date (string)
 
             } else {
                 
@@ -287,13 +333,95 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 
         }
 
-        $userTaskListResult = mysqli_query($connection, $taskListQueryFiltered); # Data from query.
+        // The prepared statement from the constructed query
+        $taskListFilteredStatement = $connection->prepare($taskListQueryFiltered);
+
+        // Binding parameters depending on the number of filters chosen
+        if (strlen($parameterTypes) == 1){
+            
+            $taskListFilteredStatement->bind_param($parameterTypes, $A); // Specify the statement parameters
+
+            $A = $userID; // First is always userID irrespective of filter
+
+        } else if (strlen($parameterTypes) == 2){
+
+            $taskListFilteredStatement->bind_param($parameterTypes, $A, $B); // Specify the statement parameters
+
+            $A = $userID; // First is always userID irrespective of filter
+
+            if ($nameFilter != ""){
+
+                // Wildcard is appended in the name, not in the prepared statement
+
+                $B = "%" . $nameFilter . "%"; // nameFilter is defined - this is what the second parameter is
+
+            } else {
+
+                // not nameFilter - check which one of the dates is specified
+
+                if ($dateStartFilter != ""){
+
+                    $B = $dateStartFilter; // dateStartFilter is defined - this is what the second parameter is
+
+                } else {
+
+                    $B = $dateEndFilter; // dateEndFilter (last remaining filter type) is defined - this is what the second parameter is
+
+                }
+
+            }
+
+        } else if (strlen($parameterTypes) == 3){
+
+            $taskListFilteredStatement->bind_param($parameterTypes, $A, $B, $C); // Specify the statement parameters
+
+            $A = $userID; // First is always userID irrespective of filter
+
+            if ($nameFilter != ""){
+
+                $B = "%" . $nameFilter . "%"; // nameFilter is defined - this is what the second parameter is
+
+                if ($dateStartFilter != ""){
+
+                    $C = $dateStartFilter; // dateStartFilter is defined - this is what the third parameter is
+
+                } else {
+
+                    $C = $dateEndFilter; // dateEndFilter (last remaining filter type) is defined - this is what the third parameter is
+
+                }
+
+            } else {
+
+                // Name parameter not valid - the other two are the dates
+
+                $B = $dateStartFilter; // dateStartFilter is defined - this is what the second parameter is
+                $C = $dateEndFilter; // dateEndFilter is defined - this is what the third parameter is
+
+            }
+
+        } else if (strlen($parameterTypes) == 4){
+
+            $taskListFilteredStatement->bind_param($parameterTypes, $A, $B, $C, $D); // Specify the statement parameters
+
+            $A = $userID; // First is always userID irrespective of filter
+
+            // All filter options were defined so we know what each parameter is already
+            $B = "%" . $nameFilter . "%";
+            $C = $dateStartFilter;
+            $D = $dateEndFilter;
+
+        }
+        
+        $taskListFilteredStatement->execute(); // Execute the prepared statement
+
+        $userTaskListFilteredResult = $taskListFilteredStatement->get_result(); // Fetch result of the prepared statement
 
         $returnList = [];
 
         # Iterate through the list, append all fetched data into the array, and then return the array for the caller to handle
 
-        while($row = mysqli_fetch_assoc($userTaskListResult)) {
+        while($row = $userTaskListFilteredResult->fetch_assoc()) {
 
             array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"]]);
 
