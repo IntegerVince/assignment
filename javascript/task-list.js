@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
     
     // Filters will be updated through events
-    var statusFilter = document.getElementById("statusFilterSelection").innerHTML;
+    var statusFilter = document.getElementById("statusFilterSelection").textContent;
     var nameFilter = document.getElementById("nameFilter").value;
     var dateStartFilter = document.getElementById("dateStartFilter").value;
     var dateEndFilter = document.getElementById("dateEndFilter").value;
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
             var taskIDContainer = document.getElementById("taskID");
 
             if (modifySelection != null){
-                modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
             }
 
             if (taskIDContainer != null){
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const templateToBeInjected = document.getElementById(templateID);
 
         // Inject Template Into Menu
-        menuContainer.innerHTML = templateToBeInjected.innerHTML;
+        menuContainer.innerHTML = templateToBeInjected.innerHTML; // Inner HTML is template spawning // safe from XSS
 
         // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
         if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Fetch the containers and add the current data
                 var modifySelection = document.getElementById("selection");
-                modifySelection.innerHTML = currentTaskName;
+                modifySelection.textContent = currentTaskName; 
 
                 var taskIDContainer = document.getElementById("taskID");
                 taskIDContainer.value = currentTaskID;
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (index = 0; index < taskTableBody.rows.length; index++){
 
             // Fetch the current taskID iteration
-            var currentMatchedTaskID = taskTableBody.rows[index].cells[3].innerHTML;
+            var currentMatchedTaskID = taskTableBody.rows[index].cells[3].textContent;
 
             if (currentMatchedTaskID == taskID){ // There is a match in taskID - the row has been found!
 
@@ -228,11 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.innerHTML = "Error! Task name cannot be blank!";
+                        message.textContent = "Error! Task name cannot be blank!";
 
                     } else {
 
-                        message.innerHTML = "Task has been added!";
+                        message.textContent = "Task has been added!";
 
                         // Check with the database if the newly added task respects the current filters in place for injection
 
@@ -303,22 +303,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     // Inject the data into the cells
                                     
-                                    cellTaskName.innerHTML = taskName;
+                                    cellTaskName.textContent = taskName;
 
                                     // Correctly inject deadline if none was specified
                                     if (taskDate == ""){
 
-                                        cellDueDate.innerHTML = "No Deadline";
+                                        cellDueDate.textContent = "No Deadline";
 
                                     } else {
 
-                                        cellDueDate.innerHTML = taskDate;
+                                        cellDueDate.textContent = taskDate;
 
                                     }
                                     
-                                    cellStatus.innerHTML = "Pending"; // Default status when a task is first added is always 'Pending'
+                                    cellStatus.textContent = "Pending"; // Default status when a task is first added is always 'Pending'
 
-                                    cellTaskID.innerHTML = data; // 'Data' variable is the passed taskID from the ajax
+                                    cellTaskID.textContent = data; // 'Data' variable is the passed taskID from the ajax
 
                                     // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
                                     latestTableRow.addEventListener("click", function() { 
@@ -348,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         var taskIDContainer = document.getElementById("taskID");
 
                                         if (modifySelection != null){
-                                            modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                            modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
                                         }
 
                                         if (taskIDContainer != null){
@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else { // Task name is blank
                 message = document.getElementById("message");
 
-                message.innerHTML = "Error! Task name cannot be blank!";
+                message.textContent = "Error! Task name cannot be blank!";
             }
         });
     });
@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Sucess! Task name has been modified!";
+                            message.textContent = "Sucess! Task name has been modified!";
 
                             // Check with the database if the modified task name respects the current filters in place
 
@@ -468,9 +468,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                         taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                        taskTableBody.rows[taskIndex].cells[0].innerHTML = newTaskName; // Inject the new task name
+                                        taskTableBody.rows[taskIndex].cells[0].textContent = newTaskName; // Inject the new task name
 
-                                        document.getElementById("selection").innerHTML = newTaskName; // Update the task name in the selection preview
+                                        document.getElementById("selection").textContent = newTaskName; // Update the task name in the selection preview
 
                                     } else {
 
@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentTaskName = "[None]";
                                         
                                         // Reset selection preview
-                                        document.getElementById("selection").innerHTML = "[None]";
+                                        document.getElementById("selection").textContent = "[None]";
 
                                         if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
@@ -503,9 +503,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -525,7 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! The new task name cannot be blank!";
+                            message.textContent = "Error! The new task name cannot be blank!";
 
 
                         } else if (data == "BlankTaskID"){
@@ -534,20 +534,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Please make a selection first";
+                            message.textContent = "Error! Please make a selection first";
 
 
                         } else if (data == "Mismatch"){
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task ID user mismatch!";
+                            message.textContent = "Error! Task ID user mismatch!";
 
                         } else {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "An unexpected error has occured! " + data;
+                            message.textContent = "An unexpected error has occured! " + data;
 
                         }
                     })
@@ -558,11 +558,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (currentTaskID == -1){
 
-                        message.innerHTML = "Error! Please make a selection first";
+                        message.textContent = "Error! Please make a selection first";
 
                     } else {
 
-                        message.innerHTML = "Error! The new task name cannot be blank!";
+                        message.textContent = "Error! The new task name cannot be blank!";
 
                     }
 
@@ -576,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     message = document.getElementById("message");
 
-                    message.innerHTML = "Error! Please select a task first!";
+                    message.textContent = "Error! Please select a task first!";
 
                 } else { // Task is selected
 
@@ -612,13 +612,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task ID cannot be blank!";
+                            message.textContent = "Error! Task ID cannot be blank!";
 
                         } else if (data == "ValidDate"){
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Task date has been updated!";
+                            message.textContent = "Task date has been updated!";
 
                             // Check with the database if the modified task date respects the current filters in place
 
@@ -669,13 +669,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Blank date means no deadline is to be done
 
-                                            taskTableBody.rows[taskIndex].cells[1].innerHTML = "No Deadline";
+                                            taskTableBody.rows[taskIndex].cells[1].textContent = "No Deadline";
                                             
                                         } else {
 
                                             // Inject the deadline date
 
-                                            taskTableBody.rows[taskIndex].cells[1].innerHTML = newDate;
+                                            taskTableBody.rows[taskIndex].cells[1].textContent = newDate;
 
                                         }
 
@@ -695,7 +695,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentTaskName = "[None]";
                                         
                                         // Reset selection preview
-                                        document.getElementById("selection").innerHTML = "[None]";
+                                        document.getElementById("selection").textContent = "[None]";
 
                                         if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
@@ -710,9 +710,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -730,13 +730,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task Date Is Invalid!";
+                            message.textContent = "Error! Task Date Is Invalid!";
 
                         } else if (data == "Mismatch"){
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task ID user mismatch!";
+                            message.textContent = "Error! Task ID user mismatch!";
 
                         } else {
 
@@ -744,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "An unexpected error has occured! " + data;
+                            message.textContent = "An unexpected error has occured! " + data;
 
                         }
                     })
@@ -759,7 +759,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     message = document.getElementById("message");
 
-                    message.innerHTML = "Error! Please select a task first!";
+                    message.textContent = "Error! Please select a task first!";
 
                 } else { // Task is selected
 
@@ -791,13 +791,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task ID cannot be blank!";
+                            message.textContent = "Error! Task ID cannot be blank!";
 
                         } else if (data == "Completed"){
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Task has been changed to 'Completed'";
+                            message.textContent = "Task has been changed to 'Completed'";
 
                             // Check with the database if the modified task status respects the current filters in place
 
@@ -844,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                         taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                        taskTableBody.rows[taskIndex].cells[2].innerHTML = "Completed";
+                                        taskTableBody.rows[taskIndex].cells[2].textContent = "Completed";
 
                                     } else {
 
@@ -862,7 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentTaskName = "[None]";
                                         
                                         // Reset selection preview
-                                        document.getElementById("selection").innerHTML = "[None]";
+                                        document.getElementById("selection").textContent = "[None]";
 
                                         if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
@@ -877,9 +877,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -893,7 +893,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Task has been changed to 'Pending'";
+                            message.textContent = "Task has been changed to 'Pending'";
 
                             // Check with the database if the modified task status respects the current filters in place
 
@@ -940,7 +940,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                         taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                        taskTableBody.rows[taskIndex].cells[2].innerHTML = "Pending";
+                                        taskTableBody.rows[taskIndex].cells[2].textContent = "Pending";
 
                                     } else {
 
@@ -958,7 +958,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentTaskName = "[None]";
                                         
                                         // Reset selection preview
-                                        document.getElementById("selection").innerHTML = "[None]";
+                                        document.getElementById("selection").textContent = "[None]";
 
                                         if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
@@ -973,9 +973,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -989,7 +989,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Task ID user mismatch!";
+                            message.textContent = "Error! Task ID user mismatch!";
 
                         } else {
 
@@ -997,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "An unexpected error has occured! " + data;
+                            message.textContent = "An unexpected error has occured! " + data;
 
                         }
                     })
@@ -1043,13 +1043,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.innerHTML = "Error! Task ID cannot be blank!";
+                        message.textContent = "Error! Task ID cannot be blank!";
 
                     } else if (data == "Success"){
 
                         message = document.getElementById("message");
 
-                        message.innerHTML = "Task has been successfully deleted!";
+                        message.textContent = "Task has been successfully deleted!";
 
                         // Update to show deleted task without refreshing the page
 
@@ -1065,7 +1065,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentTaskName = "[None]";
                         
                         // Reset selection preview
-                        document.getElementById("selection").innerHTML = "[None]";
+                        document.getElementById("selection").textContent = "[None]";
 
                         if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
@@ -1080,9 +1080,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Inject the preview spanning across the entire table
 
-                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -1092,7 +1092,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.innerHTML = "Error! Task ID user mismatch!";
+                        message.textContent = "Error! Task ID user mismatch!";
 
                     } else {
 
@@ -1100,7 +1100,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.innerHTML = "An unexpected error has occured! " + data;
+                        message.textContent = "An unexpected error has occured! " + data;
 
                     }
                 })
@@ -1109,7 +1109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 message = document.getElementById("message");
 
-                message.innerHTML = "Error! Please select a task first!";
+                message.textContent = "Error! Please select a task first!";
             }
         });
     });
@@ -1129,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Pending Status Filter
     document.getElementById("pendingStatusFilter").addEventListener("click", function(){
 
-        document.getElementById("statusFilterSelection").innerHTML = "Pending Only";
+        document.getElementById("statusFilterSelection").textContent = "Pending Only";
 
         draftStatusFilter = "Pending Only";
 
@@ -1139,7 +1139,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("completedStatusFilter").addEventListener("click", function(){
 
-        document.getElementById("statusFilterSelection").innerHTML = "Completed Only";
+        document.getElementById("statusFilterSelection").textContent = "Completed Only";
 
         draftStatusFilter = "Completed Only";
 
@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("anyStatusFilter").addEventListener("click", function(){
 
-        document.getElementById("statusFilterSelection").innerHTML = "Any Status";
+        document.getElementById("statusFilterSelection").textContent = "Any Status";
 
         draftStatusFilter = "Any Status";
 
@@ -1233,7 +1233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                        taskTableBody.innerHTML = ""; // Clear all Previous Entries
+                        taskTableBody.textContent = ""; // Clear all Previous Entries
                         parsedData = JSON.parse(data); // Parse JSON data to turn it form a string into an object we can use
 
                         for (index = 0; index != parsedData.length; index++){ // Iterate through the filtered tasks
@@ -1249,17 +1249,17 @@ document.addEventListener("DOMContentLoaded", () => {
                             newTableRow.insertCell(2);
                             newTableRow.insertCell(3);
 
-                            newTableRow.cells[0].innerHTML = parsedData[index]["taskName"]; // Inject Task Name
+                            newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
 
                             // Check If Deadline Is Set & Inject
 
                             if (parsedData[index]["taskDeadline"] == "0000-00-00"){
 
-                                newTableRow.cells[1].innerHTML = "No Deadline";
+                                newTableRow.cells[1].textContent = "No Deadline";
 
                             } else {
 
-                                newTableRow.cells[1].innerHTML = parsedData[index]["taskDeadline"];
+                                newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
 
                             }
 
@@ -1267,15 +1267,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             if (parsedData[index]["pending"] == 1){
 
-                                newTableRow.cells[2].innerHTML = "Pending";
+                                newTableRow.cells[2].textContent = "Pending";
 
                             } else {
 
-                                newTableRow.cells[2].innerHTML = "Completed";
+                                newTableRow.cells[2].textContent = "Completed";
 
                             }
 
-                            newTableRow.cells[3].innerHTML = parsedData[index]["taskID"]; // Inject Task ID
+                            newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
 
                             newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
 
@@ -1307,7 +1307,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 var taskIDContainer = document.getElementById("taskID");
 
                                 if (modifySelection != null){
-                                    modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                    modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
                                 }
 
                                 if (taskIDContainer != null){
@@ -1332,9 +1332,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Inject the preview spanning across the entire table
 
-                            taskTableBody.rows[0].cells[0].innerHTML = "N/A";
-                            taskTableBody.rows[0].cells[1].innerHTML = "No tasks yet";
-                            taskTableBody.rows[0].cells[2].innerHTML = "N/A";
+                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                            taskTableBody.rows[0].cells[2].textContent = "N/A";
 
                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -1347,7 +1347,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! Invalid dates provided";
+                            message.textContent = "Error! Invalid dates provided";
 
                         } else if (data == '"InvalidDateRange"'){
 
@@ -1355,7 +1355,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message = document.getElementById("message");
 
-                            message.innerHTML = "Error! The start date should be before the end date";
+                            message.textContent = "Error! The start date should be before the end date";
 
                         }
                     }
@@ -1370,7 +1370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         statusFilter = "Any Status";
         draftStatusFilter = "Any Status";
-        document.getElementById("statusFilterSelection").innerHTML = "Any Status";
+        document.getElementById("statusFilterSelection").textContent = "Any Status";
 
         nameFilter =  "";
         draftNameFilter = "";
@@ -1422,7 +1422,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                taskTableBody.innerHTML = ""; // Clear all Previous Entries
+                taskTableBody.textContent = ""; // Clear all Previous Entries
 
                 for (index = 0; index != parsedData.length; index++){ // Iterate through all the tasks and inject them
                 
@@ -1437,17 +1437,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     newTableRow.insertCell(2);
                     newTableRow.insertCell(3);
 
-                    newTableRow.cells[0].innerHTML = parsedData[index]["taskName"]; // Inject Task Name
+                    newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
 
                     // Check If Deadline Is Set & Inject
 
                     if (parsedData[index]["taskDeadline"] == "0000-00-00"){
 
-                        newTableRow.cells[1].innerHTML = "No Deadline";
+                        newTableRow.cells[1].textContent = "No Deadline";
 
                     } else {
 
-                        newTableRow.cells[1].innerHTML = parsedData[index]["taskDeadline"];
+                        newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
 
                     }
 
@@ -1455,15 +1455,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (parsedData[index]["pending"] == 1){
 
-                        newTableRow.cells[2].innerHTML = "Pending";
+                        newTableRow.cells[2].textContent = "Pending";
 
                     } else {
 
-                        newTableRow.cells[2].innerHTML = "Completed";
+                        newTableRow.cells[2].textContent = "Completed";
 
                     }
 
-                    newTableRow.cells[3].innerHTML = parsedData[index]["taskID"]; // Inject Task ID
+                    newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
 
                     newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
 
@@ -1495,7 +1495,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         var taskIDContainer = document.getElementById("taskID");
 
                         if (modifySelection != null){
-                            modifySelection.innerHTML = currentTaskName; // Only set the data if the relevant paragraph container exists
+                            modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
                         }
 
                         if (taskIDContainer != null){

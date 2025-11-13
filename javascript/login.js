@@ -38,15 +38,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (data == "InvalidPassword"){
 
-                    errorMessage.innerHTML = "Error! That password is incorrect";
+                    errorMessage.textContent = "Error! That password is incorrect";
 
                 } else if (data == "InvalidUsername"){
 
-                    errorMessage.innerHTML = "Error! That username does not exist";
+                    errorMessage.textContent = "Error! That username does not exist";
 
                 } else if (data == "NoAccounts"){
 
-                    errorMessage.innerHTML = "Error! No accounts currently exist in the database";
+                    errorMessage.textContent = "Error! No accounts currently exist in the database";
 
                 }
 

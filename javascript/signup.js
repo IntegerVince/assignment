@@ -11,19 +11,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
             errorMessage = document.getElementById("errorMessage");
 
-            errorMessage.innerHTML = "Error! Username and Password cannot be left blank!";
+            errorMessage.textContent = "Error! Username and Password cannot be left blank!";
 
         } else if (username == ""){
 
             errorMessage = document.getElementById("errorMessage");
 
-            errorMessage.innerHTML = "Error! Username cannot be left blank!";
+            errorMessage.textContent = "Error! Username cannot be left blank!";
 
         } else if (password == ""){
 
             errorMessage = document.getElementById("errorMessage");
 
-            errorMessage.innerHTML = "Error! Password cannot be left blank!";
+            errorMessage.textContent = "Error! Password cannot be left blank!";
 
         } else { // No data was left blank, can proceed with database check
 
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     errorMessage = document.getElementById("errorMessage");
 
-                    errorMessage.innerHTML = "Error! That username is not unique!";
+                    errorMessage.textContent = "Error! That username is not unique!";
                     
                 }
             })
