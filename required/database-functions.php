@@ -592,11 +592,17 @@ function deleteTask($accountUsername, $accountPassword, $taskIndex){
             
             require '../required/database-connector.php'; # Shortcut to connect to database
 
-            # Query to delete task
-            $deleteTaskQuery = "DELETE FROM task WHERE taskID='" . $taskIndex . "';";
+            # Prepared statement to delete task
+            $deleteTaskStatement = $connection->prepare("DELETE FROM task WHERE taskID = ?");
 
-            # Delete task
-            $connection->query($deleteTaskQuery);
+            $deleteTaskStatement->bind_param("i", $taskIndexParameter); // Specify the statement parameters
+
+            // Specify the parameter values for the prepared statement
+            $taskIndexParameter = $taskIndex;
+
+            $deleteTaskStatement->execute(); // Execute the prepared statement
+
+            $deleteTaskStatement->close(); // Close the statement
 
             return "Success"; // The task was successfully deleted
 
@@ -636,20 +642,37 @@ function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
 
             require '../required/database-connector.php'; # Shortcut to connect to database
 
-            # Query to fetch task's current status
+            # Statement to fetch task's current status
 
-            $fetchStatusQuery = "SELECT pending FROM task WHERE taskID='" . $taskIndex . "';";
+            $fetchStatusStatement = $connection->prepare("SELECT pending FROM task WHERE taskID = ?");
 
-            $statusResult = mysqli_fetch_assoc(mysqli_query($connection, $fetchStatusQuery))["pending"]; # Data from query.
+            $fetchStatusStatement->bind_param("i", $taskIndexParameter); // Specify the statement parameters
 
-            if ($statusResult == 1) {
+            // Specify the parameter values for the prepared statement
+            $taskIndexParameter = $taskIndex;
+
+            $fetchStatusStatement->execute(); // Execute the prepared statement
+
+            $statusResult = $fetchStatusStatement->get_result(); # Data from statement;
+
+            $statusResultRow = $statusResult->fetch_assoc()["pending"]; // Fetch the row of the returned data;
+
+            $fetchStatusStatement->close(); // Close the statement
+
+            if ($statusResultRow == 1) {
 
                 // Currently 'Pending' -> Change To 'Completed'
 
-                $updateQuery = "UPDATE task SET pending = FALSE WHERE taskID='" . $taskIndex . "';"; // Set Pending To False
+                $updateStatement = $connection->prepare("UPDATE task SET pending = FALSE WHERE taskID = ?"); // Set Pending To False
 
-                # Take action on the query
-                $connection->query($updateQuery);
+                $updateStatement->bind_param("i", $taskIndexParameter2); // Specify the statement parameters
+
+                // Specify the parameter values for the prepared statement
+                $taskIndexParameter2 = $taskIndex;
+
+                $updateStatement->execute(); // Execute the prepared statement
+
+                $updateStatement->close(); // Close the statement
 
                 return "Completed"; // Return the value for the caller to know what it was changed to
 
@@ -657,10 +680,16 @@ function modifyTaskStatus($accountUsername, $accountPassword, $taskIndex){
 
                 // Currently 'Completed' -> Change To 'Pending'
 
-                $updateQuery = "UPDATE task SET pending = TRUE WHERE taskID='" . $taskIndex . "';"; // Set Pending To True
+                $updateStatement = $connection->prepare("UPDATE task SET pending = TRUE WHERE taskID = ?"); // Set Pending To False
 
-                # Take action on the query
-                $connection->query($updateQuery);
+                $updateStatement->bind_param("i", $taskIndexParameter2); // Specify the statement parameters
+
+                // Specify the parameter values for the prepared statement
+                $taskIndexParameter2 = $taskIndex;
+
+                $updateStatement->execute(); // Execute the prepared statement
+
+                $updateStatement->close(); // Close the statement
 
                 return "Pending"; // Return the value for the caller to know what it was changed to
 
@@ -705,10 +734,17 @@ function modifyTaskDescription($accountUsername, $accountPassword, $taskIndex, $
 
                 # Query to update the task name per the description
 
-                $updateQuery = "UPDATE task SET task = '" . $description . "' WHERE taskID='" . $taskIndex . "';";
+                $updateStatement = $connection->prepare("UPDATE task SET task = ? WHERE taskID = ?");
 
-                # Take action on the query
-                $connection->query($updateQuery);
+                $updateStatement->bind_param("si", $taskDescriptionStatement, $taskIDstatement); // Specify the statement parameters
+
+                // Specify the parameter values for the prepared statement
+                $taskDescriptionStatement = $description;
+                $taskIDstatement = $taskIndex;
+
+                $updateStatement->execute(); // Execute the prepared statement
+
+                $updateStatement->close(); // Close the statement
 
                 return "Success"; // The task name was successfully updated
 
@@ -795,11 +831,17 @@ function modifyTaskDate($accountUsername, $accountPassword, $taskIndex, $date){
 
                 # Query to update the task deadline
 
-                $updateQuery = "UPDATE task SET deadline = '" . $date . "' WHERE taskID='" . $taskIndex . "';";
+                $updateStatement = $connection->prepare("UPDATE task SET deadline = ? WHERE taskID = ?");
 
-                # Take action on the query
+                $updateStatement->bind_param("si", $deadlineStatement, $taskIndexStatement); // Specify the statement parameters
 
-                $connection->query($updateQuery);
+                // Specify the parameter values for the prepared statement
+                $deadlineStatement = $date;
+                $taskIndexStatement = $taskIndex;
+
+                $updateStatement->execute(); // Execute the prepared statement
+
+                $updateStatement->close(); // Close the statement
 
                 return "ValidDate";
 
