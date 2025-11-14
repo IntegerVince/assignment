@@ -265,11 +265,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             return response.text(); // Return the response
 
-                        }).then(function(data){ // // Fetch the result and pass it into data
+                        }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                            if (data != "Fail"){ // A filter check was applied without issues
+                            if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                if (data){
+                                if (dataFilter){
 
                                     // Matches current filter - can inject the task
 
@@ -454,11 +454,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 return response.text(); // Return the response
 
-                            }).then(function(data){ // // Fetch the result and pass it into data
+                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                if (data != "Fail"){ // A filter check was applied without issues
+                                if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (data){
+                                    if (dataFilter){
 
                                         // Matches current filter - can update the task
                                         
@@ -651,11 +651,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 return response.text(); // Return the response
 
-                            }).then(function(data){ // // Fetch the result and pass it into data
+                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                if (data != "Fail"){ // A filter check was applied without issues
+                                if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (data){
+                                    if (dataFilter){
 
                                         // Matches current filter - can update the task
 
@@ -830,11 +830,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 return response.text(); // Return the response
 
-                            }).then(function(data){ // // Fetch the result and pass it into data
+                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                if (data != "Fail"){ // A filter check was applied without issues
+                                if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (data){
+                                    if (dataFilter){
 
                                         // Matches current filter - can update the task
 
@@ -926,11 +926,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 return response.text(); // Return the response
 
-                            }).then(function(data){ // // Fetch the result and pass it into data
+                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                if (data != "Fail"){ // A filter check was applied without issues
+                                if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (data){
+                                    if (dataFilter){
 
                                         // Matches current filter - can update the task
 
