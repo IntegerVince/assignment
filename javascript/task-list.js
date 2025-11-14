@@ -471,6 +471,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                         taskTableBody.rows[taskIndex].cells[0].textContent = newTaskName; // Inject the new task name
 
                                         document.getElementById("selection").textContent = newTaskName; // Update the task name in the selection preview
+    
+                                        currentTaskName = newTaskName; // Update the current selection name information
 
                                     } else {
 
