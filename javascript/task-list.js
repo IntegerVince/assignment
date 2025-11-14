@@ -7,12 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
     var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
     var currentTaskID = -1; // Will store the database taskID
     var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
-    
+
     // Filters will be updated through events
-    var statusFilter = document.getElementById("statusFilterSelection").textContent;
-    var nameFilter = document.getElementById("nameFilter").value;
-    var dateStartFilter = document.getElementById("dateStartFilter").value;
-    var dateEndFilter = document.getElementById("dateEndFilter").value;
+    var statusFilter = "Any Status";
+    var nameFilter = "";
+    var dateStartFilter = "";
+    var dateEndFilter = "";
 
     // Will store changes from the actual filter which get 'published' to the actual global variable once filter is applied
     // This avoids relying on the input field form in real time for changes since the fields might be different than what was submitted
@@ -199,172 +199,185 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (taskName != ""){ // Task name is not blank which is good - can proceed
 
-                fetch("../ajax/add-task.php", { // Send a fetch request where to send the data in for validation
+                if (isValidInput(taskName) && isValidInput(taskDate)){
 
-                    "method": "POST", // // Specify that the data will be passed as POST
+                    // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                    "headers": {
+                    fetch("../ajax/add-task.php", { // Send a fetch request where to send the data in for validation
 
-                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                        "method": "POST", // // Specify that the data will be passed as POST
 
-                    },
+                        "headers": {
 
-                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                        // The actual data being passed [A JSON Object]
+                        },
 
-                        {
-                            "taskName": taskName,
-                            "taskDate": taskDate
-                        }
-                    )
-                }).then(function(response){ // Catch the response
+                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                    return response.text(); // Return the response
+                            // The actual data being passed [A JSON Object]
 
-                }).then(function(data){ // Fetch the result and pass it into data
-
-                    if (data == "Fail"){
-
-                        message = document.getElementById("message");
-
-                        message.textContent = "Error! Task name cannot be blank!";
-
-                    } else {
-
-                        message.textContent = "Task has been added!";
-
-                        // Check with the database if the newly added task respects the current filters in place for injection
-
-                        fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
-
-                            "method": "POST", // // Specify that the data will be passed as POST
-
-                            "headers": {
-
-                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
-
-                            },
-
-                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
-
-                                // The actual data being passed [A JSON Object]
-
-                                {
-                                    "taskName": taskName,
-                                    "taskDate": taskDate,
-                                    "taskStatus": "Pending",
-                                    "nameFilter": nameFilter,
-                                    "statusFilter": statusFilter,
-                                    "dateStartFilter": dateStartFilter,
-                                    "dateEndFilter": dateEndFilter
-                                }
-
-                            )
-                        }).then(function(response){ // Catch the response
-
-                            return response.text(); // Return the response
-
-                        }).then(function(dataFilter){ // // Fetch the result and pass it into data
-
-                            if (dataFilter != "Fail"){ // A filter check was applied without issues
-
-                                if (dataFilter){
-
-                                    // Matches current filter - can inject the task
-
-                                    // Inject the new data without refreshing the page
-
-                                    taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
-
-                                    noTasksView = document.getElementById("noTasks");
-
-                                    if (noTasksView != null){
-
-                                        // There were no previous tasks. Now that there is, this preview (which is a table row) needs to be removed
-
-                                        taskTableBody.deleteRow(0);
-
-                                    }
-
-                                    latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
-
-                                    // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
-                                    latestTableRow.classList.add("task");
-
-                                    // Create the cells of the task to be injected
-                                    cellTaskName = latestTableRow.insertCell(0);
-                                    cellDueDate = latestTableRow.insertCell(1);
-                                    cellStatus = latestTableRow.insertCell(2);
-                                    cellTaskID = latestTableRow.insertCell(3);
-
-                                    // Hide the cell given taskID shouldn't be visible.
-                                    cellTaskID.style.display = "none";  // style.visibility = "hidden" is not used because it breaks the table alignment
-
-                                    // Inject the data into the cells
-                                    
-                                    cellTaskName.textContent = taskName;
-
-                                    // Correctly inject deadline if none was specified
-                                    if (taskDate == ""){
-
-                                        cellDueDate.textContent = "No Deadline";
-
-                                    } else {
-
-                                        cellDueDate.textContent = taskDate;
-
-                                    }
-                                    
-                                    cellStatus.textContent = "Pending"; // Default status when a task is first added is always 'Pending'
-
-                                    cellTaskID.textContent = data; // 'Data' variable is the passed taskID from the ajax
-
-                                    // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
-                                    latestTableRow.addEventListener("click", function() { 
-
-                                        // Code which triggers with the 'click' event listener
-                                        
-                                        if (currentIndexSelection != -1){ // There was a previous selection
-
-                                            tasks = document.querySelectorAll(".task"); // Update the list of all tasks
-
-                                            tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
-
-                                        }
-
-                                        this.style.backgroundColor = "red"; // Set current selection to red
-
-                                        currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
-
-                                        currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
-
-                                        currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
-
-                                        // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
-                                        
-                                        // If they don't exist, it returns null
-                                        var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
-                                        var taskIDContainer = document.getElementById("taskID");
-
-                                        if (modifySelection != null){
-                                            modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
-                                        }
-
-                                        if (taskIDContainer != null){
-                                            taskIDContainer.value = currentTaskID;
-                                        }
-
-                                    });
-                                }
-
-                                // Reset the values of the input fields
-                                document.getElementById("ftask").value = "";
-                                document.getElementById("fdate").value = "";
+                            {
+                                "taskName": taskName,
+                                "taskDate": taskDate
                             }
-                        })
-                    }
-                })
+                        )
+                    }).then(function(response){ // Catch the response
+
+                        return response.text(); // Return the response
+
+                    }).then(function(data){ // Fetch the result and pass it into data
+
+                        if (data == "Fail"){
+
+                            message = document.getElementById("message");
+
+                            message.textContent = "Error! Task name cannot be blank!";
+
+                        } else {
+
+                            message.textContent = "Task has been added!";
+
+                            // Check with the database if the newly added task respects the current filters in place for injection
+
+                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
+
+                                "method": "POST", // // Specify that the data will be passed as POST
+
+                                "headers": {
+
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                },
+
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                    // The actual data being passed [A JSON Object]
+
+                                    {
+                                        "taskName": taskName,
+                                        "taskDate": taskDate,
+                                        "taskStatus": "Pending",
+                                        "nameFilter": nameFilter,
+                                        "statusFilter": statusFilter,
+                                        "dateStartFilter": dateStartFilter,
+                                        "dateEndFilter": dateEndFilter
+                                    }
+
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
+
+                                if (dataFilter != "Fail"){ // A filter check was applied without issues
+
+                                    if (dataFilter){
+
+                                        // Matches current filter - can inject the task
+
+                                        // Inject the new data without refreshing the page
+
+                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                        noTasksView = document.getElementById("noTasks");
+
+                                        if (noTasksView != null){
+
+                                            // There were no previous tasks. Now that there is, this preview (which is a table row) needs to be removed
+
+                                            taskTableBody.deleteRow(0);
+
+                                        }
+
+                                        latestTableRow = taskTableBody.insertRow(-1); // Insert a row at the end
+
+                                        // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                                        latestTableRow.classList.add("task");
+
+                                        // Create the cells of the task to be injected
+                                        cellTaskName = latestTableRow.insertCell(0);
+                                        cellDueDate = latestTableRow.insertCell(1);
+                                        cellStatus = latestTableRow.insertCell(2);
+                                        cellTaskID = latestTableRow.insertCell(3);
+
+                                        // Hide the cell given taskID shouldn't be visible.
+                                        cellTaskID.style.display = "none";  // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                                        // Inject the data into the cells
+                                        
+                                        cellTaskName.textContent = taskName;
+
+                                        // Correctly inject deadline if none was specified
+                                        if (taskDate == ""){
+
+                                            cellDueDate.textContent = "No Deadline";
+
+                                        } else {
+
+                                            cellDueDate.textContent = taskDate;
+
+                                        }
+                                        
+                                        cellStatus.textContent = "Pending"; // Default status when a task is first added is always 'Pending'
+
+                                        cellTaskID.textContent = data; // 'Data' variable is the passed taskID from the ajax
+
+                                        // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                                        latestTableRow.addEventListener("click", function() { 
+
+                                            // Code which triggers with the 'click' event listener
+                                            
+                                            if (currentIndexSelection != -1){ // There was a previous selection
+
+                                                tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                                tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                                            }
+
+                                            this.style.backgroundColor = "red"; // Set current selection to red
+
+                                            currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                                            currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                            currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                                            // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                                            
+                                            // If they don't exist, it returns null
+                                            var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                                            var taskIDContainer = document.getElementById("taskID");
+
+                                            if (modifySelection != null){
+                                                modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                            }
+
+                                            if (taskIDContainer != null){
+                                                taskIDContainer.value = currentTaskID;
+                                            }
+
+                                        });
+                                    }
+
+                                    // Reset the values of the input fields
+                                    document.getElementById("ftask").value = "";
+                                    document.getElementById("fdate").value = "";
+                                }
+                            })
+                        }
+                    })
+
+                } else {
+
+                    message = document.getElementById("message");
+
+                    message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                    
+                }
+                
             } else { // Task name is blank
                 message = document.getElementById("message");
 
@@ -392,167 +405,180 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (newTaskName != "" && currentTaskID != -1){ // The provided task name is not blank, we can proceed
 
-                    fetch("../ajax/modify-task-name.php", { // Send a fetch request where to send the data in for modification
+                    if (isValidInput(newTaskName) && isValidInput(currentTaskID)){
 
-                        "method": "POST", // Specify that the data will be passed as POST
+                        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                        "headers": {
+                        fetch("../ajax/modify-task-name.php", { // Send a fetch request where to send the data in for modification
 
-                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                            "method": "POST", // Specify that the data will be passed as POST
 
-                        },
+                            "headers": {
 
-                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                            // The actual data being passed [A JSON Object]
+                            },
 
-                            {
-                                "taskID": currentTaskID,
-                                "taskName": newTaskName
-                            }
-                        )
-                    }).then(function(response){ // Catch the response
+                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                        return response.text(); // Return the response
+                                // The actual data being passed [A JSON Object]
 
-                    }).then(function(data){ // Fetch the result and pass it into data
+                                {
+                                    "taskID": currentTaskID,
+                                    "taskName": newTaskName
+                                }
+                            )
+                        }).then(function(response){ // Catch the response
 
-                        if (data == "Success"){
+                            return response.text(); // Return the response
 
-                            message = document.getElementById("message");
+                        }).then(function(data){ // Fetch the result and pass it into data
 
-                            message.textContent = "Sucess! Task name has been modified!";
+                            if (data == "Success"){
 
-                            // Check with the database if the modified task name respects the current filters in place
+                                message = document.getElementById("message");
 
-                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
+                                message.textContent = "Sucess! Task name has been modified!";
 
-                                "method": "POST", // // Specify that the data will be passed as POST
+                                // Check with the database if the modified task name respects the current filters in place
 
-                                "headers": {
+                                fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                                    "method": "POST", // // Specify that the data will be passed as POST
 
-                                },
+                                    "headers": {
 
-                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                    // The actual data being passed [A JSON Object]
+                                    },
 
-                                    {
-                                        "taskName": newTaskName,
-                                        "taskDate": "N/A", // Not Needed For Check
-                                        "taskStatus": "N/A", // Not Needed For Check
-                                        "nameFilter": nameFilter,
-                                        "statusFilter": statusFilter,
-                                        "dateStartFilter": dateStartFilter,
-                                        "dateEndFilter": dateEndFilter
-                                    }
+                                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                                )
-                            }).then(function(response){ // Catch the response
+                                        // The actual data being passed [A JSON Object]
 
-                                return response.text(); // Return the response
+                                        {
+                                            "taskName": newTaskName,
+                                            "taskDate": "N/A", // Not Needed For Check
+                                            "taskStatus": "N/A", // Not Needed For Check
+                                            "nameFilter": nameFilter,
+                                            "statusFilter": statusFilter,
+                                            "dateStartFilter": dateStartFilter,
+                                            "dateEndFilter": dateEndFilter
+                                        }
 
-                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
+                                    )
+                                }).then(function(response){ // Catch the response
 
-                                if (dataFilter != "Fail"){ // A filter check was applied without issues
+                                    return response.text(); // Return the response
 
-                                    if (dataFilter){
+                                }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                        // Matches current filter - can update the task
-                                        
-                                        // Update task name without refreshing the page
+                                    if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                                        if (dataFilter){
 
-                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                            // Matches current filter - can update the task
+                                            
+                                            // Update task name without refreshing the page
 
-                                        taskTableBody.rows[taskIndex].cells[0].textContent = newTaskName; // Inject the new task name
+                                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                                        document.getElementById("selection").textContent = newTaskName; // Update the task name in the selection preview
-    
-                                        currentTaskName = newTaskName; // Update the current selection name information
+                                            taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                    } else {
+                                            taskTableBody.rows[taskIndex].cells[0].textContent = newTaskName; // Inject the new task name
 
-                                        // No Longer matches the task name filter criteria - delete the task
+                                            document.getElementById("selection").textContent = newTaskName; // Update the task name in the selection preview
+        
+                                            currentTaskName = newTaskName; // Update the current selection name information
 
-                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                                        } else {
 
-                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                            // No Longer matches the task name filter criteria - delete the task
 
-                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+                                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                                        // Reset the selection since the selection was removed
-                                        currentIndexSelection = -1;
-                                        currentTaskID = -1;
-                                        currentTaskName = "[None]";
-                                        
-                                        // Reset selection preview
-                                        document.getElementById("selection").textContent = "[None]";
+                                            taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+                                            taskTableBody.deleteRow(taskIndex); // Delete the actual row
 
-                                            // Inject the 'No Tasks' preview again
+                                            // Reset the selection since the selection was removed
+                                            currentIndexSelection = -1;
+                                            currentTaskID = -1;
+                                            currentTaskName = "[None]";
+                                            
+                                            // Reset selection preview
+                                            document.getElementById("selection").textContent = "[None]";
 
-                                            taskTableBody.insertRow(); // Inject a row since there are none
+                                            if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
-                                            // Inject cells in this new row
-                                            taskTableBody.rows[0].insertCell(0); 
-                                            taskTableBody.rows[0].insertCell(1);
-                                            taskTableBody.rows[0].insertCell(2);
+                                                // Inject the 'No Tasks' preview again
 
-                                            // Inject the preview spanning across the entire table
+                                                taskTableBody.insertRow(); // Inject a row since there are none
 
-                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
-                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
+                                                // Inject cells in this new row
+                                                taskTableBody.rows[0].insertCell(0); 
+                                                taskTableBody.rows[0].insertCell(1);
+                                                taskTableBody.rows[0].insertCell(2);
 
-                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+                                                // Inject the preview spanning across the entire table
+
+                                                taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                                taskTableBody.rows[0].cells[2].textContent = "N/A";
+
+                                                taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                            }
 
                                         }
 
+                                        // Reset the value of the input field
+
+                                        document.getElementById("taskDescription").value = ""; 
                                     }
+                                })
 
-                                    // Reset the value of the input field
+                            } else if (data == "Blank"){
+                                
+                                // This check is made if the user modified the javascript and it passed data to the ajax php script
 
-                                    document.getElementById("taskDescription").value = ""; 
-                                }
-                            })
+                                message = document.getElementById("message");
 
-                        } else if (data == "Blank"){
-                            
-                            // This check is made if the user modified the javascript and it passed data to the ajax php script
-
-                            message = document.getElementById("message");
-
-                            message.textContent = "Error! The new task name cannot be blank!";
+                                message.textContent = "Error! The new task name cannot be blank!";
 
 
-                        } else if (data == "BlankTaskID"){
+                            } else if (data == "BlankTaskID"){
 
-                            // This check is made if the user modified the javascript and it passed data to the ajax php script
+                                // This check is made if the user modified the javascript and it passed data to the ajax php script
 
-                            message = document.getElementById("message");
+                                message = document.getElementById("message");
 
-                            message.textContent = "Error! Please make a selection first";
+                                message.textContent = "Error! Please make a selection first";
 
 
-                        } else if (data == "Mismatch"){
+                            } else if (data == "Mismatch"){
 
-                            message = document.getElementById("message");
+                                message = document.getElementById("message");
 
-                            message.textContent = "Error! Task ID user mismatch!";
+                                message.textContent = "Error! Task ID user mismatch!";
 
-                        } else {
+                            } else {
 
-                            message = document.getElementById("message");
+                                message = document.getElementById("message");
 
-                            message.textContent = "An unexpected error has occured! " + data;
+                                message.textContent = "An unexpected error has occured! " + data;
 
-                        }
-                    })
+                            }
+                        })
+
+                    } else {
+
+                        message = document.getElementById("message");
+
+                        message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                    }
+
+
 
                 } else { // Task name is blank or task not selected, cannot proceed
 
@@ -583,173 +609,186 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else { // Task is selected
 
                     // Fetch the data from the form
+
                     var newDate = document.getElementById("taskDueDate").value;
 
-                    fetch("../ajax/modify-task-date.php", { // Send a fetch request where to send the data in for modification
+                    if (isValidInput(newDate)){
 
-                        "method": "POST", // Specify that the data will be passed as POST
+                        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                        "headers": {
+                        fetch("../ajax/modify-task-date.php", { // Send a fetch request where to send the data in for modification
 
-                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                            "method": "POST", // Specify that the data will be passed as POST
 
-                        },
+                            "headers": {
 
-                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                            // The actual data being passed [A JSON Object]
+                            },
 
-                            {
-                                "taskID": currentTaskID,
-                                "taskDueDate": newDate
-                            }
-                        )
-                    }).then(function(response){ // Catch the response
+                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                        return response.text(); // Return the response
+                                // The actual data being passed [A JSON Object]
 
-                    }).then(function(data){ // Fetch the result and pass it into data
+                                {
+                                    "taskID": currentTaskID,
+                                    "taskDueDate": newDate
+                                }
+                            )
+                        }).then(function(response){ // Catch the response
 
-                        if (data == "Fail"){ // Blank Task ID
+                            return response.text(); // Return the response
 
-                            message = document.getElementById("message");
+                        }).then(function(data){ // Fetch the result and pass it into data
 
-                            message.textContent = "Error! Task ID cannot be blank!";
+                            if (data == "Fail"){ // Blank Task ID
 
-                        } else if (data == "ValidDate"){
+                                message = document.getElementById("message");
 
-                            message = document.getElementById("message");
+                                message.textContent = "Error! Task ID cannot be blank!";
 
-                            message.textContent = "Task date has been updated!";
+                            } else if (data == "ValidDate"){
 
-                            // Check with the database if the modified task date respects the current filters in place
+                                message = document.getElementById("message");
 
-                            fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
+                                message.textContent = "Task date has been updated!";
 
-                                "method": "POST", // // Specify that the data will be passed as POST
+                                // Check with the database if the modified task date respects the current filters in place
 
-                                "headers": {
+                                fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
 
-                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                                    "method": "POST", // // Specify that the data will be passed as POST
 
-                                },
+                                    "headers": {
 
-                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                    // The actual data being passed [A JSON Object]
+                                    },
 
-                                    {
-                                        "taskName": "N/A", // Not Needed For Check
-                                        "taskDate": newDate,
-                                        "taskStatus": "N/A", // Not Needed For Check
-                                        "nameFilter": nameFilter,
-                                        "statusFilter": statusFilter,
-                                        "dateStartFilter": dateStartFilter,
-                                        "dateEndFilter": dateEndFilter
-                                    }
+                                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                                )
-                            }).then(function(response){ // Catch the response
+                                        // The actual data being passed [A JSON Object]
 
-                                return response.text(); // Return the response
+                                        {
+                                            "taskName": "N/A", // Not Needed For Check
+                                            "taskDate": newDate,
+                                            "taskStatus": "N/A", // Not Needed For Check
+                                            "nameFilter": nameFilter,
+                                            "statusFilter": statusFilter,
+                                            "dateStartFilter": dateStartFilter,
+                                            "dateEndFilter": dateEndFilter
+                                        }
 
-                            }).then(function(dataFilter){ // // Fetch the result and pass it into data
+                                    )
+                                }).then(function(response){ // Catch the response
 
-                                if (dataFilter != "Fail"){ // A filter check was applied without issues
+                                    return response.text(); // Return the response
 
-                                    if (dataFilter){
+                                }).then(function(dataFilter){ // // Fetch the result and pass it into data
 
-                                        // Matches current filter - can update the task
+                                    if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                        // Update date without refreshing page
+                                        if (dataFilter){
 
-                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                                            // Matches current filter - can update the task
 
-                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                            // Update date without refreshing page
 
-                                        if (newDate == ""){
+                                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                                            // Blank date means no deadline is to be done
+                                            taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                            taskTableBody.rows[taskIndex].cells[1].textContent = "No Deadline";
-                                            
+                                            if (newDate == ""){
+
+                                                // Blank date means no deadline is to be done
+
+                                                taskTableBody.rows[taskIndex].cells[1].textContent = "No Deadline";
+                                                
+                                            } else {
+
+                                                // Inject the deadline date
+
+                                                taskTableBody.rows[taskIndex].cells[1].textContent = newDate;
+
+                                            }
+
                                         } else {
 
-                                            // Inject the deadline date
+                                            // No Longer matches the task name filter criteria - delete the task
 
-                                            taskTableBody.rows[taskIndex].cells[1].textContent = newDate;
+                                            taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
-                                        }
+                                            taskIndex = getTableIndexFromTaskID(currentTaskID);
 
-                                    } else {
+                                            taskTableBody.deleteRow(taskIndex); // Delete the actual row
 
-                                        // No Longer matches the task name filter criteria - delete the task
+                                            // Reset the selection since the selection was removed
+                                            currentIndexSelection = -1;
+                                            currentTaskID = -1;
+                                            currentTaskName = "[None]";
+                                            
+                                            // Reset selection preview
+                                            document.getElementById("selection").textContent = "[None]";
 
-                                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+                                            if (taskTableBody.rows.length == 0){ // That was the only task in the database
 
-                                        taskIndex = getTableIndexFromTaskID(currentTaskID);
+                                                // Inject the 'No Tasks' preview again
 
-                                        taskTableBody.deleteRow(taskIndex); // Delete the actual row
+                                                taskTableBody.insertRow(); // Inject a row since there are none
 
-                                        // Reset the selection since the selection was removed
-                                        currentIndexSelection = -1;
-                                        currentTaskID = -1;
-                                        currentTaskName = "[None]";
-                                        
-                                        // Reset selection preview
-                                        document.getElementById("selection").textContent = "[None]";
+                                                // Inject cells in this new row
+                                                taskTableBody.rows[0].insertCell(0); 
+                                                taskTableBody.rows[0].insertCell(1);
+                                                taskTableBody.rows[0].insertCell(2);
 
-                                        if (taskTableBody.rows.length == 0){ // That was the only task in the database
+                                                // Inject the preview spanning across the entire table
 
-                                            // Inject the 'No Tasks' preview again
+                                                taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                                taskTableBody.rows[0].cells[2].textContent = "N/A";
 
-                                            taskTableBody.insertRow(); // Inject a row since there are none
+                                                taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
-                                            // Inject cells in this new row
-                                            taskTableBody.rows[0].insertCell(0); 
-                                            taskTableBody.rows[0].insertCell(1);
-                                            taskTableBody.rows[0].insertCell(2);
-
-                                            // Inject the preview spanning across the entire table
-
-                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
-                                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
-
-                                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+                                            }
 
                                         }
 
+                                        // Reset the value of the date field
+                                
+                                        document.getElementById("taskDueDate").value = ""; 
                                     }
+                                })
 
-                                    // Reset the value of the date field
-                            
-                                    document.getElementById("taskDueDate").value = ""; 
-                                }
-                            })
+                            } else if (data == "InvalidDate"){
 
-                        } else if (data == "InvalidDate"){
+                                message = document.getElementById("message");
 
-                            message = document.getElementById("message");
+                                message.textContent = "Error! Task Date Is Invalid!";
 
-                            message.textContent = "Error! Task Date Is Invalid!";
+                            } else if (data == "Mismatch"){
 
-                        } else if (data == "Mismatch"){
+                                message = document.getElementById("message");
 
-                            message = document.getElementById("message");
+                                message.textContent = "Error! Task ID user mismatch!";
 
-                            message.textContent = "Error! Task ID user mismatch!";
+                            } else {
 
-                        } else {
+                                // Tackling other error instances which shouldn't occur unless the user messed with the javascript code
 
-                            // Tackling other error instances which shouldn't occur unless the user messed with the javascript code
+                                message = document.getElementById("message");
 
-                            message = document.getElementById("message");
+                                message.textContent = "An unexpected error has occured! " + data;
 
-                            message.textContent = "An unexpected error has occured! " + data;
+                            }
+                        })
 
-                        }
-                    })
+                    } else {
+
+                        message = document.getElementById("message");
+
+                        message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+
+                    }
 
                 }
 
@@ -1160,6 +1199,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Name Filter
 
     document.getElementById("nameFilter").addEventListener("input", function(){
+
+        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftNameFilter = document.getElementById("nameFilter").value;
         
@@ -1168,6 +1209,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Date Start Filter
 
     document.getElementById("dateStartFilter").addEventListener("input", function(){
+
+        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftDateStartFilter = document.getElementById("dateStartFilter").value;
 
@@ -1176,6 +1219,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Date End Filter
 
     document.getElementById("dateEndFilter").addEventListener("input", function(){
+
+        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftDateEndFilter = document.getElementById("dateEndFilter").value;
 
@@ -1510,3 +1555,40 @@ document.addEventListener("DOMContentLoaded", () => {
         })   
     });
 });
+
+// Checks if an input respects the allowedCharacters criteria -> Input filtering + Output Escaping two-in-one function
+// (rejects special characters)
+
+function isValidInput(input){
+
+    var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890-"; // Stores allowed characters - reject other characters to prevent any XSS attacks
+    var characterAllowed = false;
+
+    for (x = 0; x != input.length; x++){ // Iterate through input characters
+
+        for (y = 0; y != allowedCharacters.length; y++){ // Iterate through allowed characters
+
+            if (input[x].toLowerCase() == allowedCharacters[y]){
+                
+                characterAllowed = true; // Charcter is allowed
+
+                break; // Escape the loop
+
+            }
+
+        }
+
+        if (characterAllowed){ // Character was allowed
+
+            characterAllowed = false; // Reset character for next check
+
+        } else {
+
+            return false; // Character was not allowed - reject the string for this reason
+            
+        }
+    }
+
+    return true; // No disallowed characters were spotted - accept the input
+
+}
