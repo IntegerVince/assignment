@@ -62,6 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         document.getElementById("signupForm").submit(); // Submit the form for login
 
+                    } else if (data == "FormatFail"){
+
+                        errorMessage = document.getElementById("errorMessage");
+
+                        errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
                     } else {
 
                         errorMessage = document.getElementById("errorMessage");
@@ -75,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 errorMessage = document.getElementById("errorMessage");
 
-                errorMessage.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
             }
         }
     });
@@ -95,7 +101,7 @@ function isValidInput(input){
 
             if (input[x].toLowerCase() == allowedCharacters[y]){
                 
-                characterAllowed = true; // Charcter is allowed
+                characterAllowed = true; // Character is allowed
 
                 break; // Escape the loop
 

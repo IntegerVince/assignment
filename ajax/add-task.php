@@ -15,17 +15,27 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != ""){
     
     // User is currenly logged in with valid data + mandatory data [Task name] available
+
+    if (isValidInput($decodedData["taskName"]) && isValidInput($decodedData["taskDate"])){
+
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+        // Update the actual database
     
-    // Update the actual database
-   
-   addTaskToUser($_SESSION["username"], $_SESSION["password"],$decodedData["taskName"],$decodedData["taskDate"]);
+        addTaskToUser($_SESSION["username"], $_SESSION["password"],$decodedData["taskName"],$decodedData["taskDate"]);
 
-   $userTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]); // Get a list of the tasks again
+        $userTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]); // Get a list of the tasks again
 
-   $lastTask = end($userTasks); // Get the last of the task list
+        $lastTask = end($userTasks); // Get the last of the task list
 
-   echo $lastTask["taskID"]; // Return task ID so it can be injected through javascript without refreshing the page
+        echo $lastTask["taskID"]; // Return task ID so it can be injected through javascript without refreshing the page
 
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
+    
 } else {
 
     echo "Fail"; // Task Name Is Blank or Auth Fail

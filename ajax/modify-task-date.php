@@ -15,20 +15,40 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
     
     // User is currenly logged in with valid data + mandatory data [task ID] available
-    
-    // Update the actual database
 
-    if ($decodedData["taskDueDate"] == ""){ // Date is Blank, so no deadline (0000-00-00)
+    if (isValidInput($decodedData["taskID"])){
 
-        $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], "0000-00-00");
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-    } else { // Date is set, so pass that on
+        // Update the actual database
 
-        $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskDueDate"]);
+        if ($decodedData["taskDueDate"] == ""){ // Date is Blank, so no deadline (0000-00-00)
+
+            $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], "0000-00-00");
+            echo $resultOfModification; // Return the status for processing from javascript file
+
+        } else { // Date is set, so pass that on
+
+            if (isValidInput($decodedData["taskDueDate"])){ // Also check for due date validity
+
+                // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+                $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskDueDate"]);
+                echo $resultOfModification; // Return the status for processing from javascript file
+
+            } else {
+
+                echo "FormatFail"; // Return failure of format checking
+
+            }
+
+        }
+
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
 
     }
-
-    echo $resultOfModification; // Return the status for processing from javascript file
 
 } else {
 

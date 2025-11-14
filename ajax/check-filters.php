@@ -17,10 +17,20 @@ if (checkSessionStatus() == "Valid"){
     // User is currenly logged in with valid data
     
     // Fetch the result of whether or not the task matches the filter
-   
-   $result = matchWithFilter($decodedData["taskName"], $decodedData["taskDate"], $decodedData["taskStatus"], $decodedData["statusFilter"],  $decodedData["nameFilter"], $decodedData["dateStartFilter"], $decodedData["dateEndFilter"]);
 
-   echo $result;
+    if (isValidInput($decodedData["taskName"]) && isValidInput($decodedData["taskDate"]) && isValidInput($decodedData["taskStatus"])){
+
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+        $result = matchWithFilter($decodedData["taskName"], $decodedData["taskDate"], $decodedData["taskStatus"], $decodedData["statusFilter"],  $decodedData["nameFilter"], $decodedData["dateStartFilter"], $decodedData["dateEndFilter"]);
+
+        echo $result;
+
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
 
 } else {
 

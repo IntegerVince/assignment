@@ -234,6 +234,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.textContent = "Error! Task name cannot be blank!";
 
+                        } else if (data == "FormatFail"){
+
+                            message = document.getElementById("message");
+
+                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
                         } else {
 
                             message.textContent = "Task has been added!";
@@ -273,7 +279,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (dataFilter){
+                                    if (dataFilter == "FormatFail"){
+
+                                        message = document.getElementById("message");
+
+                                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                    } else if (dataFilter){
 
                                         // Matches current filter - can inject the task
 
@@ -374,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     message = document.getElementById("message");
 
-                    message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                    message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
                     
                 }
                 
@@ -458,8 +470,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                         {
                                             "taskName": newTaskName,
-                                            "taskDate": "N/A", // Not Needed For Check
-                                            "taskStatus": "N/A", // Not Needed For Check
+                                            "taskDate": "N-A", // Not Needed For Check
+                                            "taskStatus": "N-A", // Not Needed For Check
                                             "nameFilter": nameFilter,
                                             "statusFilter": statusFilter,
                                             "dateStartFilter": dateStartFilter,
@@ -475,7 +487,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                        if (dataFilter){
+                                        if (dataFilter == "FormatFail"){
+
+                                            alert("FAILURE FROM HERE");
+
+                                            message = document.getElementById("message");
+
+                                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                        } else if (dataFilter){
 
                                             // Matches current filter - can update the task
                                             
@@ -522,9 +542,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 // Inject the preview spanning across the entire table
 
-                                                taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[0].textContent = "N-A";
                                                 taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                                taskTableBody.rows[0].cells[2].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                                                 taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -575,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
                     }
 
 
@@ -647,6 +667,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 message.textContent = "Error! Task ID cannot be blank!";
 
+                            } else if (data == "FormatFail"){
+
+                                message = document.getElementById("message");
+
+                                message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
                             } else if (data == "ValidDate"){
 
                                 message = document.getElementById("message");
@@ -670,9 +696,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                         // The actual data being passed [A JSON Object]
 
                                         {
-                                            "taskName": "N/A", // Not Needed For Check
+                                            "taskName": "N-A", // Not Needed For Check
                                             "taskDate": newDate,
-                                            "taskStatus": "N/A", // Not Needed For Check
+                                            "taskStatus": "N-A", // Not Needed For Check
                                             "nameFilter": nameFilter,
                                             "statusFilter": statusFilter,
                                             "dateStartFilter": dateStartFilter,
@@ -688,7 +714,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                        if (dataFilter){
+                                        if (dataFilter == "FormatFail"){
+
+                                            message = document.getElementById("message");
+
+                                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                            
+                                        } else if (dataFilter){
 
                                             // Matches current filter - can update the task
 
@@ -743,9 +775,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 // Inject the preview spanning across the entire table
 
-                                                taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[0].textContent = "N-A";
                                                 taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                                taskTableBody.rows[0].cells[2].textContent = "N/A";
+                                                taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                                                 taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -786,7 +818,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message = document.getElementById("message");
 
-                        message.textContent = "Error! Invalid characters! Make sure you only include characters, numbers, and \"-\" symbol";
+                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
 
                     }
 
@@ -834,6 +866,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.textContent = "Error! Task ID cannot be blank!";
 
+                        } else if (data == "FormatFail"){
+
+                            message = document.getElementById("message");
+
+                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
                         } else if (data == "Completed"){
 
                             message = document.getElementById("message");
@@ -857,8 +895,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     // The actual data being passed [A JSON Object]
 
                                     {
-                                        "taskName": "N/A", // Not Needed For Check
-                                        "taskDate": "N/A", // Not Needed For Check
+                                        "taskName": "N-A", // Not Needed For Check
+                                        "taskDate": "N-A", // Not Needed For Check
                                         "taskStatus": "Completed", 
                                         "nameFilter": nameFilter,
                                         "statusFilter": statusFilter,
@@ -875,7 +913,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (dataFilter){
+                                    if (dataFilter == "FormatFail"){
+
+                                        message = document.getElementById("message");
+
+                                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                    } else if (dataFilter){
 
                                         // Matches current filter - can update the task
 
@@ -918,9 +962,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N-A";
                                             taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -953,8 +997,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     // The actual data being passed [A JSON Object]
 
                                     {
-                                        "taskName": "N/A", // Not Needed For Check
-                                        "taskDate": "N/A", // Not Needed For Check
+                                        "taskName": "N-A", // Not Needed For Check
+                                        "taskDate": "N-A", // Not Needed For Check
                                         "taskStatus": "Pending", 
                                         "nameFilter": nameFilter,
                                         "statusFilter": statusFilter,
@@ -971,7 +1015,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (dataFilter != "Fail"){ // A filter check was applied without issues
 
-                                    if (dataFilter){
+                                    if (dataFilter == "FormatFail"){
+
+                                        message = document.getElementById("message");
+
+                                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                    } else if (dataFilter){
 
                                         // Matches current filter - can update the task
 
@@ -1014,9 +1064,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // Inject the preview spanning across the entire table
 
-                                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[0].textContent = "N-A";
                                             taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                                            taskTableBody.rows[0].cells[2].textContent = "N/A";
+                                            taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -1086,6 +1136,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message.textContent = "Error! Task ID cannot be blank!";
 
+                    } else if (data == "FormatFail"){
+
+                        message = document.getElementById("message");
+
+                        message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
                     } else if (data == "Success"){
 
                         message = document.getElementById("message");
@@ -1121,9 +1177,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Inject the preview spanning across the entire table
 
-                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                            taskTableBody.rows[0].cells[0].textContent = "N-A";
                             taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                            taskTableBody.rows[0].cells[2].textContent = "N/A";
+                            taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -1271,7 +1327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // The data passed is being checked with double quotations marks because it was passed as a JSON string
 
-                    if (data != '"Fail"' && data != '"InvalidDates"' && data != '"InvalidDateRange"'){ // Filter Was A Success
+                    if (data != '"Fail"' && data != '"InvalidDates"' && data != '"InvalidDateRange"' && data != '"FormatFail"'){ // Filter Was A Success
 
                         // Since filter will be applied, reset selection
                         currentIndexSelection = -1;
@@ -1379,9 +1435,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Inject the preview spanning across the entire table
 
-                            taskTableBody.rows[0].cells[0].textContent = "N/A";
+                            taskTableBody.rows[0].cells[0].textContent = "N-A";
                             taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                            taskTableBody.rows[0].cells[2].textContent = "N/A";
+                            taskTableBody.rows[0].cells[2].textContent = "N-A";
 
                             taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
 
@@ -1403,6 +1459,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             message = document.getElementById("message");
 
                             message.textContent = "Error! The start date should be before the end date";
+
+                        } else if (data == '"FormatFail"'){
+
+                            message = document.getElementById("message");
+
+                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
 
                         }
                     }
@@ -1458,7 +1520,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // The data passed is being checked with double quotations marks because it was passed as a JSON string
 
-            if (data != '"Fail"'){ // Data recieved successfully
+            if (data != '"Fail"' && data != '"FormatFail"'){ // Data recieved successfully
 
                 parsedData = JSON.parse(data); // Convert JSON String to Object for handling
 
@@ -1551,6 +1613,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     });
                 }
+            } else {
+                if (data == '"FormatFail"'){
+
+                    message = document.getElementById("message");
+
+                    message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                }
             }
         })   
     });
@@ -1570,7 +1640,7 @@ function isValidInput(input){
 
             if (input[x].toLowerCase() == allowedCharacters[y]){
                 
-                characterAllowed = true; // Charcter is allowed
+                characterAllowed = true; // Character is allowed
 
                 break; // Escape the loop
 

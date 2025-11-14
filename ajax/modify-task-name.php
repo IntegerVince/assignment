@@ -15,12 +15,22 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != "" and $decodedData["taskID"] != -1){
     
     // User is currenly logged in with valid data + mandatory data [task name] available
-    
-    // Update the actual database
 
-    $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskName"]);
-    
-    echo $resultOfModification; // Return the status for processing from javascript file
+    if (isValidInput($decodedData["taskName"]) && isValidInput($decodedData["taskID"])){
+
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+        // Update the actual database
+
+        $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskName"]);
+        
+        echo $resultOfModification; // Return the status for processing from javascript file
+
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
 
 } else {
 
