@@ -73,8 +73,7 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 
             if ($row["username"] == $accountUsername){
                 
-
-                if ($row["password"] == $accountPassword){
+                if (password_verify($accountPassword, $row["password"])){
 
                     # Username and Password Valid
                     

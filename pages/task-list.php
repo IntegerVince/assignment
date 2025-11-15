@@ -159,7 +159,11 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
                 $_SESSION["username"] = $_POST["fusername_signup"];
                 $_SESSION["password"] = $_POST["fpassword_signup"];
 
-                createNewUser($_POST["fusername_signup"],$_POST["fpassword_signup"]);
+                // Hash the password for the user
+                $hashedPassword = password_hash($_POST["fpassword_signup"], PASSWORD_DEFAULT);
+
+                // Create New User
+                createNewUser($_POST["fusername_signup"], $hashedPassword);
 
                 # Perform Render of task-list as logged in user
 
