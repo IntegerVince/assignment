@@ -7,81 +7,81 @@ document.addEventListener("DOMContentLoaded", () => {
         var username = document.getElementById("fname").value;
         var password = document.getElementById("fpass").value;
 
-        if (isValidInput(username)){
+        if (grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
 
-            // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+                errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
+                        
+            } else {
 
-            fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
+                if (isValidInput(username)){
 
-                "method": "POST", // Specify that the data will be passed as POST
+                // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                "headers": {
+                fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
 
-                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                    "method": "POST", // Specify that the data will be passed as POST
 
-                },
+                    "headers": {
 
-                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                    // The actual data being passed [A JSON Object]
+                    },
 
-                    {
-                        "username": username,
-                        "password": password
-                    }
-                )
-            }).then(function(response){ // Catch the response
+                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                return response.text(); // Return the response
+                        // The actual data being passed [A JSON Object]
 
-            }).then(function(data){ // // Fetch the result and pass it into data
+                        {
+                            "username": username,
+                            "password": password
+                        }
+                    )
+                }).then(function(response){ // Catch the response
 
-                if (data != "Valid"){ // A login data was not valid
+                    return response.text(); // Return the response
 
-                    errorMessage = document.getElementById("errorMessage");
-                    
-                    if (data == "InvalidPassword"){
+                }).then(function(data){ // // Fetch the result and pass it into data
 
-                        errorMessage.textContent = "Error! That password is incorrect";
+                    if (data != "Valid"){ // A login data was not valid
 
-                    } else if (data == "InvalidUsername"){
+                        errorMessage = document.getElementById("errorMessage");
+                        
+                        if (data == "InvalidPassword"){
 
-                        errorMessage.textContent = "Error! That username does not exist";
+                            errorMessage.textContent = "Error! That password is incorrect";
 
-                    } else if (data == "NoAccounts"){
+                        } else if (data == "InvalidUsername"){
 
-                        errorMessage.textContent = "Error! No accounts currently exist in the database";
+                            errorMessage.textContent = "Error! That username does not exist";
 
-                    } else if (data == "FormatFail"){
+                        } else if (data == "NoAccounts"){
 
-                        errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                            errorMessage.textContent = "Error! No accounts currently exist in the database";
 
-                    }
+                        } else if (data == "FormatFail"){
 
-                } else {
+                            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
 
-                    // The login credentials were valid
+                        }
 
-                    if(grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
-
-                        errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
-                    
                     } else {
+
+                        // The login credentials were valid
 
                         document.getElementById("loginForm").submit(); // Submit the form for login
 
                     }
 
-                }
+                })
 
-            })
+            } else {
 
-        } else {
+                errorMessage = document.getElementById("errorMessage");
 
-            errorMessage = document.getElementById("errorMessage");
+                errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                
+            }
 
-            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
-            
         }
 
     });

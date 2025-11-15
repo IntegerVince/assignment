@@ -25,6 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             errorMessage.textContent = "Error! Password cannot be left blank!";
 
+        } else if (grecaptcha.getResponse() == ""){
+
+            // Recaptcha field was left blank
+
+            errorMessage = document.getElementById("errorMessage");
+
+            errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
+
         } else { // No data was left blank
 
             if (isValidInput(username)){
@@ -60,17 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         // The username is unique so we can create an account for the user
 
-                        if(grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
-
-                            errorMessage = document.getElementById("errorMessage");
-
-                            errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
-                        
-                        } else {
-
-                            document.getElementById("signupForm").submit(); // Submit the form for login
-
-                        }
+                        document.getElementById("signupForm").submit(); // Submit the form for login
 
                     } else if (data == "FormatFail"){
 
