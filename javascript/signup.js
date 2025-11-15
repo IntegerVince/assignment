@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
 
-                    "method": "POST", // // Specify that the data will be passed as POST
+                    "method": "POST", // Specify that the data will be passed as POST
 
                     "headers": {
 
@@ -60,7 +60,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         // The username is unique so we can create an account for the user
 
-                        document.getElementById("signupForm").submit(); // Submit the form for login
+                        if(grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
+
+                            errorMessage = document.getElementById("errorMessage");
+
+                            errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
+                        
+                        } else {
+
+                            document.getElementById("signupForm").submit(); // Submit the form for login
+
+                        }
 
                     } else if (data == "FormatFail"){
 

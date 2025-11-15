@@ -6,6 +6,7 @@
         {% elseif templateType == "Signup" %}
             <script src="../javascript/signup.js" type="text/javascript"></script> <!-- AJAX Logic -->
         {% endif %}
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script> <!-- Google Recaptcha API -->
     </head>
 
     <body>
@@ -23,6 +24,7 @@
                 <input type="text" id="fname" name="fusername_login" placeholder="exampleUser" required>
                 <label for="fpass">Password:</label>
                 <input type="password" id="fpass" name="fpassword_login" required>
+                <div class="g-recaptcha" data-sitekey="6LcfrQ0sAAAAAJUtZM7a_YXltio8kG4CsRWa5RF2"></div> <!-- Google Recaptcha -->
                 <input type="submit" value="Submit">
             </form>
 
@@ -37,6 +39,7 @@
                 <input type="text" id="fname" name="fusername_signup" placeholder="exampleUser" required>
                 <label for="fpass">Password:</label>
                 <input type="password" id="fpass" name="fpassword_signup" required>
+                <div class="g-recaptcha" data-sitekey="6LcfrQ0sAAAAAJUtZM7a_YXltio8kG4CsRWa5RF2"></div> <!-- Google Recaptcha -->
                 <input type="submit" value="Submit">
             </form>
 
