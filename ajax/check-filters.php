@@ -22,6 +22,7 @@ if (checkSessionStatus() == "Valid"){
 
         // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
+        // No Htmlentities conversion is done here as this is just a filter, not adding content to a database
         $result = matchWithFilter($decodedData["taskName"], $decodedData["taskDate"], $decodedData["taskStatus"], $decodedData["statusFilter"],  $decodedData["nameFilter"], $decodedData["dateStartFilter"], $decodedData["dateEndFilter"]);
 
         echo $result;

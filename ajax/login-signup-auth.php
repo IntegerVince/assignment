@@ -22,6 +22,8 @@ if ($decodedData["username"] != "" && $decodedData["password"] != ""){
         # Index 0 = Status
         # Index 1 = UserID (If Valid)
 
+        // No Htmlentities conversion is done here as this is just a fetcher of database content
+
         $accountResult = explode("-", checkDatabaseAccount($decodedData["username"], $decodedData["password"]));
 
         echo $accountResult[0]; // Return the result of the login attempt which will be caught from the fetch request

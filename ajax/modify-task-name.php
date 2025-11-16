@@ -22,7 +22,9 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != "" and $deco
 
         // Update the actual database
 
-        $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskName"]);
+        // Htmlentities conversion is still done as another failproof method
+
+        $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], htmlentities($decodedData["taskID"]), htmlentities($decodedData["taskName"]));
         
         echo $resultOfModification; // Return the status for processing from javascript file
 

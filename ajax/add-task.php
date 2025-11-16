@@ -22,7 +22,8 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != ""){
 
         // Update the actual database
     
-        addTaskToUser($_SESSION["username"], $_SESSION["password"],$decodedData["taskName"],$decodedData["taskDate"]);
+        // Htmlentities conversion is still done as another failproof method
+        addTaskToUser($_SESSION["username"], $_SESSION["password"],htmlentities($decodedData["taskName"]),htmlentities($decodedData["taskDate"]));
 
         $userTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]); // Get a list of the tasks again
 

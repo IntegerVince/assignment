@@ -21,6 +21,8 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
         // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
         // Update the actual database
+
+        // No Htmlentities conversion is done here as this to delete a database entry, not to add an entry which gets displayed
    
         $deletionResult = DeleteTask($_SESSION["username"], $_SESSION["password"],$decodedData["taskID"]);
 

@@ -24,6 +24,8 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
 
         if ($decodedData["taskDueDate"] == ""){ // Date is Blank, so no deadline (0000-00-00)
 
+            // Htmlentities conversion is not required here because the data inputted is by the system
+
             $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], "0000-00-00");
             echo $resultOfModification; // Return the status for processing from javascript file
 
@@ -33,7 +35,9 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
 
                 // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"], $decodedData["taskDueDate"]);
+                // Htmlentities conversion is still done as another failproof method
+
+                $resultOfModification = modifyTaskDate($_SESSION['username'], $_SESSION['password'], htmlentities($decodedData["taskID"]), htmlentities($decodedData["taskDueDate"]));
                 echo $resultOfModification; // Return the status for processing from javascript file
 
             } else {

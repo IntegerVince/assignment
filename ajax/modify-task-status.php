@@ -22,6 +22,8 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
 
         // Update the actual database
 
+        // Htmlentities conversion is not required here because status is automatically swapped in the database function
+
         $resultOfModification = modifyTaskStatus($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"]);
         
         echo $resultOfModification; // Return the status for processing from javascript file
