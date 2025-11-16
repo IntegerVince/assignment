@@ -15,13 +15,25 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
     
     // User is currenly logged in with valid data + mandatory data [Task ID] available
-    
-    // Update the actual database
+
+    if (isValidInput($decodedData["taskID"])){
+
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+        // Update the actual database
+
+        // No Htmlentities conversion is done here as this to delete a database entry, not to add an entry which gets displayed
    
-   $deletionResult = DeleteTask($_SESSION["username"], $_SESSION["password"],$decodedData["taskID"]);
+        $deletionResult = DeleteTask($_SESSION["username"], $_SESSION["password"],$decodedData["taskID"]);
 
-   echo $deletionResult; // Return the status for processing from javascript file
+        echo $deletionResult; // Return the status for processing from javascript file
 
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
+    
 } else {
 
     echo "Fail"; // Task ID is missing or auth fail

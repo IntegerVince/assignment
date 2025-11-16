@@ -34,6 +34,8 @@ if (checkSessionStatus() == "Valid") {
 
 if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
+    // A login was indeed called
+
     # Explode is used to seperate status message from user ID
     # Index 0 = Status
     # Index 1 = UserID (If Valid)
@@ -64,12 +66,12 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
     } # Other scenarios (Invalid password, etc.. are checked in the signup/login pages, not here)
 
-
-
 # At this stage, it means session was not stored and login wasn't called, so proceeding with checking if signup was called
 
 } else if (isset($_POST["fusername_signup"]) and isset($_POST["fpassword_signup"])) {
 
+    // A signup was indeed called
+    
     $receivedAccountStatus = explode("-", checkDatabaseAccount($_POST["fusername_signup"], $_POST["fpassword_signup"]));
 
     # Username and password provided for signup. Check whether or not there is already an account with that username.
@@ -84,7 +86,11 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
         $_SESSION["username"] = $_POST["fusername_signup"];
         $_SESSION["password"] = $_POST["fpassword_signup"];
 
-        createNewUser($_POST["fusername_signup"],$_POST["fpassword_signup"]);
+        // Hash the password for the user
+        $hashedPassword = password_hash($_POST["fpassword_signup"], PASSWORD_DEFAULT);
+
+        // Create New User
+        createNewUser($_POST["fusername_signup"], $hashedPassword);
 
         # Perform Render of task-list as logged in user
 

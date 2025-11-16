@@ -17,10 +17,12 @@ if (checkSessionStatus() == "Valid"){
     // User is currenly logged in with valid data
     
     // Update the actual database
-   
-   $allUserTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]);
 
-   echo json_encode($allUserTasks); // Return the tasks as a JSON string for processing from javascript file
+    // No Htmlentities conversion is done here as this is just a fetcher of database content
+   
+    $allUserTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]);
+
+    echo json_encode($allUserTasks); // Return the tasks as a JSON string for processing from javascript file
 
 } else {
 

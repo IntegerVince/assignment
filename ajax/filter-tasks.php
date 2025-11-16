@@ -17,10 +17,12 @@ if (checkSessionStatus() == "Valid"){
     // User is currenly logged in with valid data
     
     // Update the actual database
-   
-   $filteredTasks = fetchTasksAndFilter($_SESSION["username"], $_SESSION["password"], $decodedData["statusFilter"], $decodedData["nameFilter"], $decodedData["dateStartFilter"], $decodedData["dateEndFilter"]);
 
-   echo json_encode($filteredTasks); // Return the tasks as a JSON string for processing from javascript file
+    // No Htmlentities conversion is done here as this is just a filter, not adding content to a database
+   
+    $filteredTasks = fetchTasksAndFilter($_SESSION["username"], $_SESSION["password"], $decodedData["statusFilter"], $decodedData["nameFilter"], $decodedData["dateStartFilter"], $decodedData["dateEndFilter"]);
+
+    echo json_encode($filteredTasks); // Return the tasks as a JSON string for processing from javascript file
 
 } else {
 

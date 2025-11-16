@@ -15,13 +15,25 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 if (checkSessionStatus() == "Valid" and $decodedData["taskID"] != -1){
     
     // User is currenly logged in with valid data + mandatory data [task ID] available
-    
-    // Update the actual database
 
-    $resultOfModification = modifyTaskStatus($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"]);
-    
-    echo $resultOfModification; // Return the status for processing from javascript file
+    if (isValidInput($decodedData["taskID"])){
 
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+
+        // Update the actual database
+
+        // Htmlentities conversion is not required here because status is automatically swapped in the database function
+
+        $resultOfModification = modifyTaskStatus($_SESSION['username'], $_SESSION['password'], $decodedData["taskID"]);
+        
+        echo $resultOfModification; // Return the status for processing from javascript file
+
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
+    
 } else {
 
     echo "Fail"; // Task ID Is Blank or Auth Fail

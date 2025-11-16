@@ -73,8 +73,7 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 
             if ($row["username"] == $accountUsername){
                 
-
-                if ($row["password"] == $accountPassword){
+                if (password_verify($accountPassword, $row["password"])){
 
                     # Username and Password Valid
                     
@@ -437,7 +436,7 @@ function fetchTasksAndFilter($accountUsername, $accountPassword, $statusFilter, 
 // function which, given a task and the current filter settings, returns whether or not it matches the current filter settings
 function matchWithFilter($taskName, $taskDate, $taskStatus, $statusFilter, $nameFilter, $dateStartFilter, $dateEndFilter){
 
-    if ($taskName != "N/A"){ // Task name needs to be checked as it is a new task or it was the modified value
+    if ($taskName != "N-A"){ // Task name needs to be checked as it is a new task or it was the modified value
 
         // Name Filter Checking
     
@@ -458,7 +457,7 @@ function matchWithFilter($taskName, $taskDate, $taskStatus, $statusFilter, $name
 
     }
 
-    if ($taskStatus != "N/A"){ // Task status needs to be checked as it was the modified value
+    if ($taskStatus != "N-A"){ // Task status needs to be checked as it was the modified value
 
         // Status Filter Checking
 
@@ -482,7 +481,7 @@ function matchWithFilter($taskName, $taskDate, $taskStatus, $statusFilter, $name
 
     }
     
-    if ($taskDate != "N/A"){ // Task date needs to be checked as it is a new task or it was the modified value
+    if ($taskDate != "N-A"){ // Task date needs to be checked as it is a new task or it was the modified value
 
         // Date Filter Checking
 
@@ -861,6 +860,42 @@ function modifyTaskDate($accountUsername, $accountPassword, $taskIndex, $date){
         return "AuthFailure";
 
     }
+}
+
+// Checks if an input respects the allowedCharacters criteria -> Input filtering + Output Escaping two-in-one function
+// (rejects special characters)
+function isValidInput($input){
+
+    $allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890-"; // Stores allowed characters - reject other characters to prevent any XSS attacks
+    $characterAllowed = false;
+
+    for ($x = 0; $x != strlen($input); $x++){  // Iterate through input characters
+        
+        for ($y = 0; $y != strlen($allowedCharacters); $y++){ // Iterate through allowed characters
+
+            if (strtolower($input[$x]) == $allowedCharacters[$y]){
+
+                $characterAllowed = true; // Character is allowed
+
+                break; // Escape the loop
+
+            }
+
+        }
+
+        if ($characterAllowed){ // Character was allowed
+
+            $characterAllowed = false; // Reset character for next check
+
+        } else {
+
+            return false; // Character was not allowed - reject the string for this reason
+            
+        }
+    }
+
+    return true; // No disallowed characters were spotted - accept the input
+
 }
 
 ?>

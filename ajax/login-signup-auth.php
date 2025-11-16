@@ -14,15 +14,26 @@ $decodedData = json_decode($data, true); // Fetch PHP associative array from the
 # The data is already checked if blank in javascript prior to fetching, but if it's bypassed, it's checked here too
 if ($decodedData["username"] != "" && $decodedData["password"] != ""){ 
 
+    if (isValidInput($decodedData["username"])){
 
-    # Explode is used to seperate status message from user ID
-    # Index 0 = Status
-    # Index 1 = UserID (If Valid)
+        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-    $accountResult = explode("-", checkDatabaseAccount($decodedData["username"], $decodedData["password"]));
+        # Explode is used to seperate status message from user ID
+        # Index 0 = Status
+        # Index 1 = UserID (If Valid)
+
+        // No Htmlentities conversion is done here as this is just a fetcher of database content
+
+        $accountResult = explode("-", checkDatabaseAccount($decodedData["username"], $decodedData["password"]));
+
+        echo $accountResult[0]; // Return the result of the login attempt which will be caught from the fetch request
+
+    } else {
+
+        echo "FormatFail"; // Return failure of format checking
+
+    }
 
 }
-
-echo $accountResult[0]; // Return the result of the login attempt which will be caught from the fetch request
 
 ?>
