@@ -1231,7 +1231,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("statusFilterSelection").textContent = "Pending Only";
 
-        draftStatusFilter = "Pending Only";
+        draftStatusFilter = "Pending Only"; // Temporary storage of the new status filter
 
     });
 
@@ -1241,7 +1241,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("statusFilterSelection").textContent = "Completed Only";
 
-        draftStatusFilter = "Completed Only";
+        draftStatusFilter = "Completed Only"; // Temporary storage of the new status filter
 
     });
 
@@ -1251,7 +1251,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("statusFilterSelection").textContent = "Any Status";
 
-        draftStatusFilter = "Any Status";
+        draftStatusFilter = "Any Status"; // Temporary storage of the new status filter
 
     });
 
@@ -1261,9 +1261,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
-        draftNameFilter = document.getElementById("nameFilter").value;
+        draftNameFilter = document.getElementById("nameFilter").value; // Temporary storage of the new name filter
 
-        var dataListAutoSuggest = document.getElementById("autoSuggest");
+        // =================================================
+        // Code which handles autosuggestion
+        // =================================================
+
+        var dataListAutoSuggest = document.getElementById("autoSuggest"); // Fetch the datalist autosuggest word container
                 
         if (dataListAutoSuggest != null){ // check if there is an existing datalist
 
@@ -1275,13 +1279,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         userTasks.then(data => { // After the promise 'userTasks' has been fullfilled, pass the task list data into 'data'
 
-            potentialAutoSuggestion = autocompleteSuggest(draftNameFilter, data); // See if there is only one match
+            potentialAutoSuggestion = autocompleteSuggest(draftNameFilter, data); // See if there is any matches
 
             if (potentialAutoSuggestion != "No-Suggestions"){
 
+                // There are suggestions!
+
                 if (potentialAutoSuggestion != draftNameFilter){ // Prevent showing the autosuggest it's  already the full text
 
-                    // Create the datalist which will store the autosuggestion
+                    // Create the datalist which will store the autosuggestion(s)
                     var dataListAutoSuggest = document.createElement("DATALIST");
 
                     // Set the ID of the datalist
@@ -1290,16 +1296,22 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Attach the datalist to the name filter form
                     document.getElementById("nameFilterForm").appendChild(dataListAutoSuggest);
 
-                    // Create the auto suggest option which will get injected inside of the datalist
-                    var autoSuggestion = document.createElement("OPTION");
+                    for (suggestIndex = 0; suggestIndex != potentialAutoSuggestion.length; suggestIndex++){
 
-                    // Potential Suggestion is safe from XSS attacks as all tasks were previously filtered / escaped
+                        // Iterate through the auto suggestions so we can add them all to the datalist
 
-                    // Set the auto suggested task value
-                    autoSuggestion.setAttribute("value", potentialAutoSuggestion); 
+                        // Create the auto suggest option which will get injected inside of the datalist
+                        var autoSuggestion = document.createElement("OPTION");
 
-                    // Inject the autosuggestion inside of the datalist
-                    document.getElementById("autoSuggest").appendChild(autoSuggestion);
+                        // Potential Suggestion(s) are safe from XSS attacks as all tasks were previously filtered / escaped
+
+                        // Set the auto suggested task value
+                        autoSuggestion.setAttribute("value", potentialAutoSuggestion[suggestIndex]); 
+
+                        // Inject the autosuggestion inside of the datalist
+                        document.getElementById("autoSuggest").appendChild(autoSuggestion);
+
+                    }
 
                 }
 
@@ -1315,7 +1327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
-        draftDateStartFilter = document.getElementById("dateStartFilter").value;
+        draftDateStartFilter = document.getElementById("dateStartFilter").value; // Temporary storage of the new date filter
 
     });
 
@@ -1325,7 +1337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
-        draftDateEndFilter = document.getElementById("dateEndFilter").value;
+        draftDateEndFilter = document.getElementById("dateEndFilter").value; // Temporary storage of the new date filter
 
     });
 
@@ -1762,8 +1774,8 @@ function returnUserTasks(){
 // it returns the result to the caller, so that autosuggestion is recommended in the form
 function autocompleteSuggest(queryInput, listOfTaskNames){
 
-    var matchedData = "";
-    var matchCounter = 0;
+    var matchedData = []; // To store all matches
+    var matchCounter = 0; // To check if there was at least one match
 
     if (listOfTaskNames == "Failure"){
 
@@ -1778,25 +1790,32 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
             currentTaskName = listOfTaskNames[i]["taskName"];
 
             // Check if the user query is part of the task name
-            if (currentTaskName.toLowerCase().includes(queryInput.toLowerCase())){ 
+            if (currentTaskName.toLowerCase().includes(queryInput.toLowerCase())){
 
-                matchedData = currentTaskName; // Mark the matching query
+                if (!matchedData.includes(currentTaskName.toLowerCase())){
 
-                matchCounter++; // Iterate the number of matches found
+                    // There isn't already an entry with that exact name being auto suggested
+                    // [Task names are not unique]
+
+                    matchedData.push(currentTaskName.toLowerCase()); // Put the matching query inside the array container
+
+                    matchCounter++; // Iterate the number of matches found
+
+                }
 
             }
 
         }
 
-        if (matchCounter == 1){
+        if (matchCounter > 0){
 
-            // There is only one match - can return it!
+            // There is at least one match - can return them!
 
             return matchedData;
 
         } else {
 
-            return "No-Suggestions" // There are no suggestions because there is more than one match
+            return "No-Suggestions" // There are no suggestions because there are no matches
 
         }
 
