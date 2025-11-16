@@ -1,12 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    
-
     // Global Variables
     var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
     var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
     var currentTaskID = -1; // Will store the database taskID
     var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
+    var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
 
     // Filters will be updated through events
     var statusFilter = "Any Status";
@@ -244,6 +243,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             message.textContent = "Task has been added!";
 
+                            userTasks = returnUserTasks(); // Update autosuggest list since an add operation was passed.
+
                             // Check with the database if the newly added task respects the current filters in place for injection
 
                             fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
@@ -452,6 +453,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 message.textContent = "Sucess! Task name has been modified!";
 
+                                userTasks = returnUserTasks(); // Update autosuggest list since an update operation was passed.
+
                                 // Check with the database if the modified task name respects the current filters in place
 
                                 fetch("../ajax/check-filters.php", { // Send a fetch request where to send the data in for validation
@@ -488,8 +491,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                     if (dataFilter != "Fail"){ // A filter check was applied without issues
 
                                         if (dataFilter == "FormatFail"){
-
-                                            alert("FAILURE FROM HERE");
 
                                             message = document.getElementById("message");
 
@@ -1148,6 +1149,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         message.textContent = "Task has been successfully deleted!";
 
+                        userTasks = returnUserTasks(); // Update autosuggest list since a delete operation was passed.
+
                         // Update to show deleted task without refreshing the page
 
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where deletion will take place
@@ -1259,6 +1262,50 @@ document.addEventListener("DOMContentLoaded", () => {
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftNameFilter = document.getElementById("nameFilter").value;
+
+        var dataListAutoSuggest = document.getElementById("autoSuggest");
+                
+        if (dataListAutoSuggest != null){ // check if there is an existing datalist
+
+            // datalist exists & needs to be deleted for it to be reset for the next autosuggest
+
+            dataListAutoSuggest.remove();
+
+        }
+
+        userTasks.then(data => { // After the promise 'userTasks' has been fullfilled, pass the task list data into 'data'
+
+            potentialAutoSuggestion = autocompleteSuggest(draftNameFilter, data); // See if there is only one match
+
+            if (potentialAutoSuggestion != "No-Suggestions"){
+
+                if (potentialAutoSuggestion != draftNameFilter){ // Prevent showing the autosuggest it's  already the full text
+
+                    // Create the datalist which will store the autosuggestion
+                    var dataListAutoSuggest = document.createElement("DATALIST");
+
+                    // Set the ID of the datalist
+                    dataListAutoSuggest.setAttribute("id", "autoSuggest");
+
+                    // Attach the datalist to the name filter form
+                    document.getElementById("nameFilterForm").appendChild(dataListAutoSuggest);
+
+                    // Create the auto suggest option which will get injected inside of the datalist
+                    var autoSuggestion = document.createElement("OPTION");
+
+                    // Potential Suggestion is safe from XSS attacks as all tasks were previously filtered / escaped
+
+                    // Set the auto suggested task value
+                    autoSuggestion.setAttribute("value", potentialAutoSuggestion); 
+
+                    // Inject the autosuggestion inside of the datalist
+                    document.getElementById("autoSuggest").appendChild(autoSuggestion);
+
+                }
+
+            }
+
+        });
         
     });
 
@@ -1661,4 +1708,98 @@ function isValidInput(input){
 
     return true; // No disallowed characters were spotted - accept the input
 
+}
+
+// A function that returns the user's current task list data without any filters.
+// This can then be passed unto autocompleteSuggest function to avoid fetching the database content for each input
+
+function returnUserTasks(){
+
+    // Return the fetch request which gives a promise to the variable recieving it
+
+    return fetch("../ajax/fetch-tasks.php", { // Send a fetch request to get all the tasks of the user
+
+        "method": "POST", // // Specify that the data will be passed as POST
+
+        "headers": {
+
+            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+        },
+
+        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+            // The actual data being passed [A JSON Object] - In this case, no data needs to be passed
+
+            {
+
+            }
+        )
+    }).then(function(response){ // Catch the response
+
+        return response.text(); // Return the response
+
+    }).then(function(data){ // Fetch the result and pass it into data
+
+        if (data != '"Fail"' && data != '"FormatFail"'){ // Data recieved successfully
+
+            parsedData = JSON.parse(data); // Convert JSON String to Object for handling
+
+            return parsedData; // return the retrieved data
+
+        } else {
+
+            return "Failure"; // Failed to retrieve task data
+
+        }
+
+        // The data passed is being checked with double quotations marks because it was passed as a JSON string
+  
+    })
+}
+
+// A function that uses the user's current task list data to see name matches. If there is only one match,
+// it returns the result to the caller, so that autosuggestion is recommended in the form
+function autocompleteSuggest(queryInput, listOfTaskNames){
+
+    var matchedData = "";
+    var matchCounter = 0;
+
+    if (listOfTaskNames == "Failure"){
+
+        return "No-Suggestions" // There are no suggestions because the list data is invalid
+
+    } else {
+
+        // List data is valid - check how many matches there are available
+
+        for (i = 0; i != listOfTaskNames.length; i++){ // Iterate through the list of task names
+
+            currentTaskName = listOfTaskNames[i]["taskName"];
+
+            // Check if the user query is part of the task name
+            if (currentTaskName.toLowerCase().includes(queryInput.toLowerCase())){ 
+
+                matchedData = currentTaskName; // Mark the matching query
+
+                matchCounter++; // Iterate the number of matches found
+
+            }
+
+        }
+
+        if (matchCounter == 1){
+
+            // There is only one match - can return it!
+
+            return matchedData;
+
+        } else {
+
+            return "No-Suggestions" // There are no suggestions because there is more than one match
+
+        }
+
+    }
+    
 }

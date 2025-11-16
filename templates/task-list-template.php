@@ -30,7 +30,14 @@
             <!-- Name Filter --> 
             <div>
                 <h3>Filter Tasks By Name</h3>
-                <input type="text" id="nameFilter" name="nameFilter"></input>
+
+                <!-- Autocomplete as off so it does not suggest any previously entered tasks" -->
+                <!-- On submit code is to disable submitting the form since this is not a submittable form -->
+                <form id="nameFilterForm" autocomplete="off" onsubmit="return false;"> <!-- Form which will also hold datalist injections -->
+                
+                    <input list="autoSuggest" type="text" id="nameFilter" name="nameFilter"></input>
+                
+                </form>
             </div>
 
             <!-- Date Filter --> 
