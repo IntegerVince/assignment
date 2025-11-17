@@ -178,6 +178,26 @@ a {
     background-color: #f5be25;
 }
 
+#filterContainer{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+#filterContainer > * { /* Children (Filter Menus) */
+    border-style: solid;
+    width:32%;
+}
+
+#nameFilterContainer {
+    height: 65px;
+}
+
+.filterControllers{
+    margin-top: -95px;
+    margin-bottom:75px;
+}
+
 table {
     border-collapse: collapse; /* Remove the unclickable space between tables */
     width: 100%;
@@ -193,4 +213,48 @@ table td {
 
 table th {
     font-size: 1em;
+}
+
+/* Responsive CSS */
+
+/* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
+/* And filter controller has a negative margin applied which fits neatly inside of these boxes but this format breaks down */
+
+@media screen and (min-width: 1641px) {
+    .filterControllers {
+        margin-top: -36px;
+    }
+}
+
+@media screen and (min-width: 1096px) and (max-width: 1640px) {
+    .filterControllers {
+         margin-top:-65px;
+    }
+}
+
+
+@media screen and (max-width: 1095px) {
+    .filterControllers {
+         margin-top:-110px;
+         margin-bottom:85px;
+    }
+}
+
+@media screen and (max-width: 800px) {
+
+    /* Change the layout of the boxes to be under each other instead since they are very compressed */
+    #filterContainer{
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #filterContainer > * {
+        margin-bottom: 15px;
+    }
+
+    .filterControllers {
+         margin-top:15px;
+         margin-bottom:15px;
+    }
 }

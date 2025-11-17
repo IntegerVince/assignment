@@ -3,6 +3,7 @@
     <head>
         <link rel="stylesheet" href="../css/styles.css"> <!-- CSS -->
         <script src="../javascript/task-list.js" type="text/javascript"></script> <!-- Includes Ajax Logic -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
 
     <body>
@@ -15,10 +16,10 @@
         <p id="message"></p> <!-- If error message exists, it will be shown. -->
 
         <!-- Filter Container -->
-        <div>
+        <div id="filterContainer">
 
             <!-- Status Search Filters --> 
-            <div>
+            <div id="statusFilterContainer">
                 <h3>Status Filter</h3>
                 <div class="buttonWrapper">
                     <div class="buttonCenterer">
@@ -28,12 +29,12 @@
                     </div>
                 </div>
                 <p class="currentSelection">Current Selection:</p>
-                <p class="selection">Any Status</p>
+                <p class="selection" id="statusFilterSelection">Any Status</p>
             </div>
 
             <!-- Name Filter --> 
-            <div>
-                <h3>Filter Tasks By Name</h3>
+            <div id="nameFilterContainer">
+                <h3>Name Filter</h3>
 
                 <!-- Autocomplete as off so it does not suggest any previously entered tasks" -->
                 <!-- On submit code is to disable submitting the form since this is not a submittable form -->
@@ -45,22 +46,22 @@
             </div>
 
             <!-- Date Filter --> 
-            <div>
-                <h3>Filter Tasks By Date Range</h3>
+            <div id="dateFilterContainer">
+                <h3>Date Filter</h3>
                 <label for="dateStartFilter">Date From:</label>
                 <input type="date" id="dateStartFilter" name="dateStartFilter"></input>
                 <label for="dateEndFilter">Date To:</label>
                 <input type="date" id="dateEndFilter" name="dateStartFilter"></input>
-            </div>
-
-            <div class="buttonWrapper">
-                <div class="buttonCenterer">
-                    <button class="button" id="applyFilterButton">Apply Filter</button>
-                    <button class="button" id="clearFilterButton">Clear All Filters</button>
-                </div>
-            </div>
+            </div>            
         </div>
 
+        <div class="buttonWrapper">
+            <div class="buttonCenterer filterControllers">
+                <button class="button" id="applyFilterButton">Apply Filter</button>
+                <button class="button" id="clearFilterButton">Clear All Filters</button>
+            </div>
+        </div>
+        
         <!-- Task list table -->
         <h3>Task List</h3>
         <table>
@@ -151,7 +152,7 @@
             <p class="selection" id="selection">[None]</p>
             <form id="submitForm">
                 <input type='hidden' id="taskID" name='taskID' value=""> 
-                <input type="submit" value="Delete Selected Task">
+                <input class="button" type="submit" value="Delete Selected Task">
             </form>
         </template>
 
