@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="../css/task-list.css"> <!-- CSS -->
+        <link rel="stylesheet" href="../css/styles.css"> <!-- CSS -->
         {% if templateType == "Login" %}
             <script src="../javascript/login.js" type="text/javascript"></script> <!-- AJAX Logic -->
         {% elseif templateType == "Signup" %}

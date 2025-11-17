@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="../css/task-list.css"> <!-- CSS -->
+        <link rel="stylesheet" href="../css/styles.css"> <!-- CSS -->
         <script src="../javascript/task-list.js" type="text/javascript"></script> <!-- Includes Ajax Logic -->
     </head>
 
