@@ -1,0 +1,260 @@
+/* Generic Styling For Multiple Pages */
+
+/* Google Fonts - Ubuntu Font */
+
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+.ubuntu-light {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.ubuntu-regular {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.ubuntu-medium {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.ubuntu-bold {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.ubuntu-light-italic {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.ubuntu-regular-italic {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.ubuntu-medium-italic {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.ubuntu-bold-italic {
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* Default Margin/Padding Correction */
+
+*, html, body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Other Element Styling */
+
+h1, h2, h3, label, p {
+    text-align: center;
+    font-family: "Ubuntu", sans-serif;
+}
+
+label, input, div.g-recaptcha, #modificationType {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#modificationType{
+    margin-bottom: 15px;
+    font-family: "Ubuntu", sans-serif;
+}
+
+input {
+    font-family: "Ubuntu", sans-serif;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 30px;
+    padding: 6px;
+    background-color: #d5ebe0;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 1.25em;
+    margin-bottom: 5px;
+}
+
+label, .submitButton{
+    font-size: 1em;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+.button {
+    margin-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+}
+
+.displayBlockCenter{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.buttonWrapper{
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.buttonCenterer{
+    text-align: center;
+}
+
+.buttonCenterer > * { /* Children */
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.selection, #nameFilter {
+    margin-bottom:15px;
+    font-style: italic;
+}
+
+#dateStartFilter {
+    margin-bottom: 5px;
+}
+
+.currentSelection{
+    font-size: 1em;
+}
+
+input {
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+p {
+    font-size: 0.85em;
+}
+
+div.g-recaptcha {
+    width: 300px;
+    margin-bottom: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: #1c4c5c;
+    font-weight: 900;
+}
+
+#errorMessage, #message {
+    margin-bottom: 15px;
+    color: red;
+    font-weight: 900;
+}
+
+.task:hover {
+    background-color: #f5be25;
+}
+
+#filterContainer{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+#filterContainer > * { /* Children (Filter Menus) */
+    border-style: solid;
+    width:32%;
+}
+
+#nameFilterContainer {
+    height: 65px;
+}
+
+.filterControllers{
+    margin-top: -95px;
+    margin-bottom:75px;
+}
+
+table {
+    border-collapse: collapse; /* Remove the unclickable space between tables */
+    width: 100%;
+    table-layout: fixed;
+    font-family: "Ubuntu", sans-serif;
+    margin-bottom: 15px;
+}
+
+table td {
+    text-align: center;
+    font-size: 0.85em;
+}
+
+table th {
+    font-size: 1em;
+}
+
+/* Responsive CSS */
+
+/* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
+/* And filter controller has a negative margin applied which fits neatly inside of these boxes but this format breaks down */
+
+@media screen and (min-width: 1641px) {
+    .filterControllers {
+        margin-top: -36px;
+    }
+}
+
+@media screen and (min-width: 1096px) and (max-width: 1640px) {
+    .filterControllers {
+         margin-top:-65px;
+    }
+}
+
+
+@media screen and (max-width: 1095px) {
+    .filterControllers {
+         margin-top:-110px;
+         margin-bottom:85px;
+    }
+}
+
+@media screen and (max-width: 800px) {
+
+    /* Change the layout of the boxes to be under each other instead since they are very compressed */
+    #filterContainer{
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #filterContainer > * {
+        margin-bottom: 15px;
+    }
+
+    .filterControllers {
+         margin-top:15px;
+         margin-bottom:15px;
+    }
+}

@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             }
 
-            this.style.backgroundColor = "red"; // Set current selection to red
+            this.style.backgroundColor = "#73d41e"; // Set current selection to red
 
             currentTaskName = this.childNodes[1].textContent; // childNodes[0] is the task name row
 
@@ -350,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             }
 
-                                            this.style.backgroundColor = "red"; // Set current selection to red
+                                            this.style.backgroundColor = "#73d41e"; // Set current selection to red
 
                                             currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
@@ -1454,7 +1454,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 }
 
-                                this.style.backgroundColor = "red"; // Set current selection to red
+                                this.style.backgroundColor = "#73d41e"; // Set current selection to red
 
                                 currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
@@ -1648,7 +1648,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         }
 
-                        this.style.backgroundColor = "red"; // Set current selection to red
+                        this.style.backgroundColor = "#73d41e"; // Set current selection to red
 
                         currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
