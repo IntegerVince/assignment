@@ -26,7 +26,7 @@
                 <label for="fpass">Password:</label>
                 <input type="password" id="fpass" name="fpassword_login" required>
                 <div class="g-recaptcha" data-sitekey="6LcfrQ0sAAAAAJUtZM7a_YXltio8kG4CsRWa5RF2"></div> <!-- Google Recaptcha -->
-                <input class="submitButton" type="submit" value="Submit">
+                <input class="button displayBlockCenter" type="submit" value="Submit">
             </form>
 
             <a href="signup.php"><p>No account? Signup</p></a>
@@ -41,7 +41,7 @@
                 <label for="fpass">Password:</label>
                 <input type="password" id="fpass" name="fpassword_signup" required>
                 <div class="g-recaptcha" data-sitekey="6LcfrQ0sAAAAAJUtZM7a_YXltio8kG4CsRWa5RF2"></div> <!-- Google Recaptcha -->
-                <input class="submitButton" type="submit" value="Submit">
+                <input class="button displayBlockCenter" type="submit" value="Submit">
             </form>
 
             <a href="login.php"><p>Already have an account? Login</p></a>

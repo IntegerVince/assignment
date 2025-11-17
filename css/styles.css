@@ -61,15 +61,20 @@
 
 /* Other Element Styling */
 
-h1, h2, label, p {
+h1, h2, h3, label, p {
     text-align: center;
     font-family: "Ubuntu", sans-serif;
 }
 
-label, input, div.g-recaptcha {
+label, input, div.g-recaptcha, #modificationType {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+#modificationType{
+    margin-bottom: 15px;
+    font-family: "Ubuntu", sans-serif;
 }
 
 input {
@@ -88,6 +93,11 @@ h2 {
     margin-bottom: 15px;
 }
 
+h3 {
+    font-size: 1.25em;
+    margin-bottom: 5px;
+}
+
 label, .submitButton{
     font-size: 1em;
 }
@@ -96,12 +106,46 @@ label {
     margin-bottom: 5px;
 }
 
-.submitButton {
+.button {
     margin-bottom: 15px;
     padding-left: 15px;
     padding-right: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
+
+}
+
+.displayBlockCenter{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.buttonWrapper{
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.buttonCenterer{
+    text-align: center;
+}
+
+.buttonCenterer > * { /* Children */
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.selection, #nameFilter {
+    margin-bottom:15px;
+    font-style: italic;
+}
+
+#dateStartFilter {
+    margin-bottom: 5px;
+}
+
+.currentSelection{
+    font-size: 1em;
 }
 
 input {
@@ -124,21 +168,29 @@ a {
     font-weight: 900;
 }
 
-#errorMessage {
+#errorMessage, #message {
     margin-bottom: 15px;
     color: red;
     font-weight: 900;
 }
 
 .task:hover {
-    background-color: yellow;
+    background-color: #f5be25;
 }
 
 table {
     border-collapse: collapse; /* Remove the unclickable space between tables */
     width: 100%;
+    table-layout: fixed;
+    font-family: "Ubuntu", sans-serif;
+    margin-bottom: 15px;
 }
 
 table td {
     text-align: center;
+    font-size: 0.85em;
+}
+
+table th {
+    font-size: 1em;
 }
