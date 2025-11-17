@@ -1285,7 +1285,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // There are suggestions!
 
-                if (potentialAutoSuggestion != draftNameFilter){ // Prevent showing the autosuggest it's  already the full text
+                var listWithoutExactMatches = [];
+
+                for (suggestIndex = 0; suggestIndex != potentialAutoSuggestion.length; suggestIndex++){
+
+                    // Iterate through the auto suggestions and eliminate exact matches from the filter text
+
+                    if (potentialAutoSuggestion[suggestIndex].toLowerCase() != draftNameFilter.toLowerCase()){
+
+                        // Not an exact match, can push this to the list of autosuggestions to use
+                        listWithoutExactMatches.push(potentialAutoSuggestion[suggestIndex]);
+
+                    }
+
+                }
+
+                if (listWithoutExactMatches.length > 0){ // Check if there are any entries left after the exact matches check
 
                     // Create the datalist which will store the autosuggestion(s)
                     var dataListAutoSuggest = document.createElement("DATALIST");
@@ -1296,7 +1311,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Attach the datalist to the name filter form
                     document.getElementById("nameFilterForm").appendChild(dataListAutoSuggest);
 
-                    for (suggestIndex = 0; suggestIndex != potentialAutoSuggestion.length; suggestIndex++){
+                    for (suggestIndex = 0; suggestIndex != listWithoutExactMatches.length; suggestIndex++){
 
                         // Iterate through the auto suggestions so we can add them all to the datalist
 
@@ -1306,7 +1321,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Potential Suggestion(s) are safe from XSS attacks as all tasks were previously filtered / escaped
 
                         // Set the auto suggested task value
-                        autoSuggestion.setAttribute("value", potentialAutoSuggestion[suggestIndex]); 
+                        autoSuggestion.setAttribute("value", listWithoutExactMatches[suggestIndex]); 
 
                         // Inject the autosuggestion inside of the datalist
                         document.getElementById("autoSuggest").appendChild(autoSuggestion);
