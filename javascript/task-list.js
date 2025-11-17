@@ -200,6 +200,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (isValidInput(taskName) && isValidInput(taskDate)){
 
+                    // Reset the values of the input fields prior to fetch call to prevent spamming the button
+                    document.getElementById("ftask").value = "";
+                    document.getElementById("fdate").value = "";
+
                     // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
                     fetch("../ajax/add-task.php", { // Send a fetch request where to send the data in for validation
@@ -374,10 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                         });
                                     }
-
-                                    // Reset the values of the input fields
-                                    document.getElementById("ftask").value = "";
-                                    document.getElementById("fdate").value = "";
                                 }
                             })
                         }
@@ -419,6 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (newTaskName != "" && currentTaskID != -1){ // The provided task name is not blank, we can proceed
 
                     if (isValidInput(newTaskName) && isValidInput(currentTaskID)){
+
+                        // Reset the value of the input field prior to fetch request to prevent submit button spamming
+
+                        document.getElementById("taskDescription").value = "";
 
                         // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
@@ -552,10 +556,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                             }
 
                                         }
-
-                                        // Reset the value of the input field
-
-                                        document.getElementById("taskDescription").value = ""; 
                                     }
                                 })
 
