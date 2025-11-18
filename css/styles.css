@@ -193,15 +193,21 @@ a {
     height: 65px;
 }
 
-.filterControllers{
+.filterControllers {
     margin-top: -95px;
     margin-bottom:75px;
 }
 
-#contentWrapperTaskAdditionalMenu{
+#contentWrapperTaskAdditionalMenu {
     border-style: solid;
     margin-bottom: 15px;
     margin-top: 15px;
+    width: 97%;
+}
+
+#taskAdditionalMenuContainer {
+    display: flex;
+    justify-content: center;
 }
 
 table {
