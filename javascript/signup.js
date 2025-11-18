@@ -72,51 +72,85 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                            fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
+                            if (username.length <= 32){ // Username limit not exceeded
 
-                                "method": "POST", // Specify that the data will be passed as POST
+                                if (password.length <= 32){ // Password limit not exceeded
 
-                                "headers": {
+                                    // All checks made - can procceed
 
-                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                                    fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
 
-                                },
+                                        "method": "POST", // Specify that the data will be passed as POST
 
-                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                        "headers": {
 
-                                    // The actual data being passed [A JSON Object]
+                                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                    {
-                                        "username": username,
-                                        "password": password
-                                    }
-                                )
-                            }).then(function(response){ // Catch the response
+                                        },
 
-                                return response.text(); // Return the response
+                                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                            }).then(function(data){ // Fetch the result and pass it into data
+                                            // The actual data being passed [A JSON Object]
 
-                                if (data == "InvalidUsername" || data == "NoAccounts"){ // Username is unique or no accounts in database, so we can proceed
+                                            {
+                                                "username": username,
+                                                "password": password
+                                            }
+                                        )
+                                    }).then(function(response){ // Catch the response
 
-                                    // The username is unique so we can create an account for the user
+                                        return response.text(); // Return the response
 
-                                    document.getElementById("signupForm").submit(); // Submit the form for login
+                                    }).then(function(data){ // Fetch the result and pass it into data
 
-                                } else if (data == "FormatFail"){
+                                        if (data == "InvalidUsername" || data == "NoAccounts"){ // Username is unique or no accounts in database, so we can proceed
 
-                                    errorMessage = document.getElementById("errorMessage");
+                                            // The username is unique so we can create an account for the user
 
-                                    errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                            document.getElementById("signupForm").submit(); // Submit the form for login
+
+                                        } else if (data == "FormatFail"){
+
+                                            errorMessage = document.getElementById("errorMessage");
+
+                                            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                        }  else if (data == "LengthFailUsername"){
+
+                                            errorMessage = document.getElementById("errorMessage");
+
+                                            errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
+
+                                        }  else if (data == "LengthFailPassword"){
+
+                                            errorMessage = document.getElementById("errorMessage");
+
+                                            errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
+
+                                        } else {
+
+                                            errorMessage = document.getElementById("errorMessage");
+
+                                            errorMessage.textContent = "Error! That username is not unique!";
+                                            
+                                        }
+                                    })
 
                                 } else {
 
                                     errorMessage = document.getElementById("errorMessage");
 
-                                    errorMessage.textContent = "Error! That username is not unique!";
-                                    
+                                    errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
+
                                 }
-                            })
+
+                            } else {
+
+                                errorMessage = document.getElementById("errorMessage");
+
+                                errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
+
+                            }
 
                         } else {
 

@@ -16,17 +16,33 @@ if ($decodedData["username"] != "" && $decodedData["password"] != ""){
 
     if (isValidInput($decodedData["username"])){
 
-        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+        if (strlen($decodedData["username"]) <= 32){ // Username does not exceed character limit
 
-        # Explode is used to seperate status message from user ID
-        # Index 0 = Status
-        # Index 1 = UserID (If Valid)
+            if (strlen($decodedData["password"]) <= 32){
 
-        // No Htmlentities conversion is done here as this is just a fetcher of database content
+                // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-        $accountResult = explode("-", checkDatabaseAccount($decodedData["username"], $decodedData["password"]));
+                # Explode is used to seperate status message from user ID
+                # Index 0 = Status
+                # Index 1 = UserID (If Valid)
 
-        echo $accountResult[0]; // Return the result of the login attempt which will be caught from the fetch request
+                // No Htmlentities conversion is done here as this is just a fetcher of database content
+
+                $accountResult = explode("-", checkDatabaseAccount($decodedData["username"], $decodedData["password"]));
+
+                echo $accountResult[0]; // Return the result of the login attempt which will be caught from the fetch request
+
+            } else {
+
+                echo "LengthFailPassword"; // Password exceeds character limit
+
+            }
+
+        } else {
+            
+            echo "LengthFailUsername"; // Username exceeds character limit
+
+        }
 
     } else {
 
