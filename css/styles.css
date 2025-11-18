@@ -98,11 +98,11 @@ h3 {
     margin-bottom: 5px;
 }
 
-label, .submitButton{
+label, .submitButton, .largeSizedP {
     font-size: 1em;
 }
 
-label {
+label, .largeSizedP, textarea {
     margin-bottom: 5px;
 }
 
@@ -115,7 +115,7 @@ label {
 
 }
 
-.displayBlockCenter{
+.displayBlockCenter, textarea {
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -196,6 +196,12 @@ a {
 .filterControllers{
     margin-top: -95px;
     margin-bottom:75px;
+}
+
+#contentWrapperTaskAdditionalMenu{
+    border-style: solid;
+    margin-bottom: 15px;
+    margin-top: 15px;
 }
 
 table {

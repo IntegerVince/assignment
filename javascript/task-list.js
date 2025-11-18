@@ -1,11 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Global Variables
+var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
+var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
+var currentTaskID = -1; // Will store the database taskID
+var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
+var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
 
-    // Global Variables
-    var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
-    var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
-    var currentTaskID = -1; // Will store the database taskID
-    var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
-    var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
+document.addEventListener("DOMContentLoaded", () => {
 
     // Filters will be updated through events
     var statusFilter = "Any Status";
@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
 
+            spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+
             currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
             // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
@@ -66,64 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     // ==================================================================================
-
-    // Code which handles menu spawning
-
-
-    // Given a menuContainer ID & template ID, places the content of the template into the menuContainer
-    function injectMenuToDiv(menuContainerID, templateID) {
-
-        // Select Menu to Modify
-        const menuContainer = document.querySelector("#" + menuContainerID); // # String concat to keep parameters consistent
-        
-        // Select Template To Inject
-        const templateToBeInjected = document.getElementById(templateID);
-
-        // Inject Template Into Menu
-        menuContainer.innerHTML = templateToBeInjected.innerHTML; // Inner HTML is template spawning // safe from XSS
-
-        // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
-        if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
-
-            if (currentTaskName != ""){ // There is a valid selection right now
-
-                // Fetch the containers and add the current data
-                var modifySelection = document.getElementById("selection");
-                modifySelection.textContent = currentTaskName; 
-
-                var taskIDContainer = document.getElementById("taskID");
-                taskIDContainer.value = currentTaskID;
-
-            }
-
-            if (templateID == "modifyTaskMenuTemplate"){
-
-                // Fetch the modify dropdown menu
-                var modificationType = document.getElementById("modificationType");
-
-                modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
-
-                    modificationMenuChosenValue = this.value;
-                    
-                    if (modificationMenuChosenValue == "taskDescription"){
-                        
-                         injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
-
-                    }  else if  (modificationMenuChosenValue == "dueDate"){
-                        
-                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
-
-                    } else if  (modificationMenuChosenValue == "status"){
-                        
-                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
-                        
-                    }
-                    
-                });
-
-            }
-        }
-    }
 
     // Button Objects
     var addTaskButton = document.getElementById("addTask");
@@ -368,6 +312,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
+                                                spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+                                                
                                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
                                                 // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
@@ -548,6 +494,8 @@ document.addEventListener("DOMContentLoaded", () => {
             
                                                 currentTaskName = newTaskName; // Update the current selection name information
 
+                                                document.getElementById("taskAdditionalMenu-TaskName").textContent = newTaskName; // Update the field here too
+
                                             } else {
 
                                                 // No Longer matches the task name filter criteria - delete the task
@@ -562,6 +510,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 currentIndexSelection = -1;
                                                 currentTaskID = -1;
                                                 currentTaskName = "[None]";
+                                                
+                                                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                                if (textAdditionalMenu != null){
+
+                                                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                                    textAdditionalMenu.remove();
+
+                                                }
                                                 
                                                 // Reset selection preview
                                                 document.getElementById("selection").textContent = "[None]";
@@ -799,6 +757,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                             currentIndexSelection = -1;
                                             currentTaskID = -1;
                                             currentTaskName = "[None]";
+
+                                            var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                            if (textAdditionalMenu != null){
+
+                                                // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                                textAdditionalMenu.remove();
+
+                                            }
                                             
                                             // Reset selection preview
                                             document.getElementById("selection").textContent = "[None]";
@@ -986,6 +954,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentIndexSelection = -1;
                                         currentTaskID = -1;
                                         currentTaskName = "[None]";
+
+                                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                        if (textAdditionalMenu != null){
+
+                                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                            textAdditionalMenu.remove();
+
+                                        }
                                         
                                         // Reset selection preview
                                         document.getElementById("selection").textContent = "[None]";
@@ -1088,6 +1066,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentIndexSelection = -1;
                                         currentTaskID = -1;
                                         currentTaskName = "[None]";
+
+                                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                        if (textAdditionalMenu != null){
+
+                                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                            textAdditionalMenu.remove();
+
+                                        }
                                         
                                         // Reset selection preview
                                         document.getElementById("selection").textContent = "[None]";
@@ -1203,6 +1191,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentIndexSelection = -1;
                         currentTaskID = -1;
                         currentTaskName = "[None]";
+
+                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                        if (textAdditionalMenu != null){
+
+                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                            textAdditionalMenu.remove();
+
+                        }
                         
                         // Reset selection preview
                         document.getElementById("selection").textContent = "[None]";
@@ -1448,6 +1446,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentTaskID = -1;
                         currentTaskName = "[None]";
 
+                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                        if (textAdditionalMenu != null){
+
+                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                            textAdditionalMenu.remove();
+
+                        }
+
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
                         taskTableBody.textContent = ""; // Clear all Previous Entries
@@ -1514,6 +1522,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
 
                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1643,6 +1653,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentTaskID = -1;
                 currentTaskName = "[None]";
 
+                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                if (textAdditionalMenu != null){
+
+                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                    textAdditionalMenu.remove();
+
+                }
+
                 taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
                 taskTableBody.textContent = ""; // Clear all Previous Entries
@@ -1708,6 +1728,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
                         currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                        spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
 
                         currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1825,6 +1847,63 @@ function returnUserTasks(){
     })
 }
 
+// Code which handles menu spawning
+
+// Given a menuContainer ID & template ID, places the content of the template into the menuContainer
+function injectMenuToDiv(menuContainerID, templateID) {
+
+    // Select Menu to Modify
+    const menuContainer = document.querySelector("#" + menuContainerID); // # String concat to keep parameters consistent
+    
+    // Select Template To Inject
+    const templateToBeInjected = document.getElementById(templateID);
+
+    // Inject Template Into Menu
+    menuContainer.innerHTML = templateToBeInjected.innerHTML; // Inner HTML is template spawning // safe from XSS
+
+    // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
+    if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
+
+        if (currentTaskName != ""){ // There is a valid selection right now
+
+            // Fetch the containers and add the current data
+            var modifySelection = document.getElementById("selection");
+            modifySelection.textContent = currentTaskName; 
+
+            var taskIDContainer = document.getElementById("taskID");
+            taskIDContainer.value = currentTaskID;
+
+        }
+
+        if (templateID == "modifyTaskMenuTemplate"){
+
+            // Fetch the modify dropdown menu
+            var modificationType = document.getElementById("modificationType");
+
+            modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
+
+                modificationMenuChosenValue = this.value;
+                
+                if (modificationMenuChosenValue == "taskDescription"){
+                    
+                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
+
+                }  else if  (modificationMenuChosenValue == "dueDate"){
+                    
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
+
+                } else if  (modificationMenuChosenValue == "status"){
+                    
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
+                    
+                }
+                
+            });
+
+        }
+    }
+}
+
 // A function that uses the user's current task list data to see name matches. If there is only one match,
 // it returns the result to the caller, so that autosuggestion is recommended in the form
 function autocompleteSuggest(queryInput, listOfTaskNames){
@@ -1842,17 +1921,17 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
 
         for (i = 0; i != listOfTaskNames.length; i++){ // Iterate through the list of task names
 
-            currentTaskName = listOfTaskNames[i]["taskName"];
+            currentTaskNameAutoSuggest = listOfTaskNames[i]["taskName"];
 
             // Check if the user query is part of the task name
-            if (currentTaskName.toLowerCase().includes(queryInput.toLowerCase())){
+            if (currentTaskNameAutoSuggest.toLowerCase().includes(queryInput.toLowerCase())){
 
-                if (!matchedData.includes(currentTaskName.toLowerCase())){
+                if (!matchedData.includes(currentTaskNameAutoSuggest.toLowerCase())){
 
                     // There isn't already an entry with that exact name being auto suggested
                     // [Task names are not unique]
 
-                    matchedData.push(currentTaskName.toLowerCase()); // Put the matching query inside the array container
+                    matchedData.push(currentTaskNameAutoSuggest.toLowerCase()); // Put the matching query inside the array container
 
                     matchCounter++; // Iterate the number of matches found
 
@@ -1876,4 +1955,12 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
 
     }
     
+}
+
+function spawnTaskAdditionalMenu(taskID){
+
+    // Spawn the template
+    injectMenuToDiv("taskAdditionalMenuContainer", "taskAdditionalMenu");
+    
+    document.getElementById("taskAdditionalMenu-TaskName").textContent = currentTaskName;
 }

@@ -103,6 +103,8 @@
 
         </table>
 
+        <div id="taskAdditionalMenuContainer"></div>
+
          <div class="buttonWrapper">
             <div class="buttonCenterer">
                 <button class="button" id="addTask">Add Task</button>
@@ -113,7 +115,7 @@
 
         <div id="menuContainer"></div>
 
-        <!-- Template content for menuContainer which is controlled with javascript -->
+        <!-- Template contents which are controlled with javascript -->
         
         <template id="addTaskMenuTemplate"> <!-- Add Task Menu-->
             <h3>Add A Task</h3>
@@ -172,6 +174,19 @@
         <template id="modifyTypeContainer-status">
             <input type='hidden' id="taskStatusAction" name='taskStatusAction' value="true">
             <input class="button" type="submit" value="Change Status">
+        </template>
+
+        <template id="taskAdditionalMenu">
+            <div id="contentWrapperTaskAdditionalMenu"> <!-- General Container For Menu -->
+                <h3 id="taskAdditionalMenu-TaskName">Task Name</h3>
+                <div>
+                    <p class="largeSizedP">Additional Information</p>
+                    <textarea id="additionalInformationText"></textarea> <!-- Storage for Additional Information -->
+                </div>
+                <div id="GIFContainer"> <!-- Giphy GIF Container -->
+                    <p class="largeSizedP">GIF Associated With The Image</p>
+                </div>
+            </div>
         </template>
     </body>
 </html>
