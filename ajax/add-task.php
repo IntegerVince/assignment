@@ -18,18 +18,26 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != ""){
 
     if (isValidInput($decodedData["taskName"]) && isValidInput($decodedData["taskDate"])){
 
-        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+        if (strlen($decodedData["taskName"]) <= 44){ // Has not exceeded database length limit
 
-        // Update the actual database
-    
-        // Htmlentities conversion is still done as another failproof method
-        addTaskToUser($_SESSION["username"], $_SESSION["password"],htmlentities($decodedData["taskName"]),htmlentities($decodedData["taskDate"]));
+            // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-        $userTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]); // Get a list of the tasks again
+            // Update the actual database
+        
+            // Htmlentities conversion is still done as another failproof method
+            addTaskToUser($_SESSION["username"], $_SESSION["password"],htmlentities($decodedData["taskName"]),htmlentities($decodedData["taskDate"]));
 
-        $lastTask = end($userTasks); // Get the last of the task list
+            $userTasks = fetchTasks($_SESSION["username"], $_SESSION["password"]); // Get a list of the tasks again
 
-        echo $lastTask["taskID"]; // Return task ID so it can be injected through javascript without refreshing the page
+            $lastTask = end($userTasks); // Get the last of the task list
+
+            echo $lastTask["taskID"]; // Return task ID so it can be injected through javascript without refreshing the page
+
+        } else {
+            
+            echo "LengthFail"; // Return failure on task name length
+
+        }
 
     } else {
 

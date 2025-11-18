@@ -18,15 +18,23 @@ if (checkSessionStatus() == "Valid" and $decodedData["taskName"] != "" and $deco
 
     if (isValidInput($decodedData["taskName"]) && isValidInput($decodedData["taskID"])){
 
-        // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+        if (strlen($decodedData["taskName"]) <= 44){ // Does not exceed database character length limit
 
-        // Update the actual database
+            // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-        // Htmlentities conversion is still done as another failproof method
+            // Update the actual database
 
-        $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], htmlentities($decodedData["taskID"]), htmlentities($decodedData["taskName"]));
-        
-        echo $resultOfModification; // Return the status for processing from javascript file
+            // Htmlentities conversion is still done as another failproof method
+
+            $resultOfModification = modifyTaskDescription($_SESSION['username'], $_SESSION['password'], htmlentities($decodedData["taskID"]), htmlentities($decodedData["taskName"]));
+            
+            echo $resultOfModification; // Return the status for processing from javascript file
+
+        } else {
+
+            echo "LengthFail"; // Return failure on task name length
+
+        }
 
     } else {
 
