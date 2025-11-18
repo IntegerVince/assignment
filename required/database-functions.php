@@ -58,7 +58,7 @@ function checkSessionStatus() {
 # NoAccounts-null - No accounts were found
 function checkDatabaseAccount($accountUsername, $accountPassword){
 
-    require '../required/database-connector.php'; # Shortcut to connect to database
+    require  __DIR__ . '/database-connector.php'; # Shortcut to connect to database
 
     // No SQL Injection Can Take Place Since User Input Is Not Involved
     $getAccountQuery = "SELECT id, username, password FROM account"; # Query to fetch all accounts
