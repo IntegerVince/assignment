@@ -66,7 +66,7 @@ h1, h2, h3, label, p {
     font-family: "Ubuntu", sans-serif;
 }
 
-label, input, div.g-recaptcha, #modificationType, #GIF1_Preview > img, #GIF2_Preview > img, #GIF3_Preview > img{
+label, input, div.g-recaptcha, #modificationType, #GIF1_Preview > img, #GIF2_Preview > img, #GIF3_Preview > img, #taskGIF > img{
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -96,26 +96,29 @@ h2 {
 h3 {
     font-size: 1.25em;
     margin-bottom: 5px;
+    margin-top: 15px;
 }
 
 label, .submitButton, .largeSizedP {
     font-size: 1em;
 }
 
-label, .largeSizedP, textarea, #confirmGIFSelection {
+label, .largeSizedP, #confirmGIFSelection {
     margin-bottom: 5px;
 }
 
 .largeSizedP {
     font-weight: 900;
     font-style: italic;
+    margin-top: 15px;
 }
 
 textarea {
     width: 95%;
-    height: 50px;
+    height: 87px; /* The perfect size without expanding the menu more than necessary */
     font-size: 1em;
     resize: none;
+    margin-bottom: 15px;
 }
 
 .button {
@@ -180,7 +183,7 @@ a {
     font-weight: 900;
 }
 
-#errorMessage, #message, #messageAdditionalMenu{
+#errorMessage, #message {
     margin-bottom: 15px;
     color: red;
     font-weight: 900;
@@ -188,6 +191,9 @@ a {
 
 #messageAdditionalMenu{
     margin-top: 10px;
+    margin-bottom: 10px;
+    color: red;
+    font-weight: 900;
 }
 
 .task:hover {
@@ -206,7 +212,7 @@ a {
 }
 
 #nameFilterContainer {
-    height: 65px;
+    height: 80px;
 }
 
 .filterControllers {
@@ -226,7 +232,7 @@ a {
     justify-content: center;
 }
 
-#GIF3_Preview {
+#GIF3_Preview, #taskGIF {
     margin-bottom: 15px;
 }
 
@@ -249,16 +255,25 @@ table th {
 
 #GIFContainer, #AdditionalInformationArea {
     width: 33%;
-    background-color: pink;
 }
 
 #GIFSelectorContainer {
     width: 34%;
-    background-color: blueviolet;
 }
 
-#ThreeSectionDivider{
+#GIFSelectorContainer, #AdditionalInformationArea, #GIFContainer {
+    margin: 5px;
+    border: solid;
+    background-color: #d5ebe0;
+}
+
+
+#ThreeSectionDivider {
     display: flex;
+}
+
+#statusFilterContainer, #nameFilterContainer, #dateFilterContainer {
+    background-color: #d5ebe0;
 }
 
 /* Responsive CSS */
@@ -277,7 +292,6 @@ table th {
          margin-top:-65px;
     }
 }
-
 
 @media screen and (max-width: 1095px) {
     .filterControllers {
