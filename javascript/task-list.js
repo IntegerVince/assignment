@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 message = document.getElementById("message");
 
-                                message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, \"-\" symbol and spaces";
 
                             } else if (data == "LengthFail"){
 
@@ -1767,7 +1767,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function isValidInput(input){
 
-    var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890-"; // Stores allowed characters - reject other characters to prevent any XSS attacks
+    var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allowed characters - reject other characters to prevent any XSS attacks
     var characterAllowed = false;
 
     for (x = 0; x != input.length; x++){ // Iterate through input characters
@@ -1886,7 +1886,7 @@ function injectMenuToDiv(menuContainerID, templateID) {
                 
                 if (modificationMenuChosenValue == "taskDescription"){
                     
-                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
 
                 }  else if  (modificationMenuChosenValue == "dueDate"){
                     
@@ -1962,5 +1962,193 @@ function spawnTaskAdditionalMenu(taskID){
     // Spawn the template
     injectMenuToDiv("taskAdditionalMenuContainer", "taskAdditionalMenu");
     
+    // Update the task name
     document.getElementById("taskAdditionalMenu-TaskName").textContent = currentTaskName;
+
+    // Listen for the button press to search for a GIF
+    document.getElementById("submitGIFSearch").addEventListener("click", function(){
+
+        // Button has been pressed
+
+        searchField = document.getElementById("GIFSearchField");
+
+        searchFieldText = searchField.value; // Fetch the query to search
+
+        if (searchFieldText != ""){ // Check if the query is empty
+
+            // Query is not empty - can proceed
+
+            if (isValidInput(searchFieldText)){ // Check if the query only contains letters and numbers
+
+                // Input is valid  - can proceed
+
+                if (searchFieldText.length <= 32){
+
+                    // Does not exceed character limit - can proceed
+
+                    // API request parameters
+
+                    key = "M3ovqZCwLMdqIuYAB3LysHRyzeNhbuKx"; // This is a development key - in prod, there isn't a rate limit
+                    query = searchFieldText;
+                    limit = 25;
+                    offset = 0;
+                    rating = "g";
+                    lang = "en";
+                    bundle = "messaging_non_clips";
+
+                    // Construct the API URL with the above parameters
+                    requestURL = "https://api.giphy.com/v1/gifs/search?api_key=" + key + "&q=" + query + "&limit=" + limit + "&offset=" + offset + "&rating=" + rating + "&lang=" + lang + "&bundle=" + bundle;
+
+                    fetch(requestURL)
+                    .then(response => response.json())
+                    .then(giphyData =>  {
+
+                        resultsReturned = giphyData.data.length;
+                        
+                        validGIFs = [];
+
+                        if (resultsReturned > 0){
+
+                            // We have results from GIPHY!
+
+                            for (gifIndex = 0; gifIndex != resultsReturned; gifIndex ++){
+
+                                // Iterate through the results
+
+                                // We will only fetch GIFs with the parameter of a fixed height of 100 px
+
+                                resultWidth = giphyData.data[gifIndex].images.fixed_height_small.width;
+
+                                if (resultWidth == 100){
+
+                                    // Only accept results with a width also equal to 100 to keep images consistent in size
+
+                                    // Add the GIF to the list of valid GIFs
+                                    validGIFs.push(giphyData.data[gifIndex].images.fixed_height_small);
+
+                                }
+
+                            }
+
+                            if (validGIFs.length > 0){ // Recheck if there are any GIFs left after filtering
+
+                                // There are still GIFs left after filtering! Can Proceed
+
+                                for (gifDeletionIndex = 0; gifDeletionIndex != 3; gifDeletionIndex++){
+                                    
+                                    // Iterate through the exiting DIVs and eliminate any content
+
+                                    divIDName = "GIF" + (gifDeletionIndex+1) + "_Preview";
+
+                                    document.getElementById(divIDName).innerHTML = ""; // Clear the DIV
+
+                                }
+
+                                if (validGIFs.length >= 3){
+
+                                    // At least 3 GIFs (Max Displayed) Are Available
+
+                                    for (gifInjectionIndex = 0; gifInjectionIndex != 3; gifInjectionIndex++){
+
+                                        // Iterate code 3 times to inject all 3 GIFs
+
+                                        // Select the DIV to inject the GIF into
+
+                                        divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
+
+                                        // Select the Div To Inject The GIF Into
+                                        divToInject = document.getElementById(divIDName);
+
+                                        // Create the image element (gif container)
+                                        imageToInject = document.createElement("img");
+
+                                        // Set the source to be the valid GIFY url which we filtered through
+                                        imageToInject.src = validGIFs[gifInjectionIndex].url;
+
+                                        divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                    }
+
+                                } else {
+
+                                    // One Or Two GIFs are Available
+
+                                     for (gifInjectionIndex = 0; gifInjectionIndex != validGIFs.length; gifInjectionIndex++){
+
+                                        // Iterate code 3 times to inject all 3 GIFs
+
+                                        // Select the DIV to inject the GIF into
+
+                                        divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
+
+                                        // Select the Div To Inject The GIF Into
+                                        divToInject = document.getElementById(divIDName);
+
+                                        // Create the image element (gif container)
+                                        imageToInject = document.createElement("img");
+
+                                        // Set the source to be the valid GIFY url which we filtered through
+                                        imageToInject.src = validGIFs[gifInjectionIndex].url;
+
+                                        divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                    }
+
+                                }
+
+                                // GIFs were Injected - Now Inject The Rest Of The Menu
+
+                                injectMenuToDiv("gifSubmissionContainer", "gifSubmissionContainerTemplate")
+
+                            } else {
+
+                                // No GIFs remain after filtering
+
+                                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
+
+                            }
+
+                        } else {
+
+                            // No GIFs Available
+
+                            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                            messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
+                        }
+                    })
+
+                } else {
+
+                    // Exceeds Character Limit
+
+                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                    messageAdditionalMenu.textContent = "Error! Character limit exceeded! Make sure it doesn't exceed 32 characters!";
+
+                }
+
+            } else {
+
+                // Invalid characters - reject
+
+                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                messageAdditionalMenu.textContent = "Error! Invalid characters! Only include letters, numbers, \"-\" symbol and spaces!";
+
+            }
+
+        } else {
+
+            // Query is empty - reject
+
+            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+            messageAdditionalMenu.textContent = "Error! GIF Search Query is empty!" + searchFieldText;
+
+        }
+
+    });
 }

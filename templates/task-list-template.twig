@@ -179,14 +179,41 @@
         <template id="taskAdditionalMenu">
             <div id="contentWrapperTaskAdditionalMenu"> <!-- General Container For Menu -->
                 <h3 id="taskAdditionalMenu-TaskName">Task Name</h3>
-                <div>
-                    <p class="largeSizedP">Additional Information</p>
-                    <textarea id="additionalInformationText"></textarea> <!-- Storage for Additional Information -->
-                </div>
-                <div id="GIFContainer"> <!-- Giphy GIF Container -->
-                    <p class="largeSizedP">GIF Associated With The Image</p>
+                <p id="messageAdditionalMenu"></p> <!-- If error message exists, it will be shown. -->
+                <div id="ThreeSectionDivider">
+                    <div id="AdditionalInformationArea">
+                        <p class="largeSizedP">Additional Information</p>
+                        <textarea id="additionalInformationText"></textarea> <!-- Storage for Additional Information -->
+                    </div>
+
+                    <div id="GIFSelectorContainer">
+                        <p class="largeSizedP">Set A GIF</p>
+                        <label for="GIFSearchField">Search GIF Name:</label>
+                        <input type="text" id="GIFSearchField" name="GIFSearchField"></input>
+                        <button class="button displayBlockCenter" id="submitGIFSearch">Search GIF</button>
+
+                        <!-- Storage for the GIF Previews -->
+                        <div> 
+                            <div id="GIF1_Preview"></div>
+                            <div id="GIF2_Preview"></div>
+                            <div id="GIF3_Preview"></div>
+                        </div>
+
+                        <!-- Will store GIF submission controls when GIFs are loaded -->
+                        <div id="gifSubmissionContainer"></div>
+
+                    </div>
+
+                    <div id="GIFContainer"> <!-- Giphy GIF Container -->
+                        <p class="largeSizedP">GIF Associated With The Image</p>
+                    </div>
                 </div>
             </div>
+        </template>
+
+        <template id="gifSubmissionContainerTemplate">
+            <p id="confirmGIFSelection">Press a GIF to select and then submit</p>
+            <button class="button displayBlockCenter" id="ConfirmGIF">Confirm Selection</button>
         </template>
     </body>
 </html>

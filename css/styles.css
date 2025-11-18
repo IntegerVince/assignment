@@ -66,7 +66,7 @@ h1, h2, h3, label, p {
     font-family: "Ubuntu", sans-serif;
 }
 
-label, input, div.g-recaptcha, #modificationType {
+label, input, div.g-recaptcha, #modificationType, #GIF1_Preview > img, #GIF2_Preview > img, #GIF3_Preview > img{
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -102,8 +102,20 @@ label, .submitButton, .largeSizedP {
     font-size: 1em;
 }
 
-label, .largeSizedP, textarea {
+label, .largeSizedP, textarea, #confirmGIFSelection {
     margin-bottom: 5px;
+}
+
+.largeSizedP {
+    font-weight: 900;
+    font-style: italic;
+}
+
+textarea {
+    width: 95%;
+    height: 50px;
+    font-size: 1em;
+    resize: none;
 }
 
 .button {
@@ -140,7 +152,7 @@ label, .largeSizedP, textarea {
     font-style: italic;
 }
 
-#dateStartFilter {
+#dateStartFilter, #GIF1_Preview, #GIF2_Preview {
     margin-bottom: 5px;
 }
 
@@ -168,10 +180,14 @@ a {
     font-weight: 900;
 }
 
-#errorMessage, #message {
+#errorMessage, #message, #messageAdditionalMenu{
     margin-bottom: 15px;
     color: red;
     font-weight: 900;
+}
+
+#messageAdditionalMenu{
+    margin-top: 10px;
 }
 
 .task:hover {
@@ -210,6 +226,10 @@ a {
     justify-content: center;
 }
 
+#GIF3_Preview {
+    margin-bottom: 15px;
+}
+
 table {
     border-collapse: collapse; /* Remove the unclickable space between tables */
     width: 100%;
@@ -225,6 +245,20 @@ table td {
 
 table th {
     font-size: 1em;
+}
+
+#GIFContainer, #AdditionalInformationArea {
+    width: 33%;
+    background-color: pink;
+}
+
+#GIFSelectorContainer {
+    width: 34%;
+    background-color: blueviolet;
+}
+
+#ThreeSectionDivider{
+    display: flex;
 }
 
 /* Responsive CSS */
