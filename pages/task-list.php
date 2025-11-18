@@ -12,7 +12,7 @@ if (checkSessionStatus() == "Valid") {
 
     # We have valid account data stored in sessions - render in the logged in template
 
-    echo $twig->render("task-list-template.php", array(
+    echo $twig->render("task-list-template.twig", array(
 
         "websiteName" => $websiteName,
         "username" => $_SESSION["username"],
@@ -54,7 +54,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         # Perform Render of task-list as logged in user
 
-        echo $twig->render("task-list-template.php", array(
+        echo $twig->render("task-list-template.twig", array(
 
             "websiteName" => $websiteName,
             "username" => $_POST["fusername_login"],
@@ -94,7 +94,7 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         # Perform Render of task-list as logged in user
 
-        echo $twig->render("task-list-template.php", array(
+        echo $twig->render("task-list-template.twig", array(
 
             "websiteName" => $websiteName,
             "username" => $_POST["fusername_signup"],

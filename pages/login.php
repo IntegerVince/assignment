@@ -25,7 +25,7 @@ if (checkSessionStatus() == "Valid") {
 # At this stage, it means that there were no username and password sessions stored
 
 # Render in the login page
-echo $twig->render("signup-login-template.php", array(
+echo $twig->render("signup-login-template.twig", array(
 
     "websiteName" => $websiteName,
     "templateType" => "Login"
