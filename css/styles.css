@@ -227,6 +227,10 @@ a {
     width: 97%;
 }
 
+#taskAdditionalMenu-TaskName{
+    word-wrap: break-word;
+}
+
 #taskAdditionalMenuContainer {
     display: flex;
     justify-content: center;
@@ -247,6 +251,7 @@ table {
 table td {
     text-align: center;
     font-size: 0.85em;
+    word-wrap: break-word;
 }
 
 table th {
@@ -276,6 +281,10 @@ table th {
     background-color: #d5ebe0;
 }
 
+#nameFilter, #GIFSearchField {
+    width: 80%;
+}
+
 /* Responsive CSS */
 
 /* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
@@ -303,7 +312,7 @@ table th {
 @media screen and (max-width: 800px) {
 
     /* Change the layout of the boxes to be under each other instead since they are very compressed */
-    #filterContainer{
+    #filterContainer, #ThreeSectionDivider {
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -311,6 +320,11 @@ table th {
 
     #filterContainer > * {
         margin-bottom: 15px;
+        width: 94%;
+    }
+
+    #ThreeSectionDivider > *, #GIFSelectorContainer {
+        width: 94%;
     }
 
     .filterControllers {
