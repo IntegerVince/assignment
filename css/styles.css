@@ -281,6 +281,10 @@ table th {
     background-color: #d5ebe0;
 }
 
+#nameFilter, #GIFSearchField {
+    width: 80%;
+}
+
 /* Responsive CSS */
 
 /* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
@@ -328,8 +332,3 @@ table th {
          margin-bottom:15px;
     }
 }
-
-#nameFilter, #GIFSearchField {
-    width: 80%;
-}
-
