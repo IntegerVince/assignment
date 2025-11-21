@@ -981,4 +981,90 @@ function fetchTaskGIF($accountUsername, $accountPassword, $taskIndex){
     }
 
 }
+
+// Function to set the task's additional text
+
+function setTaskAdditionalText($accountUsername, $accountPassword, $taskIndex, $additionalText){
+    
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        $foundMatch = false;
+
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
+
+                $foundMatch = true; // The taskID in the function is of the authenticed user
+
+            }
+        }
+
+        if ($foundMatch){ // Task to be modified is of the authenticated user
+
+            require '../required/database-connector.php'; # Shortcut to connect to database
+
+            # Query to update the task deadline
+
+            $updateStatement = $connection->prepare("UPDATE task SET additionalText = ? WHERE taskID = ?");
+
+            $updateStatement->bind_param("si", $taskInfoStatement, $taskIndexStatement); // Specify the statement parameters
+
+            // Specify the parameter values for the prepared statement
+            $taskInfoStatement = $additionalText;
+            $taskIndexStatement = $taskIndex;
+
+            $updateStatement->execute(); // Execute the prepared statement
+
+            $updateStatement->close(); // Close the statement
+
+            return "Success";
+
+        } else {
+
+            return "Mismatch"; // the TaskID does not correspond to the user
+
+        }
+
+    } else {
+
+        return "AuthFailure";
+
+    }
+}
+
+# Function to modify a task linked to a user by taskID's name
+function fetchTaskAdditionalText($accountUsername, $accountPassword, $taskIndex){
+
+    # Query to fetch task's current status
+    
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
+
+                // Success - matched task with the user
+
+                if ($task["additionalText"] == ""){
+
+                    return "NotSet";
+
+                } else {
+
+                    return $task["additionalText"];
+
+                }
+
+            }
+        }
+
+    } else {
+
+        return "AuthFailure"; // The user was not authenticated
+
+    }
+
+}
 ?>

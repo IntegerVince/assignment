@@ -5,6 +5,7 @@ var currentTaskID = -1; // Will store the database taskID
 var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
 var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
 var currentGIFSelectionID = ""; // Will store the current GIF selected when assigning a GIF to a task
+var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allowed characters - reject other characters to prevent any XSS attacks
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
 
-            spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+            spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
 
             currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -313,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
-                                                spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+                                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
                                                 
                                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1524,7 +1525,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
-                                spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
 
                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1730,7 +1731,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
-                        spawnTaskAdditionalMenu(currentTaskID); // Spawn the additional information / GIF menu
+                        spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
 
                         currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1768,7 +1769,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function isValidInput(input){
 
-    var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allowed characters - reject other characters to prevent any XSS attacks
     var characterAllowed = false;
 
     for (x = 0; x != input.length; x++){ // Iterate through input characters
@@ -2014,8 +2014,43 @@ function spawnTaskAdditionalMenu(){
             // Actual GIF Injection
             GIFContainer.appendChild(imageTagToInjectForTask);
 
-        } else {
-            console.log(giphyGifURLData);
+        }
+    })
+
+    // Send a fetch request to the database to check if there is already additionla information text set & update if so
+
+    fetch("../ajax/fetch-additional-text.php", {
+
+        "method": "POST", // Specify that the data will be passed as POST
+
+        "headers": {
+
+            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+        },
+
+        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+            // The actual data being passed [A JSON Object]
+
+            {
+                "taskID": currentTaskID,
+            }
+        )
+    }).then(function(response){ // Catch the response
+
+        return response.text(); // Return the response
+
+    }).then(function(additionalTextData){ // Fetch the result and pass it into data
+
+        if (additionalTextData != "NotSet" && additionalTextData != "AuthFailure" && additionalTextData != "FormatFail" && additionalTextData != "Fail"){
+
+            // If the above error codes were not the case, it means that additional text exists in the database
+
+            // Set the additional text
+
+            document.getElementById("additionalInformationText").value = additionalTextData;
+            
         }
     })
 
@@ -2182,7 +2217,6 @@ function spawnTaskAdditionalMenu(){
                                         imageToInject.addEventListener("click", function() {
 
                                             currentGIFSelectionID = this.id; // Set the current selection
-                                            console.log(currentGIFSelectionID);
 
                                             // Reset any border selections
 
@@ -2356,6 +2390,92 @@ function spawnTaskAdditionalMenu(){
             messageAdditionalMenu.textContent = "Error! GIF Search Query is empty!" + searchFieldText;
 
         }
+
+    });
+
+    // Attach an event listener to the textarea for user input
+    document.getElementById("additionalInformationText").addEventListener("input", function (){
+
+        // Current Text
+        textAreaText = document.getElementById("additionalInformationText").value;
+
+        truncatedtextAreaText = textAreaText.substring(0, 176); // Truncate up to database limit (176 characters)
+
+        newTextToSet = ""; // Will be constructed according to allowed characters
+
+        for (characterIndex = 0; characterIndex != truncatedtextAreaText.length; characterIndex++){
+
+            // Iterate through each character in the textArea's Text
+
+            for (validCharacterIndex = 0; validCharacterIndex != allowedCharacters.length; validCharacterIndex++){
+
+                // Iterate through each allowed character
+
+                if (allowedCharacters[validCharacterIndex].toLowerCase() == truncatedtextAreaText[characterIndex].toLowerCase()){
+
+                    // The current character in the iteration was matched with an allowed character
+
+                    newTextToSet += truncatedtextAreaText[characterIndex] // Allow this character
+
+                }
+
+            }
+
+        }
+
+        // Set the value of the textarea to be the filtered text
+        document.getElementById("additionalInformationText").value = newTextToSet
+        
+    });
+
+    // Attach an event listener to the textarea when they finish typing to it and the text is different
+
+    document.getElementById("additionalInformationText").addEventListener("change", function (){
+
+        // Update the database now that the user finished typing
+
+        // Send an ajax request to update the database & see the result
+
+        fetch("../ajax/set-additional-text.php", { // Send a fetch request where to send the data in for modification
+
+            "method": "POST", // Specify that the data will be passed as POST
+
+            "headers": {
+
+                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+            },
+
+            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                // The actual data being passed [A JSON Object]
+
+                {
+                    "taskID": currentTaskID,
+                    "textAreaInput": document.getElementById("additionalInformationText").value
+                }
+            )
+        }).then(function(response){ // Catch the response
+
+            return response.text(); // Return the response
+
+        }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+
+            if (giphyFetchData != "Success"){
+
+                message = document.getElementById("message");
+
+                message.textContent = "An unexpected error has occured! 'Additional Information' not saved to database";
+
+            } else if (giphyFetchData == "Success"){
+
+                // Inform The User That The GIF Was Set
+
+                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                messageAdditionalMenu.textContent = "'Additional Information' has been updated!";
+            }
+        })
 
     });
 }
