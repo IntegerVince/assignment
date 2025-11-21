@@ -2050,9 +2050,11 @@ function spawnTaskAdditionalMenu(){
             // Set the additional text
 
             document.getElementById("additionalInformationText").value = additionalTextData;
-            
+
         }
     })
+
+    var lastSearch = ""; // Will store the last GIPHY search to prevent calling the API again if the query is the same
 
     // Listen for the button press to search for a GIF
     document.getElementById("submitGIFSearch").addEventListener("click", function(){
@@ -2075,291 +2077,295 @@ function spawnTaskAdditionalMenu(){
 
                     // Does not exceed character limit - can proceed
 
-                    // API request parameters
+                    if (lastSearch != searchFieldText) // Different query - can proceed
 
-                    key = "M3ovqZCwLMdqIuYAB3LysHRyzeNhbuKx"; // This is a development key - in prod, there isn't a rate limit
-                    query = searchFieldText;
-                    limit = 25;
-                    offset = 0;
-                    rating = "g";
-                    lang = "en";
-                    bundle = "messaging_non_clips";
-
-                    // Construct the API URL with the above parameters
-                    requestURL = "https://api.giphy.com/v1/gifs/search?api_key=" + key + "&q=" + query + "&limit=" + limit + "&offset=" + offset + "&rating=" + rating + "&lang=" + lang + "&bundle=" + bundle;
-
-                    fetch(requestURL)
-                    .then(response => response.json())
-                    .then(giphyData =>  {
-
-                        resultsReturned = giphyData.data.length;
+                        lastSearch = searchFieldText; // Update the last query
                         
-                        validGIFs = [];
+                        // API request parameters
 
-                        if (resultsReturned > 0){
+                        key = "M3ovqZCwLMdqIuYAB3LysHRyzeNhbuKx"; // This is a development key - in prod, there isn't a rate limit
+                        query = searchFieldText;
+                        limit = 25;
+                        offset = 0;
+                        rating = "g";
+                        lang = "en";
+                        bundle = "messaging_non_clips";
 
-                            // We have results from GIPHY!
+                        // Construct the API URL with the above parameters
+                        requestURL = "https://api.giphy.com/v1/gifs/search?api_key=" + key + "&q=" + query + "&limit=" + limit + "&offset=" + offset + "&rating=" + rating + "&lang=" + lang + "&bundle=" + bundle;
 
-                            for (gifIndex = 0; gifIndex != resultsReturned; gifIndex ++){
+                        fetch(requestURL)
+                        .then(response => response.json())
+                        .then(giphyData =>  {
 
-                                // Iterate through the results
+                            resultsReturned = giphyData.data.length;
+                            
+                            validGIFs = [];
 
-                                // We will only fetch GIFs with the parameter of a fixed height of 100 px
+                            if (resultsReturned > 0){
 
-                                resultWidth = giphyData.data[gifIndex].images.fixed_height_small.width;
+                                // We have results from GIPHY!
 
-                                if (resultWidth == 100){
+                                for (gifIndex = 0; gifIndex != resultsReturned; gifIndex ++){
 
-                                    // Only accept results with a width also equal to 100 to keep images consistent in size
+                                    // Iterate through the results
 
-                                    // Add the GIF to the list of valid GIFs
-                                    validGIFs.push(giphyData.data[gifIndex].images.fixed_height_small);
+                                    // We will only fetch GIFs with the parameter of a fixed height of 100 px
 
-                                }
+                                    resultWidth = giphyData.data[gifIndex].images.fixed_height_small.width;
 
-                            }
+                                    if (resultWidth == 100){
 
-                            if (validGIFs.length > 0){ // Recheck if there are any GIFs left after filtering
+                                        // Only accept results with a width also equal to 100 to keep images consistent in size
 
-                                // There are still GIFs left after filtering! Can Proceed
-
-                                currentGIFSelectionID = ""; // Reset Selection
-
-                                for (gifDeletionIndex = 0; gifDeletionIndex != 3; gifDeletionIndex++){
-                                    
-                                    // Iterate through the existing DIVs and eliminate any content
-
-                                    divIDName = "GIF" + (gifDeletionIndex+1) + "_Preview";
-
-                                    document.getElementById(divIDName).innerHTML = ""; // Clear the DIV
-
-                                }
-
-                                if (validGIFs.length >= 3){
-
-                                    // At least 3 GIFs (Max Displayed) Are Available
-
-                                    for (gifInjectionIndex = 0; gifInjectionIndex != 3; gifInjectionIndex++){
-
-                                        // Iterate code 3 times to inject all 3 GIFs
-
-                                        // Select the DIV to inject the GIF into
-
-                                        divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
-
-                                        // Select the Div To Inject The GIF Into
-                                        divToInject = document.getElementById(divIDName);
-
-                                        // Create the image element (GIF container)
-                                        imageToInject = document.createElement("img");
-
-                                        // Set the source to be the valid GIFY url which we filtered through
-                                        imageToInject.src = validGIFs[gifInjectionIndex].url;
-
-                                        imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
-
-                                        divToInject.appendChild(imageToInject); // Actual GIF Injection
-
-                                        // Attach an event listener to the GIF to know what the current selection is
-                                        imageToInject.addEventListener("click", function() {
-
-                                            currentGIFSelectionID = this.id; // Set the current selection
-
-                                            // Reset any border selections
-
-                                            GIF1 = document.getElementById("GIF1");
-                                            GIF2 = document.getElementById("GIF2");
-                                            GIF3 = document.getElementById("GIF3");
-
-                                            if (GIF1 != null){
-                                                // GIF1 Exists - Clear Border
-                                                GIF1.style.border = "none";
-                                            }
-                                            if (GIF2 != null){
-                                                // GIF2 Exists - Clear Border
-                                                GIF2.style.border = "none";
-                                            }
-                                            if (GIF3 != null){
-                                                // GIF3 Exists - Clear Border
-                                                GIF3.style.border = "none";
-                                            }
-
-                                            // Set the current selection's border
-
-                                            this.style.border = "solid";
-
-                                        });
-
-                                    }
-
-                                } else {
-
-                                    // One Or Two GIFs are Available
-
-                                     for (gifInjectionIndex = 0; gifInjectionIndex != validGIFs.length; gifInjectionIndex++){
-
-                                        // Iterate code 3 times to inject all 3 GIFs
-
-                                        // Select the Div To Inject The GIF Into
-                                        divToInject = document.getElementById("GIF" + (gifInjectionIndex+1) + "_Preview");
-
-                                        // Create the image element (GIF container)
-                                        imageToInject = document.createElement("img");
-
-                                        // Set the source to be the valid GIFY url which we filtered through
-                                        imageToInject.src = validGIFs[gifInjectionIndex].url;
-
-                                        imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
-
-                                        divToInject.appendChild(imageToInject); // Actual GIF Injection
-
-                                        // Attach an event listener to the GIF to know what the current selection is
-                                        imageToInject.addEventListener("click", function() {
-
-                                            currentGIFSelectionID = this.id; // Set the current selection
-
-                                            // Reset any border selections
-
-                                            GIF1 = document.getElementById("GIF1");
-                                            GIF2 = document.getElementById("GIF2");
-                                            GIF3 = document.getElementById("GIF3");
-
-                                            if (GIF1 != null){
-                                                // GIF1 Exists - Clear Border
-                                                GIF1.style.border = "none";
-                                            }
-                                            if (GIF2 != null){
-                                                // GIF2 Exists - Clear Border
-                                                GIF2.style.border = "none";
-                                            }
-                                            if (GIF3 != null){
-                                                // GIF3 Exists - Clear Border
-                                                GIF3.style.border = "none";
-                                            }
-
-                                            // Set the current selection's border
-
-                                            this.style.border = "solid";
-
-                                        });
+                                        // Add the GIF to the list of valid GIFs
+                                        validGIFs.push(giphyData.data[gifIndex].images.fixed_height_small);
 
                                     }
 
                                 }
 
-                                // GIFs were Injected - Now Inject The Rest Of The Menu
+                                if (validGIFs.length > 0){ // Recheck if there are any GIFs left after filtering
 
-                                injectMenuToDiv("gifSubmissionContainer", "gifSubmissionContainerTemplate");
+                                    // There are still GIFs left after filtering! Can Proceed
 
-                                // Listen to the 'Confirm GIF' button
-                                document.getElementById("ConfirmGIF").addEventListener("click", function(){
+                                    currentGIFSelectionID = ""; // Reset Selection
 
-                                    // Confirm GIF button was pressed
-
-                                    if (currentGIFSelectionID != ""){
+                                    for (gifDeletionIndex = 0; gifDeletionIndex != 3; gifDeletionIndex++){
                                         
-                                        numberOfGIF = currentGIFSelectionID[3]; // Fetch the number of the GIF to spawn
+                                        // Iterate through the existing DIVs and eliminate any content
 
-                                        gifURL = validGIFs[numberOfGIF-1].url; // Fetch the URL of the selected GIF
+                                        divIDName = "GIF" + (gifDeletionIndex+1) + "_Preview";
 
-                                        // Select the Div To Inject The GIF Into
-                                        taskGIFContainer = document.getElementById("taskGIF");
+                                        document.getElementById(divIDName).innerHTML = ""; // Clear the DIV
 
-                                        // Reset Previous Selection
-                                        taskGIFContainer.innerHTML = "";
+                                    }
 
-                                        // Create the image element (GIF container)
-                                        imageToInjectForTask = document.createElement("img");
+                                    if (validGIFs.length >= 3){
 
-                                        // Set the source to be the valid GIFY url which is selected
-                                        imageToInjectForTask.src = gifURL;
+                                        // At least 3 GIFs (Max Displayed) Are Available
 
-                                        taskGIFContainer.appendChild(imageToInjectForTask); // Actual GIF Injection
+                                        for (gifInjectionIndex = 0; gifInjectionIndex != 3; gifInjectionIndex++){
 
-                                        // Clear Out GIF Selection Menu Now That GIF Was Set
-                                        document.getElementById("GIF1_Preview").innerHTML = "";
-                                        document.getElementById("GIF2_Preview").innerHTML = "";
-                                        document.getElementById("GIF3_Preview").innerHTML = "";
-                                        document.getElementById("gifSubmissionContainer").innerHTML = "";
-                                        GIFSearchField.value = "";
+                                            // Iterate code 3 times to inject all 3 GIFs
 
-                                        // Reset Selection
-                                        currentGIFSelectionID = "";
+                                            // Select the DIV to inject the GIF into
 
-                                        // Send an ajax request to update the database & see the result
+                                            divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
 
-                                        fetch("../ajax/set-task-giphy-url.php", { // Send a fetch request where to send the data in for modification
+                                            // Select the Div To Inject The GIF Into
+                                            divToInject = document.getElementById(divIDName);
 
-                                            "method": "POST", // Specify that the data will be passed as POST
+                                            // Create the image element (GIF container)
+                                            imageToInject = document.createElement("img");
 
-                                            "headers": {
+                                            // Set the source to be the valid GIFY url which we filtered through
+                                            imageToInject.src = validGIFs[gifInjectionIndex].url;
 
-                                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                                            imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
 
-                                            },
+                                            divToInject.appendChild(imageToInject); // Actual GIF Injection
 
-                                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                            // Attach an event listener to the GIF to know what the current selection is
+                                            imageToInject.addEventListener("click", function() {
 
-                                                // The actual data being passed [A JSON Object]
+                                                currentGIFSelectionID = this.id; // Set the current selection
 
-                                                {
-                                                    "taskID": currentTaskID,
-                                                    "url": gifURL
+                                                // Reset any border selections
+
+                                                GIF1 = document.getElementById("GIF1");
+                                                GIF2 = document.getElementById("GIF2");
+                                                GIF3 = document.getElementById("GIF3");
+
+                                                if (GIF1 != null){
+                                                    // GIF1 Exists - Clear Border
+                                                    GIF1.style.border = "none";
                                                 }
-                                            )
-                                        }).then(function(response){ // Catch the response
+                                                if (GIF2 != null){
+                                                    // GIF2 Exists - Clear Border
+                                                    GIF2.style.border = "none";
+                                                }
+                                                if (GIF3 != null){
+                                                    // GIF3 Exists - Clear Border
+                                                    GIF3.style.border = "none";
+                                                }
 
-                                            return response.text(); // Return the response
+                                                // Set the current selection's border
 
-                                        }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+                                                this.style.border = "solid";
 
-                                            if (giphyFetchData != "Success"){
+                                            });
 
-                                                message = document.getElementById("message");
-
-                                                message.textContent = "An unexpected error has occured! GIF not saved to database";
-
-                                            } else if (giphyFetchData == "Success"){
-
-                                                // Inform The User That The GIF Was Set
-
-                                                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
-
-                                                messageAdditionalMenu.textContent = "GIF Has Been Set!";
-                                            }
-                                        })
+                                        }
 
                                     } else {
 
-                                        // There is currently no GIF selected
+                                        // One Or Two GIFs are Available
 
-                                        messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+                                        for (gifInjectionIndex = 0; gifInjectionIndex != validGIFs.length; gifInjectionIndex++){
 
-                                        messageAdditionalMenu.textContent = "Error! No GIF Selected!";
+                                            // Iterate code 3 times to inject all 3 GIFs
+
+                                            // Select the Div To Inject The GIF Into
+                                            divToInject = document.getElementById("GIF" + (gifInjectionIndex+1) + "_Preview");
+
+                                            // Create the image element (GIF container)
+                                            imageToInject = document.createElement("img");
+
+                                            // Set the source to be the valid GIFY url which we filtered through
+                                            imageToInject.src = validGIFs[gifInjectionIndex].url;
+
+                                            imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
+
+                                            divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                            // Attach an event listener to the GIF to know what the current selection is
+                                            imageToInject.addEventListener("click", function() {
+
+                                                currentGIFSelectionID = this.id; // Set the current selection
+
+                                                // Reset any border selections
+
+                                                GIF1 = document.getElementById("GIF1");
+                                                GIF2 = document.getElementById("GIF2");
+                                                GIF3 = document.getElementById("GIF3");
+
+                                                if (GIF1 != null){
+                                                    // GIF1 Exists - Clear Border
+                                                    GIF1.style.border = "none";
+                                                }
+                                                if (GIF2 != null){
+                                                    // GIF2 Exists - Clear Border
+                                                    GIF2.style.border = "none";
+                                                }
+                                                if (GIF3 != null){
+                                                    // GIF3 Exists - Clear Border
+                                                    GIF3.style.border = "none";
+                                                }
+
+                                                // Set the current selection's border
+
+                                                this.style.border = "solid";
+
+                                            });
+
+                                        }
 
                                     }
 
-                                });
+                                    // GIFs were Injected - Now Inject The Rest Of The Menu
+
+                                    injectMenuToDiv("gifSubmissionContainer", "gifSubmissionContainerTemplate");
+
+                                    // Listen to the 'Confirm GIF' button
+                                    document.getElementById("ConfirmGIF").addEventListener("click", function(){
+
+                                        // Confirm GIF button was pressed
+
+                                        if (currentGIFSelectionID != ""){
+                                            
+                                            numberOfGIF = currentGIFSelectionID[3]; // Fetch the number of the GIF to spawn
+
+                                            gifURL = validGIFs[numberOfGIF-1].url; // Fetch the URL of the selected GIF
+
+                                            // Select the Div To Inject The GIF Into
+                                            taskGIFContainer = document.getElementById("taskGIF");
+
+                                            // Reset Previous Selection
+                                            taskGIFContainer.innerHTML = "";
+
+                                            // Create the image element (GIF container)
+                                            imageToInjectForTask = document.createElement("img");
+
+                                            // Set the source to be the valid GIFY url which is selected
+                                            imageToInjectForTask.src = gifURL;
+
+                                            taskGIFContainer.appendChild(imageToInjectForTask); // Actual GIF Injection
+
+                                            // Clear Out GIF Selection Menu Now That GIF Was Set
+                                            document.getElementById("GIF1_Preview").innerHTML = "";
+                                            document.getElementById("GIF2_Preview").innerHTML = "";
+                                            document.getElementById("GIF3_Preview").innerHTML = "";
+                                            document.getElementById("gifSubmissionContainer").innerHTML = "";
+                                            GIFSearchField.value = "";
+
+                                            // Reset Selection
+                                            currentGIFSelectionID = "";
+
+                                            // Send an ajax request to update the database & see the result
+
+                                            fetch("../ajax/set-task-giphy-url.php", { // Send a fetch request where to send the data in for modification
+
+                                                "method": "POST", // Specify that the data will be passed as POST
+
+                                                "headers": {
+
+                                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                                },
+
+                                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                                    // The actual data being passed [A JSON Object]
+
+                                                    {
+                                                        "taskID": currentTaskID,
+                                                        "url": gifURL
+                                                    }
+                                                )
+                                            }).then(function(response){ // Catch the response
+
+                                                return response.text(); // Return the response
+
+                                            }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+
+                                                if (giphyFetchData != "Success"){
+
+                                                    message = document.getElementById("message");
+
+                                                    message.textContent = "An unexpected error has occured! GIF not saved to database";
+
+                                                } else if (giphyFetchData == "Success"){
+
+                                                    // Inform The User That The GIF Was Set
+
+                                                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                                    messageAdditionalMenu.textContent = "GIF Has Been Set!";
+                                                }
+                                            })
+
+                                        } else {
+
+                                            // There is currently no GIF selected
+
+                                            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                            messageAdditionalMenu.textContent = "Error! No GIF Selected!";
+
+                                        }
+
+                                    });
+
+                                } else {
+
+                                    // No GIFs remain after filtering
+
+                                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                    messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
+
+                                }
 
                             } else {
 
-                                // No GIFs remain after filtering
+                                // No GIFs Available
 
                                 messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
 
                                 messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
-
                             }
-
-                        } else {
-
-                            // No GIFs Available
-
-                            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
-
-                            messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
-                        }
-                    })
+                        })
 
                 } else {
 
