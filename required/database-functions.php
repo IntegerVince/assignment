@@ -118,7 +118,6 @@ function createNewUser($usernameSignup, $passwordSignup){
 }
 
 # Function to add a task linked to a user
-
 function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate){
 
     # Fetch account status with explode for seperation of status and UserID
@@ -173,7 +172,6 @@ function addTaskToUser($accountUsername, $accountPassword, $taskName, $taskDate)
 }
 
 # Given a username and password, authenticates the user, and returns all tasks relating to that userID.
-
 function fetchTasks($accountUsername, $accountPassword) {
 
     # Fetch account status with explode for seperation of status and UserID
@@ -186,7 +184,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         require '../required/database-connector.php'; # Shortcut to connect to database
 
-        $userTaskListStatement = $connection->prepare("SELECT taskID, userID, task, deadline, pending FROM task WHERE userID = ?");
+        $userTaskListStatement = $connection->prepare("SELECT taskID, userID, task, deadline, pending, additionalText, gifUrl FROM task WHERE userID = ?");
 
         $userTaskListStatement->bind_param("i", $userIDstatement); // Specify the statement parameters
 
@@ -203,7 +201,7 @@ function fetchTasks($accountUsername, $accountPassword) {
 
         while($row = $userTaskListResult->fetch_assoc()) {
 
-            array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"]]);
+            array_push($returnList, ["taskID" => $row["taskID"], "taskName" => $row["task"], "taskDeadline" => $row["deadline"], "pending" => $row["pending"], "additionalText" => $row["additionalText"], "gifUrl" => $row["gifUrl"]]);
             
         }
 
@@ -898,4 +896,89 @@ function isValidInput($input){
 
 }
 
+# Function to add a task linked to a user
+function setTaskGIF($accountUsername, $accountPassword, $taskIndex, $URL){
+
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        $foundMatch = false;
+
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
+
+                $foundMatch = true; // The taskID in the function is of the authenticed user
+
+            }
+        }
+
+        if ($foundMatch){ // Task to be modified is of the authenticated user
+
+            require '../required/database-connector.php'; # Shortcut to connect to database
+
+            # Query to update the task deadline
+
+            $updateStatement = $connection->prepare("UPDATE task SET gifUrl = ? WHERE taskID = ?");
+
+            $updateStatement->bind_param("si", $urlStatement, $taskIndexStatement); // Specify the statement parameters
+
+            // Specify the parameter values for the prepared statement
+            $urlStatement = $URL;
+            $taskIndexStatement = $taskIndex;
+
+            $updateStatement->execute(); // Execute the prepared statement
+
+            $updateStatement->close(); // Close the statement
+
+            return "Success";
+
+        } else {
+
+            return "Mismatch"; // the TaskID does not correspond to the user
+
+        }
+
+    } else {
+
+        return "AuthFailure";
+
+    }
+
+}
+
+# Function to modify a task linked to a user by taskID's name
+function fetchTaskGIF($accountUsername, $accountPassword, $taskIndex){
+
+    # Query to fetch task's current status
+    
+    $result = fetchTasks($accountUsername, $accountPassword);
+
+    if (gettype($result) == "array") { # The returned data is a list of tasks (even if empty), so user was authenticated
+
+        foreach ($result as $task){
+            if ($task["taskID"] == $taskIndex) {
+
+                // Success - matched task with the user
+
+                if ($task["gifUrl"] == ""){
+
+                    return "NotSet";
+
+                } else {
+
+                    return $task["gifUrl"];
+
+                }
+
+            }
+        }
+
+    } else {
+
+        return "AuthFailure"; // The user was not authenticated
+
+    }
+
+}
 ?>

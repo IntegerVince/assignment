@@ -1958,7 +1958,7 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
     
 }
 
-function spawnTaskAdditionalMenu(taskID){
+function spawnTaskAdditionalMenu(){
 
     currentGIFSelectionID = ""; // Reset the current selected GIF since the menu was changed
 
@@ -1967,6 +1967,57 @@ function spawnTaskAdditionalMenu(taskID){
     
     // Update the task name
     document.getElementById("taskAdditionalMenu-TaskName").textContent = currentTaskName;
+
+    // Send a fetch request to the database to check if there is already a GIF set & update the GIF if so
+
+    fetch("../ajax/fetch-task-giphy-url.php", {
+
+        "method": "POST", // Specify that the data will be passed as POST
+
+        "headers": {
+
+            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+        },
+
+        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+            // The actual data being passed [A JSON Object]
+
+            {
+                "taskID": currentTaskID,
+            }
+        )
+    }).then(function(response){ // Catch the response
+
+        return response.text(); // Return the response
+
+    }).then(function(giphyGifURLData){ // Fetch the result and pass it into data
+
+        if (giphyGifURLData != "NotSet" && giphyGifURLData != "AuthFailure" && giphyGifURLData != "FormatFail" && giphyGifURLData != "Fail"){
+
+            // If the above error codes were not the case, it means that a URL exists in the database
+
+            // Set this GIF in the menu:
+
+            // Create the image element (GIF container)
+            imageTagToInjectForTask = document.createElement("img");
+
+            // Set the source to be the valid GIFY url from the database
+            imageTagToInjectForTask.src = giphyGifURLData;
+
+            // Select the Div To Inject The GIF Into
+            GIFContainer = document.getElementById("taskGIF");
+
+            GIFContainer.innerHTML = ""; // Remove the previous HTML (such as the text ["None"]) from the container
+
+            // Actual GIF Injection
+            GIFContainer.appendChild(imageTagToInjectForTask);
+
+        } else {
+            console.log(giphyGifURLData);
+        }
+    })
 
     // Listen for the button press to search for a GIF
     document.getElementById("submitGIFSearch").addEventListener("click", function(){
@@ -2201,11 +2252,48 @@ function spawnTaskAdditionalMenu(taskID){
                                         // Reset Selection
                                         currentGIFSelectionID = "";
 
-                                        // Inform The User That The GIF Was Set
+                                        // Send an ajax request to update the database & see the result
 
-                                        messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+                                        fetch("../ajax/set-task-giphy-url.php", { // Send a fetch request where to send the data in for modification
 
-                                        messageAdditionalMenu.textContent = "GIF Has Been Set!";
+                                            "method": "POST", // Specify that the data will be passed as POST
+
+                                            "headers": {
+
+                                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                            },
+
+                                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                                // The actual data being passed [A JSON Object]
+
+                                                {
+                                                    "taskID": currentTaskID,
+                                                    "url": gifURL
+                                                }
+                                            )
+                                        }).then(function(response){ // Catch the response
+
+                                            return response.text(); // Return the response
+
+                                        }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+
+                                            if (giphyFetchData != "Success"){
+
+                                                message = document.getElementById("message");
+
+                                                message.textContent = "An unexpected error has occured! GIF not saved to database";
+
+                                            } else if (giphyFetchData == "Success"){
+
+                                                // Inform The User That The GIF Was Set
+
+                                                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                                messageAdditionalMenu.textContent = "GIF Has Been Set!";
+                                            }
+                                        })
 
                                     } else {
 
