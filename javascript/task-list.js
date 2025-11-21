@@ -1,11 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Global Variables
+var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
+var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
+var currentTaskID = -1; // Will store the database taskID
+var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
+var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
+var currentGIFSelectionID = ""; // Will store the current GIF selected when assigning a GIF to a task
+var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allowed characters - reject other characters to prevent any XSS attacks
 
-    // Global Variables
-    var currentIndexSelection = -1; // Will store the current taskID of task to be modified if the modify task command is executed
-    var currentTaskName = ""; // Will store the current selected task's name for display in the modify menu
-    var currentTaskID = -1; // Will store the database taskID
-    var modificationMenuChosenValue = "taskDescription"; // Will store the current modification dropdown menu selection (default is task desc)
-    var userTasks = returnUserTasks(); // Stores the current user tasks promise for autocomplete checking. Updates on taskName CRUD operations.
+document.addEventListener("DOMContentLoaded", () => {
 
     // Filters will be updated through events
     var statusFilter = "Any Status";
@@ -46,6 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
 
+            spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
+
             currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
             // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
@@ -66,64 +70,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     // ==================================================================================
-
-    // Code which handles menu spawning
-
-
-    // Given a menuContainer ID & template ID, places the content of the template into the menuContainer
-    function injectMenuToDiv(menuContainerID, templateID) {
-
-        // Select Menu to Modify
-        const menuContainer = document.querySelector("#" + menuContainerID); // # String concat to keep parameters consistent
-        
-        // Select Template To Inject
-        const templateToBeInjected = document.getElementById(templateID);
-
-        // Inject Template Into Menu
-        menuContainer.innerHTML = templateToBeInjected.innerHTML; // Inner HTML is template spawning // safe from XSS
-
-        // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
-        if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
-
-            if (currentTaskName != ""){ // There is a valid selection right now
-
-                // Fetch the containers and add the current data
-                var modifySelection = document.getElementById("selection");
-                modifySelection.textContent = currentTaskName; 
-
-                var taskIDContainer = document.getElementById("taskID");
-                taskIDContainer.value = currentTaskID;
-
-            }
-
-            if (templateID == "modifyTaskMenuTemplate"){
-
-                // Fetch the modify dropdown menu
-                var modificationType = document.getElementById("modificationType");
-
-                modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
-
-                    modificationMenuChosenValue = this.value;
-                    
-                    if (modificationMenuChosenValue == "taskDescription"){
-                        
-                         injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
-
-                    }  else if  (modificationMenuChosenValue == "dueDate"){
-                        
-                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
-
-                    } else if  (modificationMenuChosenValue == "status"){
-                        
-                        injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
-                        
-                    }
-                    
-                });
-
-            }
-        }
-    }
 
     // Button Objects
     var addTaskButton = document.getElementById("addTask");
@@ -243,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 message = document.getElementById("message");
 
-                                message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, \"-\" symbol and spaces";
 
                             } else if (data == "LengthFail"){
 
@@ -368,6 +314,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
+                                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
+                                                
                                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
                                                 // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
@@ -548,6 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
             
                                                 currentTaskName = newTaskName; // Update the current selection name information
 
+                                                document.getElementById("taskAdditionalMenu-TaskName").textContent = newTaskName; // Update the field here too
+
                                             } else {
 
                                                 // No Longer matches the task name filter criteria - delete the task
@@ -562,6 +512,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                                 currentIndexSelection = -1;
                                                 currentTaskID = -1;
                                                 currentTaskName = "[None]";
+                                                
+                                                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                                if (textAdditionalMenu != null){
+
+                                                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                                    textAdditionalMenu.remove();
+
+                                                }
                                                 
                                                 // Reset selection preview
                                                 document.getElementById("selection").textContent = "[None]";
@@ -799,6 +759,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                             currentIndexSelection = -1;
                                             currentTaskID = -1;
                                             currentTaskName = "[None]";
+
+                                            var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                            if (textAdditionalMenu != null){
+
+                                                // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                                textAdditionalMenu.remove();
+
+                                            }
                                             
                                             // Reset selection preview
                                             document.getElementById("selection").textContent = "[None]";
@@ -986,6 +956,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentIndexSelection = -1;
                                         currentTaskID = -1;
                                         currentTaskName = "[None]";
+
+                                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                        if (textAdditionalMenu != null){
+
+                                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                            textAdditionalMenu.remove();
+
+                                        }
                                         
                                         // Reset selection preview
                                         document.getElementById("selection").textContent = "[None]";
@@ -1088,6 +1068,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                         currentIndexSelection = -1;
                                         currentTaskID = -1;
                                         currentTaskName = "[None]";
+
+                                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                        if (textAdditionalMenu != null){
+
+                                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                            textAdditionalMenu.remove();
+
+                                        }
                                         
                                         // Reset selection preview
                                         document.getElementById("selection").textContent = "[None]";
@@ -1203,6 +1193,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentIndexSelection = -1;
                         currentTaskID = -1;
                         currentTaskName = "[None]";
+
+                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                        if (textAdditionalMenu != null){
+
+                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                            textAdditionalMenu.remove();
+
+                        }
                         
                         // Reset selection preview
                         document.getElementById("selection").textContent = "[None]";
@@ -1448,6 +1448,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         currentTaskID = -1;
                         currentTaskName = "[None]";
 
+                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                        if (textAdditionalMenu != null){
+
+                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                            textAdditionalMenu.remove();
+
+                        }
+
                         taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
                         taskTableBody.textContent = ""; // Clear all Previous Entries
@@ -1514,6 +1524,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
 
                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1643,6 +1655,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentTaskID = -1;
                 currentTaskName = "[None]";
 
+                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                if (textAdditionalMenu != null){
+
+                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                    textAdditionalMenu.remove();
+
+                }
+
                 taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
 
                 taskTableBody.textContent = ""; // Clear all Previous Entries
@@ -1709,6 +1731,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
 
+                        spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
+
                         currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
                         // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
@@ -1745,7 +1769,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function isValidInput(input){
 
-    var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890-"; // Stores allowed characters - reject other characters to prevent any XSS attacks
     var characterAllowed = false;
 
     for (x = 0; x != input.length; x++){ // Iterate through input characters
@@ -1825,6 +1848,63 @@ function returnUserTasks(){
     })
 }
 
+// Code which handles menu spawning
+
+// Given a menuContainer ID & template ID, places the content of the template into the menuContainer
+function injectMenuToDiv(menuContainerID, templateID) {
+
+    // Select Menu to Modify
+    const menuContainer = document.querySelector("#" + menuContainerID); // # String concat to keep parameters consistent
+    
+    // Select Template To Inject
+    const templateToBeInjected = document.getElementById(templateID);
+
+    // Inject Template Into Menu
+    menuContainer.innerHTML = templateToBeInjected.innerHTML; // Inner HTML is template spawning // safe from XSS
+
+    // The template to be set is either 'Modify' or 'Delete', which has the 'Selection' container showing current selection
+    if (templateID == "modifyTaskMenuTemplate" || templateID == "deleteTaskMenuTemplate"){
+
+        if (currentTaskName != ""){ // There is a valid selection right now
+
+            // Fetch the containers and add the current data
+            var modifySelection = document.getElementById("selection");
+            modifySelection.textContent = currentTaskName; 
+
+            var taskIDContainer = document.getElementById("taskID");
+            taskIDContainer.value = currentTaskID;
+
+        }
+
+        if (templateID == "modifyTaskMenuTemplate"){
+
+            // Fetch the modify dropdown menu
+            var modificationType = document.getElementById("modificationType");
+
+            modificationType.addEventListener('change', function(){ // Add listener to inject menu depending on dropdown
+
+                modificationMenuChosenValue = this.value;
+                
+                if (modificationMenuChosenValue == "taskDescription"){
+                    
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-taskDescription");
+
+                }  else if  (modificationMenuChosenValue == "dueDate"){
+                    
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-dueDate");
+
+                } else if  (modificationMenuChosenValue == "status"){
+                    
+                    injectMenuToDiv("modifyTypeContainer", "modifyTypeContainer-status");
+                    
+                }
+                
+            });
+
+        }
+    }
+}
+
 // A function that uses the user's current task list data to see name matches. If there is only one match,
 // it returns the result to the caller, so that autosuggestion is recommended in the form
 function autocompleteSuggest(queryInput, listOfTaskNames){
@@ -1842,17 +1922,17 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
 
         for (i = 0; i != listOfTaskNames.length; i++){ // Iterate through the list of task names
 
-            currentTaskName = listOfTaskNames[i]["taskName"];
+            currentTaskNameAutoSuggest = listOfTaskNames[i]["taskName"];
 
             // Check if the user query is part of the task name
-            if (currentTaskName.toLowerCase().includes(queryInput.toLowerCase())){
+            if (currentTaskNameAutoSuggest.toLowerCase().includes(queryInput.toLowerCase())){
 
-                if (!matchedData.includes(currentTaskName.toLowerCase())){
+                if (!matchedData.includes(currentTaskNameAutoSuggest.toLowerCase())){
 
                     // There isn't already an entry with that exact name being auto suggested
                     // [Task names are not unique]
 
-                    matchedData.push(currentTaskName.toLowerCase()); // Put the matching query inside the array container
+                    matchedData.push(currentTaskNameAutoSuggest.toLowerCase()); // Put the matching query inside the array container
 
                     matchCounter++; // Iterate the number of matches found
 
@@ -1876,4 +1956,532 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
 
     }
     
+}
+
+function spawnTaskAdditionalMenu(){
+
+    currentGIFSelectionID = ""; // Reset the current selected GIF since the menu was changed
+
+    // Spawn the template
+    injectMenuToDiv("taskAdditionalMenuContainer", "taskAdditionalMenu");
+    
+    // Update the task name
+    document.getElementById("taskAdditionalMenu-TaskName").textContent = currentTaskName;
+
+    // Send a fetch request to the database to check if there is already a GIF set & update the GIF if so
+
+    fetch("../ajax/fetch-task-giphy-url.php", {
+
+        "method": "POST", // Specify that the data will be passed as POST
+
+        "headers": {
+
+            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+        },
+
+        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+            // The actual data being passed [A JSON Object]
+
+            {
+                "taskID": currentTaskID,
+            }
+        )
+    }).then(function(response){ // Catch the response
+
+        return response.text(); // Return the response
+
+    }).then(function(giphyGifURLData){ // Fetch the result and pass it into data
+
+        if (giphyGifURLData != "NotSet" && giphyGifURLData != "AuthFailure" && giphyGifURLData != "FormatFail" && giphyGifURLData != "Fail"){
+
+            // If the above error codes were not the case, it means that a URL exists in the database
+
+            // Set this GIF in the menu:
+
+            // Create the image element (GIF container)
+            imageTagToInjectForTask = document.createElement("img");
+
+            // Set the source to be the valid GIFY url from the database
+            imageTagToInjectForTask.src = giphyGifURLData;
+
+            // Select the Div To Inject The GIF Into
+            GIFContainer = document.getElementById("taskGIF");
+
+            GIFContainer.innerHTML = ""; // Remove the previous HTML (such as the text ["None"]) from the container
+
+            // Actual GIF Injection
+            GIFContainer.appendChild(imageTagToInjectForTask);
+
+        }
+    })
+
+    // Send a fetch request to the database to check if there is already additionla information text set & update if so
+
+    fetch("../ajax/fetch-additional-text.php", {
+
+        "method": "POST", // Specify that the data will be passed as POST
+
+        "headers": {
+
+            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+        },
+
+        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+            // The actual data being passed [A JSON Object]
+
+            {
+                "taskID": currentTaskID,
+            }
+        )
+    }).then(function(response){ // Catch the response
+
+        return response.text(); // Return the response
+
+    }).then(function(additionalTextData){ // Fetch the result and pass it into data
+
+        if (additionalTextData != "NotSet" && additionalTextData != "AuthFailure" && additionalTextData != "FormatFail" && additionalTextData != "Fail"){
+
+            // If the above error codes were not the case, it means that additional text exists in the database
+
+            // Set the additional text
+
+            document.getElementById("additionalInformationText").value = additionalTextData;
+
+        }
+    })
+
+    var lastSearch = ""; // Will store the last GIPHY search to prevent calling the API again if the query is the same
+
+    // Listen for the button press to search for a GIF
+    document.getElementById("submitGIFSearch").addEventListener("click", function(){
+
+        // Button has been pressed
+
+        searchField = document.getElementById("GIFSearchField");
+
+        searchFieldText = searchField.value; // Fetch the query to search
+
+        if (searchFieldText != ""){ // Check if the query is empty
+
+            // Query is not empty - can proceed
+
+            if (isValidInput(searchFieldText)){ // Check if the query only contains letters and numbers
+
+                // Input is valid  - can proceed
+
+                if (searchFieldText.length <= 32){
+
+                    // Does not exceed character limit - can proceed
+
+                    if (lastSearch != searchFieldText) // Different query - can proceed
+
+                        lastSearch = searchFieldText; // Update the last query
+                        
+                        // API request parameters
+
+                        key = "M3ovqZCwLMdqIuYAB3LysHRyzeNhbuKx"; // This is a development key - in prod, there isn't a rate limit
+                        query = searchFieldText;
+                        limit = 25;
+                        offset = 0;
+                        rating = "g";
+                        lang = "en";
+                        bundle = "messaging_non_clips";
+
+                        // Construct the API URL with the above parameters
+                        requestURL = "https://api.giphy.com/v1/gifs/search?api_key=" + key + "&q=" + query + "&limit=" + limit + "&offset=" + offset + "&rating=" + rating + "&lang=" + lang + "&bundle=" + bundle;
+
+                        fetch(requestURL)
+                        .then(response => response.json())
+                        .then(giphyData =>  {
+
+                            resultsReturned = giphyData.data.length;
+                            
+                            validGIFs = [];
+
+                            if (resultsReturned > 0){
+
+                                // We have results from GIPHY!
+
+                                for (gifIndex = 0; gifIndex != resultsReturned; gifIndex ++){
+
+                                    // Iterate through the results
+
+                                    // We will only fetch GIFs with the parameter of a fixed height of 100 px
+
+                                    resultWidth = giphyData.data[gifIndex].images.fixed_height_small.width;
+
+                                    if (resultWidth == 100){
+
+                                        // Only accept results with a width also equal to 100 to keep images consistent in size
+
+                                        // Add the GIF to the list of valid GIFs
+                                        validGIFs.push(giphyData.data[gifIndex].images.fixed_height_small);
+
+                                    }
+
+                                }
+
+                                if (validGIFs.length > 0){ // Recheck if there are any GIFs left after filtering
+
+                                    // There are still GIFs left after filtering! Can Proceed
+
+                                    currentGIFSelectionID = ""; // Reset Selection
+
+                                    for (gifDeletionIndex = 0; gifDeletionIndex != 3; gifDeletionIndex++){
+                                        
+                                        // Iterate through the existing DIVs and eliminate any content
+
+                                        divIDName = "GIF" + (gifDeletionIndex+1) + "_Preview";
+
+                                        document.getElementById(divIDName).innerHTML = ""; // Clear the DIV
+
+                                    }
+
+                                    if (validGIFs.length >= 3){
+
+                                        // At least 3 GIFs (Max Displayed) Are Available
+
+                                        for (gifInjectionIndex = 0; gifInjectionIndex != 3; gifInjectionIndex++){
+
+                                            // Iterate code 3 times to inject all 3 GIFs
+
+                                            // Select the DIV to inject the GIF into
+
+                                            divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
+
+                                            // Select the Div To Inject The GIF Into
+                                            divToInject = document.getElementById(divIDName);
+
+                                            // Create the image element (GIF container)
+                                            imageToInject = document.createElement("img");
+
+                                            // Set the source to be the valid GIFY url which we filtered through
+                                            imageToInject.src = validGIFs[gifInjectionIndex].url;
+
+                                            imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
+
+                                            divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                            // Attach an event listener to the GIF to know what the current selection is
+                                            imageToInject.addEventListener("click", function() {
+
+                                                currentGIFSelectionID = this.id; // Set the current selection
+
+                                                // Reset any border selections
+
+                                                GIF1 = document.getElementById("GIF1");
+                                                GIF2 = document.getElementById("GIF2");
+                                                GIF3 = document.getElementById("GIF3");
+
+                                                if (GIF1 != null){
+                                                    // GIF1 Exists - Clear Border
+                                                    GIF1.style.border = "none";
+                                                }
+                                                if (GIF2 != null){
+                                                    // GIF2 Exists - Clear Border
+                                                    GIF2.style.border = "none";
+                                                }
+                                                if (GIF3 != null){
+                                                    // GIF3 Exists - Clear Border
+                                                    GIF3.style.border = "none";
+                                                }
+
+                                                // Set the current selection's border
+
+                                                this.style.border = "solid";
+
+                                            });
+
+                                        }
+
+                                    } else {
+
+                                        // One Or Two GIFs are Available
+
+                                        for (gifInjectionIndex = 0; gifInjectionIndex != validGIFs.length; gifInjectionIndex++){
+
+                                            // Iterate code 3 times to inject all 3 GIFs
+
+                                            // Select the Div To Inject The GIF Into
+                                            divToInject = document.getElementById("GIF" + (gifInjectionIndex+1) + "_Preview");
+
+                                            // Create the image element (GIF container)
+                                            imageToInject = document.createElement("img");
+
+                                            // Set the source to be the valid GIFY url which we filtered through
+                                            imageToInject.src = validGIFs[gifInjectionIndex].url;
+
+                                            imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
+
+                                            divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                            // Attach an event listener to the GIF to know what the current selection is
+                                            imageToInject.addEventListener("click", function() {
+
+                                                currentGIFSelectionID = this.id; // Set the current selection
+
+                                                // Reset any border selections
+
+                                                GIF1 = document.getElementById("GIF1");
+                                                GIF2 = document.getElementById("GIF2");
+                                                GIF3 = document.getElementById("GIF3");
+
+                                                if (GIF1 != null){
+                                                    // GIF1 Exists - Clear Border
+                                                    GIF1.style.border = "none";
+                                                }
+                                                if (GIF2 != null){
+                                                    // GIF2 Exists - Clear Border
+                                                    GIF2.style.border = "none";
+                                                }
+                                                if (GIF3 != null){
+                                                    // GIF3 Exists - Clear Border
+                                                    GIF3.style.border = "none";
+                                                }
+
+                                                // Set the current selection's border
+
+                                                this.style.border = "solid";
+
+                                            });
+
+                                        }
+
+                                    }
+
+                                    // GIFs were Injected - Now Inject The Rest Of The Menu
+
+                                    injectMenuToDiv("gifSubmissionContainer", "gifSubmissionContainerTemplate");
+
+                                    // Listen to the 'Confirm GIF' button
+                                    document.getElementById("ConfirmGIF").addEventListener("click", function(){
+
+                                        // Confirm GIF button was pressed
+
+                                        if (currentGIFSelectionID != ""){
+                                            
+                                            numberOfGIF = currentGIFSelectionID[3]; // Fetch the number of the GIF to spawn
+
+                                            gifURL = validGIFs[numberOfGIF-1].url; // Fetch the URL of the selected GIF
+
+                                            // Select the Div To Inject The GIF Into
+                                            taskGIFContainer = document.getElementById("taskGIF");
+
+                                            // Reset Previous Selection
+                                            taskGIFContainer.innerHTML = "";
+
+                                            // Create the image element (GIF container)
+                                            imageToInjectForTask = document.createElement("img");
+
+                                            // Set the source to be the valid GIFY url which is selected
+                                            imageToInjectForTask.src = gifURL;
+
+                                            taskGIFContainer.appendChild(imageToInjectForTask); // Actual GIF Injection
+
+                                            // Clear Out GIF Selection Menu Now That GIF Was Set
+                                            document.getElementById("GIF1_Preview").innerHTML = "";
+                                            document.getElementById("GIF2_Preview").innerHTML = "";
+                                            document.getElementById("GIF3_Preview").innerHTML = "";
+                                            document.getElementById("gifSubmissionContainer").innerHTML = "";
+                                            GIFSearchField.value = "";
+
+                                            // Reset Selection
+                                            currentGIFSelectionID = "";
+
+                                            // Send an ajax request to update the database & see the result
+
+                                            fetch("../ajax/set-task-giphy-url.php", { // Send a fetch request where to send the data in for modification
+
+                                                "method": "POST", // Specify that the data will be passed as POST
+
+                                                "headers": {
+
+                                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                                                },
+
+                                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                                    // The actual data being passed [A JSON Object]
+
+                                                    {
+                                                        "taskID": currentTaskID,
+                                                        "url": gifURL
+                                                    }
+                                                )
+                                            }).then(function(response){ // Catch the response
+
+                                                return response.text(); // Return the response
+
+                                            }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+
+                                                if (giphyFetchData != "Success"){
+
+                                                    message = document.getElementById("message");
+
+                                                    message.textContent = "An unexpected error has occured! GIF not saved to database";
+
+                                                } else if (giphyFetchData == "Success"){
+
+                                                    // Inform The User That The GIF Was Set
+
+                                                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                                    messageAdditionalMenu.textContent = "GIF Has Been Set!";
+                                                }
+                                            })
+
+                                        } else {
+
+                                            // There is currently no GIF selected
+
+                                            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                            messageAdditionalMenu.textContent = "Error! No GIF Selected!";
+
+                                        }
+
+                                    });
+
+                                } else {
+
+                                    // No GIFs remain after filtering
+
+                                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                    messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
+
+                                }
+
+                            } else {
+
+                                // No GIFs Available
+
+                                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                                messageAdditionalMenu.textContent = "Error! No GIFs have been found!";
+                            }
+                        })
+
+                } else {
+
+                    // Exceeds Character Limit
+
+                    messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                    messageAdditionalMenu.textContent = "Error! Character limit exceeded! Make sure it doesn't exceed 32 characters!";
+
+                }
+
+            } else {
+
+                // Invalid characters - reject
+
+                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                messageAdditionalMenu.textContent = "Error! Invalid characters! Only include letters, numbers, \"-\" symbol and spaces!";
+
+            }
+
+        } else {
+
+            // Query is empty - reject
+
+            messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+            messageAdditionalMenu.textContent = "Error! GIF Search Query is empty!" + searchFieldText;
+
+        }
+
+    });
+
+    // Attach an event listener to the textarea for user input
+    document.getElementById("additionalInformationText").addEventListener("input", function (){
+
+        // Current Text
+        textAreaText = document.getElementById("additionalInformationText").value;
+
+        truncatedtextAreaText = textAreaText.substring(0, 176); // Truncate up to database limit (176 characters)
+
+        newTextToSet = ""; // Will be constructed according to allowed characters
+
+        for (characterIndex = 0; characterIndex != truncatedtextAreaText.length; characterIndex++){
+
+            // Iterate through each character in the textArea's Text
+
+            for (validCharacterIndex = 0; validCharacterIndex != allowedCharacters.length; validCharacterIndex++){
+
+                // Iterate through each allowed character
+
+                if (allowedCharacters[validCharacterIndex].toLowerCase() == truncatedtextAreaText[characterIndex].toLowerCase()){
+
+                    // The current character in the iteration was matched with an allowed character
+
+                    newTextToSet += truncatedtextAreaText[characterIndex] // Allow this character
+
+                }
+
+            }
+
+        }
+
+        // Set the value of the textarea to be the filtered text
+        document.getElementById("additionalInformationText").value = newTextToSet
+        
+    });
+
+    // Attach an event listener to the textarea when they finish typing to it and the text is different
+
+    document.getElementById("additionalInformationText").addEventListener("change", function (){
+
+        // Update the database now that the user finished typing
+
+        // Send an ajax request to update the database & see the result
+
+        fetch("../ajax/set-additional-text.php", { // Send a fetch request where to send the data in for modification
+
+            "method": "POST", // Specify that the data will be passed as POST
+
+            "headers": {
+
+                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+            },
+
+            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                // The actual data being passed [A JSON Object]
+
+                {
+                    "taskID": currentTaskID,
+                    "textAreaInput": document.getElementById("additionalInformationText").value
+                }
+            )
+        }).then(function(response){ // Catch the response
+
+            return response.text(); // Return the response
+
+        }).then(function(giphyFetchData){ // Fetch the result and pass it into data
+
+            if (giphyFetchData != "Success"){
+
+                message = document.getElementById("message");
+
+                message.textContent = "An unexpected error has occured! 'Additional Information' not saved to database";
+
+            } else if (giphyFetchData == "Success"){
+
+                // Inform The User That The GIF Was Set
+
+                messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
+
+                messageAdditionalMenu.textContent = "'Additional Information' has been updated!";
+            }
+        })
+
+    });
 }

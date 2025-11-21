@@ -66,7 +66,7 @@ h1, h2, h3, label, p {
     font-family: "Ubuntu", sans-serif;
 }
 
-label, input, div.g-recaptcha, #modificationType {
+label, input, div.g-recaptcha, #modificationType, #GIF1_Preview > img, #GIF2_Preview > img, #GIF3_Preview > img, #taskGIF > img{
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -96,14 +96,29 @@ h2 {
 h3 {
     font-size: 1.25em;
     margin-bottom: 5px;
+    margin-top: 15px;
 }
 
-label, .submitButton{
+label, .submitButton, .largeSizedP {
     font-size: 1em;
 }
 
-label {
+label, .largeSizedP, #confirmGIFSelection {
     margin-bottom: 5px;
+}
+
+.largeSizedP {
+    font-weight: 900;
+    font-style: italic;
+    margin-top: 15px;
+}
+
+textarea {
+    width: 95%;
+    height: 87px; /* The perfect size without expanding the menu more than necessary */
+    font-size: 1em;
+    resize: none;
+    margin-bottom: 15px;
 }
 
 .button {
@@ -115,7 +130,7 @@ label {
 
 }
 
-.displayBlockCenter{
+.displayBlockCenter, textarea {
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -140,7 +155,7 @@ label {
     font-style: italic;
 }
 
-#dateStartFilter {
+#dateStartFilter, #GIF1_Preview, #GIF2_Preview {
     margin-bottom: 5px;
 }
 
@@ -174,6 +189,13 @@ a {
     font-weight: 900;
 }
 
+#messageAdditionalMenu{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: red;
+    font-weight: 900;
+}
+
 .task:hover {
     background-color: #f5be25;
 }
@@ -190,12 +212,28 @@ a {
 }
 
 #nameFilterContainer {
-    height: 65px;
+    height: 80px;
 }
 
-.filterControllers{
+.filterControllers {
     margin-top: -95px;
     margin-bottom:75px;
+}
+
+#contentWrapperTaskAdditionalMenu {
+    border-style: solid;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    width: 97%;
+}
+
+#taskAdditionalMenuContainer {
+    display: flex;
+    justify-content: center;
+}
+
+#GIF3_Preview, #taskGIF {
+    margin-bottom: 15px;
 }
 
 table {
@@ -215,6 +253,29 @@ table th {
     font-size: 1em;
 }
 
+#GIFContainer, #AdditionalInformationArea {
+    width: 33%;
+}
+
+#GIFSelectorContainer {
+    width: 34%;
+}
+
+#GIFSelectorContainer, #AdditionalInformationArea, #GIFContainer {
+    margin: 5px;
+    border: solid;
+    background-color: #d5ebe0;
+}
+
+
+#ThreeSectionDivider {
+    display: flex;
+}
+
+#statusFilterContainer, #nameFilterContainer, #dateFilterContainer {
+    background-color: #d5ebe0;
+}
+
 /* Responsive CSS */
 
 /* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
@@ -231,7 +292,6 @@ table th {
          margin-top:-65px;
     }
 }
-
 
 @media screen and (max-width: 1095px) {
     .filterControllers {
