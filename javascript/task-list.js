@@ -9,8 +9,6 @@ var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allo
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log(document.cookie);
-
     if (seekCookie("returningUser")){
 
         // The user was already logged in and returned to the site without logging out
