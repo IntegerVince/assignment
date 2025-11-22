@@ -9,11 +9,108 @@ var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allo
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Filters will be updated through events
-    var statusFilter = "Any Status";
-    var nameFilter = "";
-    var dateStartFilter = "";
-    var dateEndFilter = "";
+    // Filters will be populated either through localstorage below or by being set by the user
+
+    var statusFilter;
+    var nameFilter;
+    var dateStartFilter;
+    var dateEndFilter;
+
+    // Check if there are saved filter settings saved in local storage
+
+    // Status Filter Local Storage Check
+
+    console.log(localStorage.getItem("statusFilter"));
+
+    if (localStorage.getItem("statusFilter") != null){
+        
+        // There is a status filter saved!
+
+        if (localStorage.getItem("statusFilter") == "completed"){
+
+            // Status filter is set to 'Completed'
+
+            document.getElementById("statusFilterSelection").textContent = "Completed Only"; // Update filter preview
+
+            statusFilter = "Completed Only";
+
+        } else if (localStorage.getItem("statusFilter") == "pending"){
+
+            // Status filter is set to 'Pending'
+
+            document.getElementById("statusFilterSelection").textContent = "Pending Only"; // Update filter preview
+
+            statusFilter = "Pending Only";
+
+        } else {
+            
+            // Either it was set to 'any' or an unknown value - in both instances, set to Any
+
+            document.getElementById("statusFilterSelection").textContent = "Any Status"; // Update filter preview
+
+            statusFilter = "Any Status";
+        }
+    } else {
+        
+        statusFilter = "Any Status"; // Set to any (default setting)
+
+        document.getElementById("statusFilterSelection").textContent = "Any Status"; // Update filter preview
+
+    }
+
+    // Name Filter Local Storage Check
+
+    if (localStorage.getItem("nameFilter") != null){
+        
+        // There is a name filter saved!
+
+        nameFilter = localStorage.getItem("nameFilter");
+
+        document.getElementById("nameFilter").value = nameFilter;
+
+    } else {
+        
+        nameFilter = ""; // Set to nothing (default)
+
+        document.getElementById("nameFilter").value = nameFilter;
+
+    }
+
+    // Date Start Filter Local Storage Check
+
+    if (localStorage.getItem("dateStartFilter") != null){
+        
+        // There is a date filter saved!
+
+        dateStartFilter = localStorage.getItem("dateStartFilter");
+
+        document.getElementById("dateStartFilter").value = dateStartFilter;
+
+    } else {
+        
+        dateStartFilter = ""; // Set to nothing (default)
+
+        document.getElementById("dateStartFilter").value = dateStartFilter;
+
+    }
+
+    // Date End Filter Local Storage Check
+
+    if (localStorage.getItem("dateEndFilter") != null){
+        
+        // There is a date filter saved!
+
+        dateEndFilter = localStorage.getItem("dateEndFilter");
+
+        document.getElementById("dateEndFilter").value = dateEndFilter;
+
+    } else {
+        
+        dateEndFilter = ""; // Set to nothing (default)
+
+        document.getElementById("dateEndFilter").value = dateEndFilter;
+
+    }
 
     // Will store changes from the actual filter which get 'published' to the actual global variable once filter is applied
     // This avoids relying on the input field form in real time for changes since the fields might be different than what was submitted
@@ -1273,6 +1370,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         draftStatusFilter = "Pending Only"; // Temporary storage of the new status filter
 
+        // Save local storage
+        localStorage.setItem("statusFilter", "pending"); // Doesn't integrate with database so this is ideal
+
     });
 
     // Completed Status Filter
@@ -1282,6 +1382,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("statusFilterSelection").textContent = "Completed Only";
 
         draftStatusFilter = "Completed Only"; // Temporary storage of the new status filter
+
+        // Save local storage
+        localStorage.setItem("statusFilter", "completed"); // Doesn't integrate with database so this is ideal
 
     });
 
@@ -1293,6 +1396,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         draftStatusFilter = "Any Status"; // Temporary storage of the new status filter
 
+        // Save local storage
+        localStorage.setItem("statusFilter", "any"); // Doesn't integrate with database so this is ideal
+
     });
 
     // Name Filter
@@ -1302,6 +1408,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftNameFilter = document.getElementById("nameFilter").value; // Temporary storage of the new name filter
+
+        // Save local storage
+        localStorage.setItem("nameFilter", draftNameFilter); // Doesn't integrate with database so this is ideal
 
         // =================================================
         // Code which handles autosuggestion
@@ -1384,6 +1493,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         draftDateStartFilter = document.getElementById("dateStartFilter").value; // Temporary storage of the new date filter
 
+        // Save local storage
+        localStorage.setItem("dateStartFilter", draftDateStartFilter); // Doesn't integrate with database so this is ideal
     });
 
     // Date End Filter
@@ -1393,6 +1504,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
         
         draftDateEndFilter = document.getElementById("dateEndFilter").value; // Temporary storage of the new date filter
+
+        // Save local storage
+        localStorage.setItem("dateEndFilter", draftDateEndFilter); // Doesn't integrate with database so this is ideal
 
     });
 
@@ -1606,19 +1720,23 @@ document.addEventListener("DOMContentLoaded", () => {
         statusFilter = "Any Status";
         draftStatusFilter = "Any Status";
         document.getElementById("statusFilterSelection").textContent = "Any Status";
+        localStorage.setItem("statusFilter", "");
 
         nameFilter =  "";
         draftNameFilter = "";
         document.getElementById("nameFilter").value = "";
+        localStorage.setItem("nameFilter", "");
 
 
         dateStartFilter = "";
         draftDateStartFilter = "";
         document.getElementById("dateStartFilter").value = "";
+        localStorage.setItem("dateStartFilter", "");
 
         dateEndFilter = "";
         draftDateEndFilter = "";
         document.getElementById("dateEndFilter").value = "";
+        localStorage.setItem("dateEndFilter", "");
 
         fetch("../ajax/fetch-tasks.php", { // Send a fetch request to get all the tasks of the user
 
