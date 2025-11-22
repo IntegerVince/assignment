@@ -107,6 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                             // The username is unique so we can create an account for the user
 
+                                            document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
+
                                             document.getElementById("signupForm").submit(); // Submit the form for login
 
                                         } else if (data == "FormatFail"){

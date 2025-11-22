@@ -9,6 +9,24 @@ var allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allo
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    console.log(document.cookie);
+
+    if (seekCookie("returningUser")){
+
+        // The user was already logged in and returned to the site without logging out
+
+        welcomeMessage = document.getElementById("welcomeMessage")
+
+        username = welcomeMessage.textContent.split(" ")[1]; // Split the welcome message to fetch the username
+
+        welcomeMessage.textContent = "Welcome Back, " + username; // Replace the welcome message to be for returning user
+
+    } else {
+
+        document.cookie = "returningUser"; // Set the cookie to be returning user for next time
+
+    }
+
     // Filters will be populated either through localstorage below or by being set by the user
 
     var statusFilter;
@@ -19,8 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check if there are saved filter settings saved in local storage
 
     // Status Filter Local Storage Check
-
-    console.log(localStorage.getItem("statusFilter"));
 
     if (localStorage.getItem("statusFilter") != null){
         
@@ -2602,4 +2618,25 @@ function spawnTaskAdditionalMenu(){
         })
 
     });
+}
+
+// Function which goes over cookies and returns the value of the found cookie (if it was found)
+function seekCookie(cookieToFind){
+
+    cookies = document.cookie; // Fetch the saved cookies
+
+    splitCookies = cookies.split(";"); // Seperate all the cookies
+
+    for (cookieIndex = 0; cookieIndex != splitCookies.length; cookieIndex++){
+
+        // Iterate through cookies to check if the cookie being sought is found
+
+        if (cookieToFind == splitCookies[cookieIndex]){
+
+            return true; // The cookie was found
+
+        }
+    }
+
+    return false; // The cookie was not found
 }
