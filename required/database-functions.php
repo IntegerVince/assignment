@@ -71,7 +71,7 @@ function checkDatabaseAccount($accountUsername, $accountPassword){
 
             # Iterate through the accounts until the account is found
 
-            if ($row["username"] == $accountUsername){
+            if (strtolower($row["username"]) == strtolower($accountUsername)){ // Case insensitive
                 
                 if (password_verify($accountPassword, $row["password"])){
 
