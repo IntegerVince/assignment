@@ -127,7 +127,14 @@ textarea {
     padding-right: 15px;
     padding-top: 5px;
     padding-bottom: 5px;
+    background-color:#afccbe;
+	border:2px solid #3b6e22;
+    font-weight: 600;
 
+}
+
+.button:hover {
+    background-color: #92bca8;
 }
 
 .displayBlockCenter, textarea {
@@ -200,6 +207,7 @@ a {
     background-color: #f5be25;
 }
 
+
 #filterContainer{
     display: flex;
     width: 100%;
@@ -208,16 +216,14 @@ a {
 
 #filterContainer > * { /* Children (Filter Menus) */
     border-style: solid;
-    width:32%;
+    width: 30%;
+    margin-left: 1%;
+    margin-right: 1%;
+    height: 100px;
 }
 
-#nameFilterContainer {
-    height: 80px;
-}
-
-.filterControllers {
-    margin-top: -95px;
-    margin-bottom:75px;
+.filterControllers{
+    margin-top: 15px;
 }
 
 #contentWrapperTaskAdditionalMenu {
@@ -285,34 +291,105 @@ table th {
     width: 80%;
 }
 
+#fname, #fpass{
+    font-size: 0.7em;
+    text-align: center;
+}
+
+#welcomeMessage {
+    margin-right: 15px;
+}
+
+#nameDisplay{
+    display: flex;
+    justify-content: center;
+}
+
+#statusFilterType{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#dateFromDateToWrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#popupScreen{
+    background-color: black;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    opacity: 0.7;
+}
+
+#whiteScreen{
+    background-color: white;
+    width: 50%;
+    height: 273px;
+    z-index: 300;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#AdditionalInformationArea, #GIFContainer {
+    height: 172px;
+}
+
+#gifSubmissionContainerButton {
+    position: relative;
+    top: 65px;
+    margin-top: -40px;
+}
+
+#submitGIFSearch{
+    background-color: white;
+}
+
+#submitGIFSearch:hover {
+    background-color: rgb(174, 185, 164);
+}
+
 /* Responsive CSS */
 
-/* Filter Controller has margin adjusted because filter boxes change when buttons no longer fit, which change their height */
-/* And filter controller has a negative margin applied which fits neatly inside of these boxes but this format breaks down */
-
-@media screen and (min-width: 1641px) {
-    .filterControllers {
-        margin-top: -36px;
+@media screen and (min-width: 1137px){
+    #filterContainer > * {
+        width: 28%;
+        margin-left: 3%;
+        margin-right: 3%;
     }
 }
 
-@media screen and (min-width: 1096px) and (max-width: 1640px) {
-    .filterControllers {
-         margin-top:-65px;
+@media screen and (min-width: 1250px){
+    #filterContainer > * {
+        width: 23%;
+        margin-left: 5%;
+        margin-right: 5%;
     }
 }
 
-@media screen and (max-width: 1095px) {
-    .filterControllers {
-         margin-top:-110px;
-         margin-bottom:85px;
+@media screen and (min-width: 1618px){
+    #filterContainer > * {
+        width: 18.5%;
+        margin-left: 7%;
+        margin-right: 7%;
     }
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 940px) {
 
     /* Change the layout of the boxes to be under each other instead since they are very compressed */
-    #filterContainer, #ThreeSectionDivider {
+    #filterContainer {
         flex-direction: column;
         justify-content: center;
         align-items: center;
@@ -320,15 +397,64 @@ table th {
 
     #filterContainer > * {
         margin-bottom: 15px;
-        width: 94%;
+        width: 35%;
     }
 
     #ThreeSectionDivider > *, #GIFSelectorContainer {
         width: 94%;
     }
+}
 
-    .filterControllers {
-         margin-top:15px;
-         margin-bottom:15px;
+@media screen and (max-width: 984px){
+    
+    #whiteScreen{
+        width: 60%;
     }
+
+}
+
+@media screen and (max-width: 835px) {
+
+    #filterContainer > * {
+        width: 45%;
+    }
+
+    #whiteScreen{
+        width: 75%;
+    }
+
+}
+
+@media screen and (max-width: 650px) {
+
+    #filterContainer > * {
+        width: 55%;
+    }
+
+    #whiteScreen {
+        width: 85%;
+    }
+
+}
+
+@media screen and (max-width: 575px) {
+    #whiteScreen {
+        padding-bottom: 15px;
+    }
+}
+
+@media screen and (max-width: 550px) {
+
+    #filterContainer > * {
+        width: 65%;
+    }
+
+}
+
+@media screen and (max-width: 450px) {
+
+    #filterContainer > * {
+        width: 75%;
+    }
+
 }

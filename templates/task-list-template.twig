@@ -8,60 +8,77 @@
 
     <body>
 
-        <h1>{{ websiteName }}, Your To Do List Tracker</h1>
-        <h2 id="welcomeMessage">Hello, {{ username }}</h2>
+        <!-- Will store spawned popups, such as the additional task menu upon clicking on a selected task -->
+        <div id="popupScreenDiv">
+        </div>
 
-        <a href="../redirect/logout-redirector.php"><button class="button displayBlockCenter">Logout</button></a>
+        <h1>{{ websiteName }}, Your To Do List Tracker</h1>
+
+        <div id="nameDisplay"> <!-- Name Display -->
+            <h2 id="welcomeMessage">Hello, {{ username }}</h2>
+            <a href="../redirect/logout-redirector.php"><button class="button displayBlockCenter">Logout</button></a>
+        </div>
 
         <p id="message"></p> <!-- If error message exists, it will be shown. -->
 
-        <!-- Filter Container -->
-        <div id="filterContainer">
+        <button id="filterToggleButton" class="button displayBlockCenter">Filters</button>
 
-            <!-- Status Search Filters --> 
-            <div id="statusFilterContainer">
-                <h3>Status Filter</h3>
-                <div class="buttonWrapper">
-                    <div class="buttonCenterer">
-                        <button class="button" id="pendingStatusFilter">Filter By Pending</button>
-                        <button class="button" id="completedStatusFilter">Filter By Completed</button>
-                        <button class="button" id="anyStatusFilter">Clear Status Filter</button>
-                    </div>
+        <!-- Will store the spawned template -->
+        <div id="FilterMenuWrapper"></div>
+
+        <!-- Filter Menu Template - Spawned With Button -->
+        <template id="filterContainerTemplate">
+            <!-- Filter Container -->
+            <div id="filterContainer">
+
+                <!-- Status Search Filters --> 
+                <div id="statusFilterContainer">
+                    <h3>Status Filter</h3>
+                    <select id="statusFilterType" name="statusFilterType">
+                        <option value="anyStatus">Any Status</option>
+                        <option value="pendingStatus">Pending Only</option>
+                        <option value="completedStatus">Completed Only</option>
+                    </select>
                 </div>
-                <p class="currentSelection">Current Selection:</p>
-                <p class="selection" id="statusFilterSelection">Any Status</p>
+
+                <!-- Name Filter --> 
+                <div id="nameFilterContainer">
+                    <h3>Name Filter</h3>
+
+                    <!-- Autocomplete as off so it does not suggest any previously entered tasks" -->
+                    <!-- On submit code is to disable submitting the form since this is not a submittable form -->
+                    <form id="nameFilterForm" autocomplete="off" onsubmit="return false;"> <!-- Form which will also hold datalist injections -->
+                    
+                        <input list="autoSuggest" type="text" id="nameFilter" name="nameFilter"></input>
+                    
+                    </form>
+                </div>
+
+                <!-- Date Filter --> 
+                <div id="dateFilterContainer">
+                    <h3>Date Filter</h3>
+                    <div id="dateFromDateToWrapper"> <!-- Wrapper for centering -->
+                        <div> <!-- Date From -->
+                            <label for="dateStartFilter">From</label>
+                            <input type="date" id="dateStartFilter" name="dateStartFilter"></input>
+                        </div>
+
+                        <div> <!-- Date To -->
+                            <label for="dateEndFilter">To</label>
+                            <input type="date" id="dateEndFilter" name="dateStartFilter"></input>
+                        </div>
+                    </div>
+                </div>            
             </div>
 
-            <!-- Name Filter --> 
-            <div id="nameFilterContainer">
-                <h3>Name Filter</h3>
-
-                <!-- Autocomplete as off so it does not suggest any previously entered tasks" -->
-                <!-- On submit code is to disable submitting the form since this is not a submittable form -->
-                <form id="nameFilterForm" autocomplete="off" onsubmit="return false;"> <!-- Form which will also hold datalist injections -->
-                
-                    <input list="autoSuggest" type="text" id="nameFilter" name="nameFilter"></input>
-                
-                </form>
+            <div class="buttonWrapper">
+                <div class="buttonCenterer filterControllers">
+                    <button class="button" id="applyFilterButton">Apply Filter</button>
+                    <button class="button" id="clearFilterButton">Clear All Filters</button>
+                </div>
             </div>
+        </template>
 
-            <!-- Date Filter --> 
-            <div id="dateFilterContainer">
-                <h3>Date Filter</h3>
-                <label for="dateStartFilter">Date From:</label>
-                <input type="date" id="dateStartFilter" name="dateStartFilter"></input>
-                <label for="dateEndFilter">Date To:</label>
-                <input type="date" id="dateEndFilter" name="dateStartFilter"></input>
-            </div>            
-        </div>
-
-        <div class="buttonWrapper">
-            <div class="buttonCenterer filterControllers">
-                <button class="button" id="applyFilterButton">Apply Filter</button>
-                <button class="button" id="clearFilterButton">Clear All Filters</button>
-            </div>
-        </div>
-        
         <!-- Task list table -->
         <h3>Task List</h3>
         <table>
@@ -176,9 +193,12 @@
             <input class="button" type="submit" value="Change Status">
         </template>
 
-        <template id="taskAdditionalMenu">
-            <div id="contentWrapperTaskAdditionalMenu"> <!-- General Container For Menu -->
+        <template id="taskAdditionalMenuPopup">
+            <div id="popupScreen"> <!-- The semi-transparent dark effect behind a popup -->
+            </div>
+            <div id="whiteScreen"> <!-- Actual Popup -->
                 <h3 id="taskAdditionalMenu-TaskName">Task Name</h3>
+
                 <p id="messageAdditionalMenu"></p> <!-- If error message exists, it will be shown. -->
                 <div id="ThreeSectionDivider">
                     <div id="AdditionalInformationArea">
@@ -188,34 +208,40 @@
 
                     <div id="GIFSelectorContainer">
                         <p class="largeSizedP">Set A GIF</p>
-                        <label for="GIFSearchField">Search GIF Name:</label>
-                        <input type="text" id="GIFSearchField" name="GIFSearchField"></input>
-                        <button class="button displayBlockCenter" id="submitGIFSearch">Search GIF</button>
+                            <label for="GIFSearchField">Search GIF Name:</label>
+                            <input type="text" id="GIFSearchField" name="GIFSearchField"></input>
+                            <button class="button displayBlockCenter" id="submitGIFSearch">Search GIF</button>
 
-                        <!-- Storage for the GIF Previews -->
-                        <div> 
-                            <div id="GIF1_Preview"></div>
-                            <div id="GIF2_Preview"></div>
-                            <div id="GIF3_Preview"></div>
+                            <!-- Storage for the GIF Previews -->
+                            <div> 
+                                <div id="GIF1_Preview"></div>
+                                <div id="GIF2_Preview"></div>
+                            </div>
+
+                            <!-- Will store GIF submission text when GIFs are loaded -->
+                            <div id="gifSubmissionContainerText"></div>
+
+                            <!-- Will store GIF submission button when GIFs are loaded -->
+                            <div id="gifSubmissionContainerButton"></div>
+
                         </div>
 
-                        <!-- Will store GIF submission controls when GIFs are loaded -->
-                        <div id="gifSubmissionContainer"></div>
-
-                    </div>
-
-                    <div id="GIFContainer"> <!-- Giphy GIF Container -->
-                        <p class="largeSizedP">GIF Associated With The Task</p>
-                        <div id="taskGIF">
-                            <p>[None]</p> <!-- GIF Will Be Injected When It's Added -->
+                        <div id="GIFContainer"> <!-- Giphy GIF Container -->
+                            <p class="largeSizedP">GIF Associated With The Task</p>
+                            <div id="taskGIF">
+                                <p>[None]</p> <!-- GIF Will Be Injected When It's Added -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </template>
 
-        <template id="gifSubmissionContainerTemplate">
+        <template id="gifSubmissionContainerTextTemplate">
             <p id="confirmGIFSelection">Press a GIF to select and then submit</p>
+        </template>
+
+        <template id="gifSubmissionContainerButtonTemplate">
             <button class="button displayBlockCenter" id="ConfirmGIF">Confirm Selection</button>
         </template>
     </body>

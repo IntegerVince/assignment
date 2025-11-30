@@ -31,107 +31,663 @@ document.addEventListener("DOMContentLoaded", () => {
     var nameFilter;
     var dateStartFilter;
     var dateEndFilter;
+    var draftStatusFilter;
+    var draftNameFilter;
+    var draftDateStartFilter;
+    var draftDateEndFilter;
 
-    // Check if there are saved filter settings saved in local storage
+    // Button which listens for spawning the filter menu
+    
+    document.getElementById("filterToggleButton").addEventListener("click", function (){
 
-    // Status Filter Local Storage Check
+        wrapperForMenu = document.getElementById("FilterMenuWrapper");
 
-    if (localStorage.getItem("statusFilter") != null){
-        
-        // There is a status filter saved!
+        if (wrapperForMenu.innerHTML != ""){ // There is content already - the user wants to hide the filter menu
 
-        if (localStorage.getItem("statusFilter") == "completed"){
+            wrapperForMenu.innerHTML = ""; // Reset the content
 
-            // Status filter is set to 'Completed'
+        } else { // Spawn the content and attach all filter event listeners
 
-            document.getElementById("statusFilterSelection").textContent = "Completed Only"; // Update filter preview
+            wrapperForMenu.innerHTML = ""; // Reset any previous menu already there
 
-            statusFilter = "Completed Only";
+            injectMenuToDiv("FilterMenuWrapper", "filterContainerTemplate"); // Spawn in the actual filters
 
-        } else if (localStorage.getItem("statusFilter") == "pending"){
+            // Check if there are saved filter settings saved in local storage
 
-            // Status filter is set to 'Pending'
+            // Status Filter Local Storage Check
 
-            document.getElementById("statusFilterSelection").textContent = "Pending Only"; // Update filter preview
+            if (localStorage.getItem("statusFilter") != null){
+                
+                // There is a status filter saved!
 
-            statusFilter = "Pending Only";
+                if (localStorage.getItem("statusFilter") == "completed"){
 
-        } else {
-            
-            // Either it was set to 'any' or an unknown value - in both instances, set to Any
+                    // Status filter is set to 'Completed'
 
-            document.getElementById("statusFilterSelection").textContent = "Any Status"; // Update filter preview
+                    document.getElementById("statusFilterType").value = "completedStatus"; // Update filter preview
 
-            statusFilter = "Any Status";
+                    statusFilter = "Completed Only";
+
+                } else if (localStorage.getItem("statusFilter") == "pending"){
+
+                    // Status filter is set to 'Pending'
+
+                    document.getElementById("statusFilterType").value = "pendingStatus"; // Update filter preview
+
+                    statusFilter = "Pending Only";
+
+                } else {
+                    
+                    // Either it was set to 'any' or an unknown value - in both instances, set to Any
+
+                    document.getElementById("statusFilterType").value = "anyStatus"; // Update filter preview
+
+                    statusFilter = "Any Status";
+                }
+
+            } else {
+                
+                statusFilter = "Any Status"; // Set to any (default setting)
+
+                document.getElementById("statusFilterType").value = "anyStatus"; // Update filter preview
+
+            }
+
+            // Name Filter Local Storage Check
+
+            if (localStorage.getItem("nameFilter") != null){
+                
+                // There is a name filter saved!
+
+                nameFilter = localStorage.getItem("nameFilter");
+
+                document.getElementById("nameFilter").value = nameFilter;
+
+            } else {
+                
+                nameFilter = ""; // Set to nothing (default)
+
+                document.getElementById("nameFilter").value = nameFilter;
+
+            }
+
+            // Date Start Filter Local Storage Check
+
+            if (localStorage.getItem("dateStartFilter") != null){
+                
+                // There is a date filter saved!
+
+                dateStartFilter = localStorage.getItem("dateStartFilter");
+
+                document.getElementById("dateStartFilter").value = dateStartFilter;
+
+            } else {
+                
+                dateStartFilter = ""; // Set to nothing (default)
+
+                document.getElementById("dateStartFilter").value = dateStartFilter;
+
+            }
+
+            // Date End Filter Local Storage Check
+
+            if (localStorage.getItem("dateEndFilter") != null){
+                
+                // There is a date filter saved!
+
+                dateEndFilter = localStorage.getItem("dateEndFilter");
+
+                document.getElementById("dateEndFilter").value = dateEndFilter;
+
+            } else {
+                
+                dateEndFilter = ""; // Set to nothing (default)
+
+                document.getElementById("dateEndFilter").value = dateEndFilter;
+
+            }
+
+            // Will store changes from the actual filter which get 'published' to the actual global variable once filter is applied
+            // This avoids relying on the input field form in real time for changes since the fields might be different than what was submitted
+            draftStatusFilter = statusFilter;
+            draftNameFilter = nameFilter;
+            draftDateStartFilter = dateStartFilter;
+            draftDateEndFilter = dateEndFilter;
+
+            // ==================================================================================
+
+            // Code that handles filters
+
+            // =====================================
+
+            // Filter Change Event Triggers To Update Global Variables & Previews
+
+            // =====================================
+
+            // Status Filter Logic
+
+            document.getElementById("statusFilterType").addEventListener('change', function(){ // Add listener to handle filter dropdown change
+
+                var statusFilterType = this.value;
+
+                if (statusFilterType == "pendingStatus"){ // User dropdown selected 'Pending Only'
+
+                    draftStatusFilter = "Pending Only"; // Temporary storage of the new status filter
+
+                    // Save local storage
+                    localStorage.setItem("statusFilter", "pending"); // Doesn't integrate with database so this is ideal
+
+                } else if (statusFilterType == "completedStatus") { // User dropdown selected 'Completed Only'
+
+                    draftStatusFilter = "Completed Only"; // Temporary storage of the new status filter
+
+                    // Save local storage
+                    localStorage.setItem("statusFilter", "completed"); // Doesn't integrate with database so this is ideal
+
+                } else if (statusFilterType == "anyStatus"){ // User dropdown selected 'Any'
+
+                    draftStatusFilter = "Any Status"; // Temporary storage of the new status filter
+
+                    // Save local storage
+                    localStorage.setItem("statusFilter", "any"); // Doesn't integrate with database so this is ideal
+
+                }
+            });
+
+            // Name Filter
+
+            document.getElementById("nameFilter").addEventListener("input", function(){
+
+                // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
+                
+                draftNameFilter = document.getElementById("nameFilter").value; // Temporary storage of the new name filter
+
+                // Save local storage
+                localStorage.setItem("nameFilter", draftNameFilter); // Doesn't integrate with database so this is ideal
+
+                // =================================================
+                // Code which handles autosuggestion
+                // =================================================
+
+                var dataListAutoSuggest = document.getElementById("autoSuggest"); // Fetch the datalist autosuggest word container
+                        
+                if (dataListAutoSuggest != null){ // check if there is an existing datalist
+
+                    // datalist exists & needs to be deleted for it to be reset for the next autosuggest
+
+                    dataListAutoSuggest.remove();
+
+                }
+
+                userTasks.then(data => { // After the promise 'userTasks' has been fullfilled, pass the task list data into 'data'
+
+                    potentialAutoSuggestion = autocompleteSuggest(draftNameFilter, data); // See if there is any matches
+
+                    if (potentialAutoSuggestion != "No-Suggestions"){
+
+                        // There are suggestions!
+
+                        var listWithoutExactMatches = [];
+
+                        for (suggestIndex = 0; suggestIndex != potentialAutoSuggestion.length; suggestIndex++){
+
+                            // Iterate through the auto suggestions and eliminate exact matches from the filter text
+
+                            if (potentialAutoSuggestion[suggestIndex].toLowerCase() != draftNameFilter.toLowerCase()){
+
+                                // Not an exact match, can push this to the list of autosuggestions to use
+                                listWithoutExactMatches.push(potentialAutoSuggestion[suggestIndex]);
+
+                            }
+
+                        }
+
+                        if (listWithoutExactMatches.length > 0){ // Check if there are any entries left after the exact matches check
+
+                            // Create the datalist which will store the autosuggestion(s)
+                            var dataListAutoSuggest = document.createElement("DATALIST");
+
+                            // Set the ID of the datalist
+                            dataListAutoSuggest.setAttribute("id", "autoSuggest");
+
+                            // Attach the datalist to the name filter form
+                            document.getElementById("nameFilterForm").appendChild(dataListAutoSuggest);
+
+                            for (suggestIndex = 0; suggestIndex != listWithoutExactMatches.length; suggestIndex++){
+
+                                // Iterate through the auto suggestions so we can add them all to the datalist
+
+                                // Create the auto suggest option which will get injected inside of the datalist
+                                var autoSuggestion = document.createElement("OPTION");
+
+                                // Potential Suggestion(s) are safe from XSS attacks as all tasks were previously filtered / escaped
+
+                                // Set the auto suggested task value
+                                autoSuggestion.setAttribute("value", listWithoutExactMatches[suggestIndex]); 
+
+                                // Inject the autosuggestion inside of the datalist
+                                document.getElementById("autoSuggest").appendChild(autoSuggestion);
+
+                            }
+
+                        }
+
+                    }
+
+                });
+                
+            });
+
+            // Date Start Filter
+
+            document.getElementById("dateStartFilter").addEventListener("input", function(){
+
+                // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
+                
+                draftDateStartFilter = document.getElementById("dateStartFilter").value; // Temporary storage of the new date filter
+
+                // Save local storage
+                localStorage.setItem("dateStartFilter", draftDateStartFilter); // Doesn't integrate with database so this is ideal
+            });
+
+            // Date End Filter
+
+            document.getElementById("dateEndFilter").addEventListener("input", function(){
+
+                // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
+                
+                draftDateEndFilter = document.getElementById("dateEndFilter").value; // Temporary storage of the new date filter
+
+                // Save local storage
+                localStorage.setItem("dateEndFilter", draftDateEndFilter); // Doesn't integrate with database so this is ideal
+
+            });
+
+            // =====================================
+
+            // Apply And Clear Filter Buttons Logic
+
+            // =====================================
+
+            // Apply Filter Logic
+
+            document.getElementById("applyFilterButton").addEventListener("click", function(){
+
+                // Merge the drafted values with the global variables
+                statusFilter = draftStatusFilter;
+                nameFilter = draftNameFilter;
+                dateStartFilter = draftDateStartFilter;
+                dateEndFilter = draftDateEndFilter;
+
+                fetch("../ajax/filter-tasks.php", { // Send a fetch request where to send the data in for filtration
+
+                            "method": "POST", // // Specify that the data will be passed as POST
+
+                            "headers": {
+
+                                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                            },
+
+                            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                // The actual data being passed [A JSON Object]
+
+                                {
+                                    "statusFilter": statusFilter,
+                                    "nameFilter": nameFilter,
+                                    "dateStartFilter": dateStartFilter,
+                                    "dateEndFilter": dateEndFilter
+                                }
+                            )
+                        }).then(function(response){ // Catch the response
+
+                            return response.text(); // Return the response
+
+                        }).then(function(data){ // // Fetch the result and pass it into data
+
+                            // The data passed is being checked with double quotations marks because it was passed as a JSON string
+
+                            if (data != '"Fail"' && data != '"InvalidDates"' && data != '"InvalidDateRange"' && data != '"FormatFail"'){ // Filter Was A Success
+
+                                // Since filter will be applied, reset selection
+                                currentIndexSelection = -1;
+                                currentTaskID = -1;
+                                currentTaskName = "[None]";
+
+                                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                                if (textAdditionalMenu != null){
+
+                                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                                    textAdditionalMenu.remove();
+
+                                }
+
+                                taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                                taskTableBody.textContent = ""; // Clear all Previous Entries
+                                parsedData = JSON.parse(data); // Parse JSON data to turn it form a string into an object we can use
+
+                                for (index = 0; index != parsedData.length; index++){ // Iterate through the filtered tasks
+
+                                    newTableRow = taskTableBody.insertRow(-1); // Create a new row at the end where the injected task will be placed
+
+                                    // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                                    newTableRow.classList.add("task");
+
+                                    // Create cells for the injected task's values
+                                    newTableRow.insertCell(0);
+                                    newTableRow.insertCell(1);
+                                    newTableRow.insertCell(2);
+                                    newTableRow.insertCell(3);
+
+                                    newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
+
+                                    // Check If Deadline Is Set & Inject
+
+                                    if (parsedData[index]["taskDeadline"] == "0000-00-00"){
+
+                                        newTableRow.cells[1].textContent = "No Deadline";
+
+                                    } else {
+
+                                        newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
+
+                                    }
+
+                                    // Check Status & Inject
+
+                                    if (parsedData[index]["pending"] == 1){
+
+                                        newTableRow.cells[2].textContent = "Pending";
+
+                                    } else {
+
+                                        newTableRow.cells[2].textContent = "Completed";
+
+                                    }
+
+                                    newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
+
+                                    newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                                    // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                                    newTableRow.addEventListener("click", function() { 
+
+                                        // Code which triggers with the 'click' event listener
+                                        
+                                        if (currentIndexSelection != -1){ // There was a previous selection
+
+                                            tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                            tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                                        }
+
+                                        if (currentIndexSelection == getTableIndexFromTaskID(this.childNodes[3].textContent)){
+                                            
+                                            // Same task was clicked again
+                                            
+                                            spawnTaskAdditionalMenuPopup();
+
+                                        }
+
+                                        this.style.backgroundColor = "#73d41e"; // Set current selection to green
+
+                                        currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                                        currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                        currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                                        // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                                        
+                                        // If they don't exist, it returns null
+                                        var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                                        var taskIDContainer = document.getElementById("taskID");
+
+                                        if (modifySelection != null){
+                                            modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                        }
+
+                                        if (taskIDContainer != null){
+                                            taskIDContainer.value = currentTaskID;
+                                        }
+
+                                    });
+                                }
+
+                                // Check if there are any tasks after the filter was applied
+
+                                if (taskTableBody.rows.length == 0){  // No tasks visible
+
+                                    // Inject the 'No Tasks' preview again
+
+                                    taskTableBody.insertRow(); // Inject a row since there are none
+
+                                    // Inject cells in this new row
+                                    taskTableBody.rows[0].insertCell(0); 
+                                    taskTableBody.rows[0].insertCell(1);
+                                    taskTableBody.rows[0].insertCell(2);
+
+                                    // Inject the preview spanning across the entire table
+
+                                    taskTableBody.rows[0].cells[0].textContent = "N-A";
+                                    taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
+                                    taskTableBody.rows[0].cells[2].textContent = "N-A";
+
+                                    taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
+
+                                }
+                                
+                            } else {
+                                if (data == '"InvalidDates"'){
+
+                                    // Display the error to the user
+
+                                    message = document.getElementById("message");
+
+                                    message.textContent = "Error! Invalid dates provided";
+
+                                } else if (data == '"InvalidDateRange"'){
+
+                                    // Display the error to the user
+
+                                    message = document.getElementById("message");
+
+                                    message.textContent = "Error! The start date should be before the end date";
+
+                                } else if (data == '"FormatFail"'){
+
+                                    message = document.getElementById("message");
+
+                                    message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                }
+                            }
+                        }
+                    )
+            });
+
+            // Clear all filters button logic
+            document.getElementById("clearFilterButton").addEventListener("click", function(){
+
+                // Reset All Filter Settings
+
+                statusFilter = "Any Status";
+                draftStatusFilter = "Any Status";
+                document.getElementById("statusFilterType").value = "anyStatus";
+                localStorage.setItem("statusFilter", "");
+
+                nameFilter =  "";
+                draftNameFilter = "";
+                document.getElementById("nameFilter").value = "";
+                localStorage.setItem("nameFilter", "");
+
+
+                dateStartFilter = "";
+                draftDateStartFilter = "";
+                document.getElementById("dateStartFilter").value = "";
+                localStorage.setItem("dateStartFilter", "");
+
+                dateEndFilter = "";
+                draftDateEndFilter = "";
+                document.getElementById("dateEndFilter").value = "";
+                localStorage.setItem("dateEndFilter", "");
+
+                fetch("../ajax/fetch-tasks.php", { // Send a fetch request to get all the tasks of the user
+
+                    "method": "POST", // // Specify that the data will be passed as POST
+
+                    "headers": {
+
+                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+
+                    },
+
+                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                        // The actual data being passed [A JSON Object] - In this case, no data needs to be passed
+
+                        {
+
+                        }
+                    )
+                }).then(function(response){ // Catch the response
+
+                    return response.text(); // Return the response
+
+                }).then(function(data){ // // Fetch the result and pass it into data
+
+                    // The data passed is being checked with double quotations marks because it was passed as a JSON string
+
+                    if (data != '"Fail"' && data != '"FormatFail"'){ // Data recieved successfully
+
+                        parsedData = JSON.parse(data); // Convert JSON String to Object for handling
+
+                        // Since all tasks will be stripped first, reset selection
+                        currentIndexSelection = -1;
+                        currentTaskID = -1;
+                        currentTaskName = "[None]";
+
+                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
+
+                        if (textAdditionalMenu != null){
+
+                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
+
+                            textAdditionalMenu.remove();
+
+                        }
+
+                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
+
+                        taskTableBody.textContent = ""; // Clear all Previous Entries
+
+                        for (index = 0; index != parsedData.length; index++){ // Iterate through all the tasks and inject them
+                        
+                            newTableRow = taskTableBody.insertRow(-1); // Create a new row at the end where the injected task will be placed
+
+                            // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
+                            newTableRow.classList.add("task");
+
+                            // Create cells for the injected task's values
+                            newTableRow.insertCell(0);
+                            newTableRow.insertCell(1);
+                            newTableRow.insertCell(2);
+                            newTableRow.insertCell(3);
+
+                            newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
+
+                            // Check If Deadline Is Set & Inject
+
+                            if (parsedData[index]["taskDeadline"] == "0000-00-00"){
+
+                                newTableRow.cells[1].textContent = "No Deadline";
+
+                            } else {
+
+                                newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
+
+                            }
+
+                            // Check Status & Inject
+
+                            if (parsedData[index]["pending"] == 1){
+
+                                newTableRow.cells[2].textContent = "Pending";
+
+                            } else {
+
+                                newTableRow.cells[2].textContent = "Completed";
+
+                            }
+
+                            newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
+
+                            newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
+
+                            // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
+                            newTableRow.addEventListener("click", function() { 
+
+                                // Code which triggers with the 'click' event listener
+                                
+                                if (currentIndexSelection != -1){ // There was a previous selection
+
+                                    tasks = document.querySelectorAll(".task"); // Update the list of all tasks
+
+                                    tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
+
+                                }
+
+                                if (currentIndexSelection == getTableIndexFromTaskID(this.childNodes[3].textContent)){
+                                    
+                                    // Same task was clicked again
+                                            
+                                    spawnTaskAdditionalMenuPopup();
+
+                                }
+
+                                this.style.backgroundColor = "#73d41e"; // Set current selection to green
+
+                                currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
+
+                                currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
+
+                                currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
+
+                                // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
+                                
+                                // If they don't exist, it returns null
+                                var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
+                                var taskIDContainer = document.getElementById("taskID");
+
+                                if (modifySelection != null){
+                                    modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
+                                }
+
+                                if (taskIDContainer != null){
+                                    taskIDContainer.value = currentTaskID;
+                                }
+
+                            });
+                        }
+                    } else {
+                        if (data == '"FormatFail"'){
+
+                            message = document.getElementById("message");
+
+                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                        }
+                    }
+                })   
+            });
         }
-    } else {
-        
-        statusFilter = "Any Status"; // Set to any (default setting)
 
-        document.getElementById("statusFilterSelection").textContent = "Any Status"; // Update filter preview
-
-    }
-
-    // Name Filter Local Storage Check
-
-    if (localStorage.getItem("nameFilter") != null){
-        
-        // There is a name filter saved!
-
-        nameFilter = localStorage.getItem("nameFilter");
-
-        document.getElementById("nameFilter").value = nameFilter;
-
-    } else {
-        
-        nameFilter = ""; // Set to nothing (default)
-
-        document.getElementById("nameFilter").value = nameFilter;
-
-    }
-
-    // Date Start Filter Local Storage Check
-
-    if (localStorage.getItem("dateStartFilter") != null){
-        
-        // There is a date filter saved!
-
-        dateStartFilter = localStorage.getItem("dateStartFilter");
-
-        document.getElementById("dateStartFilter").value = dateStartFilter;
-
-    } else {
-        
-        dateStartFilter = ""; // Set to nothing (default)
-
-        document.getElementById("dateStartFilter").value = dateStartFilter;
-
-    }
-
-    // Date End Filter Local Storage Check
-
-    if (localStorage.getItem("dateEndFilter") != null){
-        
-        // There is a date filter saved!
-
-        dateEndFilter = localStorage.getItem("dateEndFilter");
-
-        document.getElementById("dateEndFilter").value = dateEndFilter;
-
-    } else {
-        
-        dateEndFilter = ""; // Set to nothing (default)
-
-        document.getElementById("dateEndFilter").value = dateEndFilter;
-
-    }
-
-    // Will store changes from the actual filter which get 'published' to the actual global variable once filter is applied
-    // This avoids relying on the input field form in real time for changes since the fields might be different than what was submitted
-    var draftStatusFilter = statusFilter;
-    var draftNameFilter = nameFilter;
-    var draftDateStartFilter = dateStartFilter;
-    var draftDateEndFilter = dateEndFilter;
+    });
 
     // Code which handles task selection
 
@@ -155,11 +711,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             this.style.backgroundColor = "#73d41e"; // Set current selection to green
 
+            if (currentIndexSelection == getTableIndexFromTaskID(this.childNodes[7].textContent)){
+                // Same task was clicked again
+                                            
+                spawnTaskAdditionalMenuPopup();
+            }
+
             currentTaskName = this.childNodes[1].textContent; // childNodes[0] is the task name row
 
             currentTaskID = this.childNodes[7].textContent; // childNodes[7] is the taskID hidden table value
-
-            spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
 
             currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -421,11 +981,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                 this.style.backgroundColor = "#73d41e"; // Set current selection to green
 
+                                                if (currentIndexSelection == getTableIndexFromTaskID(currentTaskID)){
+                                                    // Same task was clicked again
+                                            
+                                                    spawnTaskAdditionalMenuPopup();
+                                                }
+
                                                 currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
                                                 currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
-
-                                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
                                                 
                                                 currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
 
@@ -1364,536 +1928,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
-    // ==================================================================================
-
-    // Code that handles filters
-
-    // =====================================
-
-    // Filter Change Event Triggers To Update Global Variables & Previews
-
-    // =====================================
-
-    // Status Filter Logic
-
-    // Pending Status Filter
-    document.getElementById("pendingStatusFilter").addEventListener("click", function(){
-
-        document.getElementById("statusFilterSelection").textContent = "Pending Only";
-
-        draftStatusFilter = "Pending Only"; // Temporary storage of the new status filter
-
-        // Save local storage
-        localStorage.setItem("statusFilter", "pending"); // Doesn't integrate with database so this is ideal
-
-    });
-
-    // Completed Status Filter
-
-    document.getElementById("completedStatusFilter").addEventListener("click", function(){
-
-        document.getElementById("statusFilterSelection").textContent = "Completed Only";
-
-        draftStatusFilter = "Completed Only"; // Temporary storage of the new status filter
-
-        // Save local storage
-        localStorage.setItem("statusFilter", "completed"); // Doesn't integrate with database so this is ideal
-
-    });
-
-    // Clear Status Filter
-
-    document.getElementById("anyStatusFilter").addEventListener("click", function(){
-
-        document.getElementById("statusFilterSelection").textContent = "Any Status";
-
-        draftStatusFilter = "Any Status"; // Temporary storage of the new status filter
-
-        // Save local storage
-        localStorage.setItem("statusFilter", "any"); // Doesn't integrate with database so this is ideal
-
-    });
-
-    // Name Filter
-
-    document.getElementById("nameFilter").addEventListener("input", function(){
-
-        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
-        
-        draftNameFilter = document.getElementById("nameFilter").value; // Temporary storage of the new name filter
-
-        // Save local storage
-        localStorage.setItem("nameFilter", draftNameFilter); // Doesn't integrate with database so this is ideal
-
-        // =================================================
-        // Code which handles autosuggestion
-        // =================================================
-
-        var dataListAutoSuggest = document.getElementById("autoSuggest"); // Fetch the datalist autosuggest word container
-                
-        if (dataListAutoSuggest != null){ // check if there is an existing datalist
-
-            // datalist exists & needs to be deleted for it to be reset for the next autosuggest
-
-            dataListAutoSuggest.remove();
-
-        }
-
-        userTasks.then(data => { // After the promise 'userTasks' has been fullfilled, pass the task list data into 'data'
-
-            potentialAutoSuggestion = autocompleteSuggest(draftNameFilter, data); // See if there is any matches
-
-            if (potentialAutoSuggestion != "No-Suggestions"){
-
-                // There are suggestions!
-
-                var listWithoutExactMatches = [];
-
-                for (suggestIndex = 0; suggestIndex != potentialAutoSuggestion.length; suggestIndex++){
-
-                    // Iterate through the auto suggestions and eliminate exact matches from the filter text
-
-                    if (potentialAutoSuggestion[suggestIndex].toLowerCase() != draftNameFilter.toLowerCase()){
-
-                        // Not an exact match, can push this to the list of autosuggestions to use
-                        listWithoutExactMatches.push(potentialAutoSuggestion[suggestIndex]);
-
-                    }
-
-                }
-
-                if (listWithoutExactMatches.length > 0){ // Check if there are any entries left after the exact matches check
-
-                    // Create the datalist which will store the autosuggestion(s)
-                    var dataListAutoSuggest = document.createElement("DATALIST");
-
-                    // Set the ID of the datalist
-                    dataListAutoSuggest.setAttribute("id", "autoSuggest");
-
-                    // Attach the datalist to the name filter form
-                    document.getElementById("nameFilterForm").appendChild(dataListAutoSuggest);
-
-                    for (suggestIndex = 0; suggestIndex != listWithoutExactMatches.length; suggestIndex++){
-
-                        // Iterate through the auto suggestions so we can add them all to the datalist
-
-                        // Create the auto suggest option which will get injected inside of the datalist
-                        var autoSuggestion = document.createElement("OPTION");
-
-                        // Potential Suggestion(s) are safe from XSS attacks as all tasks were previously filtered / escaped
-
-                        // Set the auto suggested task value
-                        autoSuggestion.setAttribute("value", listWithoutExactMatches[suggestIndex]); 
-
-                        // Inject the autosuggestion inside of the datalist
-                        document.getElementById("autoSuggest").appendChild(autoSuggestion);
-
-                    }
-
-                }
-
-            }
-
-        });
-        
-    });
-
-    // Date Start Filter
-
-    document.getElementById("dateStartFilter").addEventListener("input", function(){
-
-        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
-        
-        draftDateStartFilter = document.getElementById("dateStartFilter").value; // Temporary storage of the new date filter
-
-        // Save local storage
-        localStorage.setItem("dateStartFilter", draftDateStartFilter); // Doesn't integrate with database so this is ideal
-    });
-
-    // Date End Filter
-
-    document.getElementById("dateEndFilter").addEventListener("input", function(){
-
-        // Output escaping is not required for filters because they are only being compared through PHP and not injected anywhere in HTML
-        
-        draftDateEndFilter = document.getElementById("dateEndFilter").value; // Temporary storage of the new date filter
-
-        // Save local storage
-        localStorage.setItem("dateEndFilter", draftDateEndFilter); // Doesn't integrate with database so this is ideal
-
-    });
-
-    // =====================================
-
-    // Apply And Clear Filter Buttons Logic
-
-    // =====================================
-
-    // Apply Filter Logic
-
-    document.getElementById("applyFilterButton").addEventListener("click", function(){
-
-        // Merge the drafted values with the global variables
-        statusFilter = draftStatusFilter;
-        nameFilter = draftNameFilter;
-        dateStartFilter = draftDateStartFilter;
-        dateEndFilter = draftDateEndFilter;
-
-        fetch("../ajax/filter-tasks.php", { // Send a fetch request where to send the data in for filtration
-
-                    "method": "POST", // // Specify that the data will be passed as POST
-
-                    "headers": {
-
-                        "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
-
-                    },
-
-                    "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
-
-                        // The actual data being passed [A JSON Object]
-
-                        {
-                            "statusFilter": statusFilter,
-                            "nameFilter": nameFilter,
-                            "dateStartFilter": dateStartFilter,
-                            "dateEndFilter": dateEndFilter
-                        }
-                    )
-                }).then(function(response){ // Catch the response
-
-                    return response.text(); // Return the response
-
-                }).then(function(data){ // // Fetch the result and pass it into data
-
-                    // The data passed is being checked with double quotations marks because it was passed as a JSON string
-
-                    if (data != '"Fail"' && data != '"InvalidDates"' && data != '"InvalidDateRange"' && data != '"FormatFail"'){ // Filter Was A Success
-
-                        // Since filter will be applied, reset selection
-                        currentIndexSelection = -1;
-                        currentTaskID = -1;
-                        currentTaskName = "[None]";
-
-                        var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
-
-                        if (textAdditionalMenu != null){
-
-                            // Need to eliminate the additional task menu since the task was removed & selection cancelled
-
-                            textAdditionalMenu.remove();
-
-                        }
-
-                        taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
-
-                        taskTableBody.textContent = ""; // Clear all Previous Entries
-                        parsedData = JSON.parse(data); // Parse JSON data to turn it form a string into an object we can use
-
-                        for (index = 0; index != parsedData.length; index++){ // Iterate through the filtered tasks
-
-                            newTableRow = taskTableBody.insertRow(-1); // Create a new row at the end where the injected task will be placed
-
-                            // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
-                            newTableRow.classList.add("task");
-
-                            // Create cells for the injected task's values
-                            newTableRow.insertCell(0);
-                            newTableRow.insertCell(1);
-                            newTableRow.insertCell(2);
-                            newTableRow.insertCell(3);
-
-                            newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
-
-                            // Check If Deadline Is Set & Inject
-
-                            if (parsedData[index]["taskDeadline"] == "0000-00-00"){
-
-                                newTableRow.cells[1].textContent = "No Deadline";
-
-                            } else {
-
-                                newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
-
-                            }
-
-                            // Check Status & Inject
-
-                            if (parsedData[index]["pending"] == 1){
-
-                                newTableRow.cells[2].textContent = "Pending";
-
-                            } else {
-
-                                newTableRow.cells[2].textContent = "Completed";
-
-                            }
-
-                            newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
-
-                            newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
-
-                            // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
-                            newTableRow.addEventListener("click", function() { 
-
-                                // Code which triggers with the 'click' event listener
-                                
-                                if (currentIndexSelection != -1){ // There was a previous selection
-
-                                    tasks = document.querySelectorAll(".task"); // Update the list of all tasks
-
-                                    tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
-
-                                }
-
-                                this.style.backgroundColor = "#73d41e"; // Set current selection to green
-
-                                currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
-
-                                currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
-
-                                spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
-
-                                currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
-
-                                // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
-                                
-                                // If they don't exist, it returns null
-                                var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
-                                var taskIDContainer = document.getElementById("taskID");
-
-                                if (modifySelection != null){
-                                    modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
-                                }
-
-                                if (taskIDContainer != null){
-                                    taskIDContainer.value = currentTaskID;
-                                }
-
-                            });
-                        }
-
-                        // Check if there are any tasks after the filter was applied
-
-                        if (taskTableBody.rows.length == 0){  // No tasks visible
-
-                            // Inject the 'No Tasks' preview again
-
-                            taskTableBody.insertRow(); // Inject a row since there are none
-
-                            // Inject cells in this new row
-                            taskTableBody.rows[0].insertCell(0); 
-                            taskTableBody.rows[0].insertCell(1);
-                            taskTableBody.rows[0].insertCell(2);
-
-                            // Inject the preview spanning across the entire table
-
-                            taskTableBody.rows[0].cells[0].textContent = "N-A";
-                            taskTableBody.rows[0].cells[1].textContent = "No tasks yet";
-                            taskTableBody.rows[0].cells[2].textContent = "N-A";
-
-                            taskTableBody.rows[0].setAttribute("id", "noTasks"); // Give ID of no Tasks 
-
-                        }
-                        
-                    } else {
-                        if (data == '"InvalidDates"'){
-
-                            // Display the error to the user
-
-                            message = document.getElementById("message");
-
-                            message.textContent = "Error! Invalid dates provided";
-
-                        } else if (data == '"InvalidDateRange"'){
-
-                            // Display the error to the user
-
-                            message = document.getElementById("message");
-
-                            message.textContent = "Error! The start date should be before the end date";
-
-                        } else if (data == '"FormatFail"'){
-
-                            message = document.getElementById("message");
-
-                            message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
-
-                        }
-                    }
-                }
-            )
-    });
-
-    // Clear all filters button logic
-    document.getElementById("clearFilterButton").addEventListener("click", function(){
-
-        // Reset All Filter Settings
-
-        statusFilter = "Any Status";
-        draftStatusFilter = "Any Status";
-        document.getElementById("statusFilterSelection").textContent = "Any Status";
-        localStorage.setItem("statusFilter", "");
-
-        nameFilter =  "";
-        draftNameFilter = "";
-        document.getElementById("nameFilter").value = "";
-        localStorage.setItem("nameFilter", "");
-
-
-        dateStartFilter = "";
-        draftDateStartFilter = "";
-        document.getElementById("dateStartFilter").value = "";
-        localStorage.setItem("dateStartFilter", "");
-
-        dateEndFilter = "";
-        draftDateEndFilter = "";
-        document.getElementById("dateEndFilter").value = "";
-        localStorage.setItem("dateEndFilter", "");
-
-        fetch("../ajax/fetch-tasks.php", { // Send a fetch request to get all the tasks of the user
-
-            "method": "POST", // // Specify that the data will be passed as POST
-
-            "headers": {
-
-                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
-
-            },
-
-            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
-
-                // The actual data being passed [A JSON Object] - In this case, no data needs to be passed
-
-                {
-
-                }
-            )
-        }).then(function(response){ // Catch the response
-
-            return response.text(); // Return the response
-
-        }).then(function(data){ // // Fetch the result and pass it into data
-
-            // The data passed is being checked with double quotations marks because it was passed as a JSON string
-
-            if (data != '"Fail"' && data != '"FormatFail"'){ // Data recieved successfully
-
-                parsedData = JSON.parse(data); // Convert JSON String to Object for handling
-
-                // Since all tasks will be stripped first, reset selection
-                currentIndexSelection = -1;
-                currentTaskID = -1;
-                currentTaskName = "[None]";
-
-                var textAdditionalMenu = document.getElementById("contentWrapperTaskAdditionalMenu");
-
-                if (textAdditionalMenu != null){
-
-                    // Need to eliminate the additional task menu since the task was removed & selection cancelled
-
-                    textAdditionalMenu.remove();
-
-                }
-
-                taskTableBody = document.getElementById("taskTableBody"); // Get Table Body where injection will take place
-
-                taskTableBody.textContent = ""; // Clear all Previous Entries
-
-                for (index = 0; index != parsedData.length; index++){ // Iterate through all the tasks and inject them
-                
-                    newTableRow = taskTableBody.insertRow(-1); // Create a new row at the end where the injected task will be placed
-
-                    // Put the row under the generic 'Task' to enable task functionality such as hover effects, etc..
-                    newTableRow.classList.add("task");
-
-                    // Create cells for the injected task's values
-                    newTableRow.insertCell(0);
-                    newTableRow.insertCell(1);
-                    newTableRow.insertCell(2);
-                    newTableRow.insertCell(3);
-
-                    newTableRow.cells[0].textContent = parsedData[index]["taskName"]; // Inject Task Name
-
-                    // Check If Deadline Is Set & Inject
-
-                    if (parsedData[index]["taskDeadline"] == "0000-00-00"){
-
-                        newTableRow.cells[1].textContent = "No Deadline";
-
-                    } else {
-
-                        newTableRow.cells[1].textContent = parsedData[index]["taskDeadline"];
-
-                    }
-
-                    // Check Status & Inject
-
-                    if (parsedData[index]["pending"] == 1){
-
-                        newTableRow.cells[2].textContent = "Pending";
-
-                    } else {
-
-                        newTableRow.cells[2].textContent = "Completed";
-
-                    }
-
-                    newTableRow.cells[3].textContent = parsedData[index]["taskID"]; // Inject Task ID
-
-                    newTableRow.cells[3].style.display = "none"; // style.visibility = "hidden" is not used because it breaks the table alignment
-
-                    // Add an event listener for this task which will enable 'Clicking it' like the other existing tasks.
-                    newTableRow.addEventListener("click", function() { 
-
-                        // Code which triggers with the 'click' event listener
-                        
-                        if (currentIndexSelection != -1){ // There was a previous selection
-
-                            tasks = document.querySelectorAll(".task"); // Update the list of all tasks
-
-                            tasks[currentIndexSelection].style.backgroundColor = null; // Reset previous selection's colour
-
-                        }
-
-                        this.style.backgroundColor = "#73d41e"; // Set current selection to green
-
-                        currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
-
-                        currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
-
-                        spawnTaskAdditionalMenu(); // Spawn the additional information / GIF menu
-
-                        currentIndexSelection = getTableIndexFromTaskID(currentTaskID);
-
-                        // Fetch the tag which mentions the current 'Selection' and change the value to reflect the actual selection
-                        
-                        // If they don't exist, it returns null
-                        var modifySelection = document.getElementById("selection"); // (for modify/delete options only)
-                        var taskIDContainer = document.getElementById("taskID");
-
-                        if (modifySelection != null){
-                            modifySelection.textContent = currentTaskName; // Only set the data if the relevant paragraph container exists
-                        }
-
-                        if (taskIDContainer != null){
-                            taskIDContainer.value = currentTaskID;
-                        }
-
-                    });
-                }
-            } else {
-                if (data == '"FormatFail"'){
-
-                    message = document.getElementById("message");
-
-                    message.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
-
-                }
-            }
-        })   
-    });
 });
 
 // Checks if an input respects the allowedCharacters criteria -> Input filtering + Output Escaping two-in-one function
@@ -2090,15 +2124,43 @@ function autocompleteSuggest(queryInput, listOfTaskNames){
     
 }
 
-function spawnTaskAdditionalMenu(){
+// Function which goes over cookies and returns the value of the found cookie (if it was found)
+function seekCookie(cookieToFind){
 
+    cookies = document.cookie; // Fetch the saved cookies
+
+    splitCookies = cookies.split(";"); // Seperate all the cookies
+
+    for (cookieIndex = 0; cookieIndex != splitCookies.length; cookieIndex++){
+
+        // Iterate through cookies to check if the cookie being sought is found
+
+        if (cookieToFind == splitCookies[cookieIndex]){
+
+            return true; // The cookie was found
+
+        }
+    }
+
+    return false; // The cookie was not found
+}
+
+function spawnTaskAdditionalMenuPopup(){
     currentGIFSelectionID = ""; // Reset the current selected GIF since the menu was changed
 
     // Spawn the template
-    injectMenuToDiv("taskAdditionalMenuContainer", "taskAdditionalMenu");
-    
+    injectMenuToDiv("popupScreenDiv", "taskAdditionalMenuPopup");
+
     // Update the task name
     document.getElementById("taskAdditionalMenu-TaskName").textContent = currentTaskName;
+
+    // Attach an event listener on the background area of the popup so that when the user clicks out of it,
+    // They exit the popup
+    document.getElementById("popupScreen").addEventListener("click", function (){
+
+        document.getElementById("popupScreenDiv").innerHTML = "";
+
+    });
 
     // Send a fetch request to the database to check if there is already a GIF set & update the GIF if so
 
@@ -2141,15 +2203,21 @@ function spawnTaskAdditionalMenu(){
             // Select the Div To Inject The GIF Into
             GIFContainer = document.getElementById("taskGIF");
 
-            GIFContainer.innerHTML = ""; // Remove the previous HTML (such as the text ["None"]) from the container
+            if (GIFContainer != null){
+                
+                // GIF container was not deleted before this took place
 
-            // Actual GIF Injection
-            GIFContainer.appendChild(imageTagToInjectForTask);
+                GIFContainer.innerHTML = ""; // Remove the previous HTML (such as the text ["None"]) from the container
+
+                // Actual GIF Injection
+                GIFContainer.appendChild(imageTagToInjectForTask);
+
+            }
 
         }
     })
 
-    // Send a fetch request to the database to check if there is already additionla information text set & update if so
+    // Send a fetch request to the database to check if there is already additional information text set & update if so
 
     fetch("../ajax/fetch-additional-text.php", {
 
@@ -2181,7 +2249,15 @@ function spawnTaskAdditionalMenu(){
 
             // Set the additional text
 
-            document.getElementById("additionalInformationText").value = additionalTextData;
+            additionalInformationText = document.getElementById("additionalInformationText");
+
+            if (additionalInformationText != null){
+
+                // It exists (was not erased before the text was populated)
+
+                additionalInformationText.value = additionalTextData;
+
+            }
 
         }
     })
@@ -2263,7 +2339,7 @@ function spawnTaskAdditionalMenu(){
 
                                     currentGIFSelectionID = ""; // Reset Selection
 
-                                    for (gifDeletionIndex = 0; gifDeletionIndex != 3; gifDeletionIndex++){
+                                    for (gifDeletionIndex = 0; gifDeletionIndex != 2; gifDeletionIndex++){
                                         
                                         // Iterate through the existing DIVs and eliminate any content
 
@@ -2273,70 +2349,19 @@ function spawnTaskAdditionalMenu(){
 
                                     }
 
-                                    if (validGIFs.length >= 3){
+                                    // One Or Two GIFs are Available
 
-                                        // At least 3 GIFs (Max Displayed) Are Available
+                                    if (validGIFs.length >= 2){
 
-                                        for (gifInjectionIndex = 0; gifInjectionIndex != 3; gifInjectionIndex++){
+                                        // Expand the size of the white screen background for the GIF previews
 
-                                            // Iterate code 3 times to inject all 3 GIFs
+                                        document.getElementById("whiteScreen").style.paddingBottom = "264px";
 
-                                            // Select the DIV to inject the GIF into
+                                        // Iterate through two GIFs
 
-                                            divIDName = "GIF" + (gifInjectionIndex+1) + "_Preview";
+                                        for (gifInjectionIndex = 0; gifInjectionIndex != 2; gifInjectionIndex++){
 
-                                            // Select the Div To Inject The GIF Into
-                                            divToInject = document.getElementById(divIDName);
-
-                                            // Create the image element (GIF container)
-                                            imageToInject = document.createElement("img");
-
-                                            // Set the source to be the valid GIFY url which we filtered through
-                                            imageToInject.src = validGIFs[gifInjectionIndex].url;
-
-                                            imageToInject.id = "GIF" + (gifInjectionIndex+1); // Set Image ID to identify it
-
-                                            divToInject.appendChild(imageToInject); // Actual GIF Injection
-
-                                            // Attach an event listener to the GIF to know what the current selection is
-                                            imageToInject.addEventListener("click", function() {
-
-                                                currentGIFSelectionID = this.id; // Set the current selection
-
-                                                // Reset any border selections
-
-                                                GIF1 = document.getElementById("GIF1");
-                                                GIF2 = document.getElementById("GIF2");
-                                                GIF3 = document.getElementById("GIF3");
-
-                                                if (GIF1 != null){
-                                                    // GIF1 Exists - Clear Border
-                                                    GIF1.style.border = "none";
-                                                }
-                                                if (GIF2 != null){
-                                                    // GIF2 Exists - Clear Border
-                                                    GIF2.style.border = "none";
-                                                }
-                                                if (GIF3 != null){
-                                                    // GIF3 Exists - Clear Border
-                                                    GIF3.style.border = "none";
-                                                }
-
-                                                // Set the current selection's border
-
-                                                this.style.border = "solid";
-
-                                            });
-
-                                        }
-
-                                    } else {
-
-                                        // One Or Two GIFs are Available
-
-                                        for (gifInjectionIndex = 0; gifInjectionIndex != validGIFs.length; gifInjectionIndex++){
-
-                                            // Iterate code 3 times to inject all 3 GIFs
+                                            // Iterate code to inject GIFs
 
                                             // Select the Div To Inject The GIF Into
                                             divToInject = document.getElementById("GIF" + (gifInjectionIndex+1) + "_Preview");
@@ -2360,7 +2385,6 @@ function spawnTaskAdditionalMenu(){
 
                                                 GIF1 = document.getElementById("GIF1");
                                                 GIF2 = document.getElementById("GIF2");
-                                                GIF3 = document.getElementById("GIF3");
 
                                                 if (GIF1 != null){
                                                     // GIF1 Exists - Clear Border
@@ -2369,10 +2393,6 @@ function spawnTaskAdditionalMenu(){
                                                 if (GIF2 != null){
                                                     // GIF2 Exists - Clear Border
                                                     GIF2.style.border = "none";
-                                                }
-                                                if (GIF3 != null){
-                                                    // GIF3 Exists - Clear Border
-                                                    GIF3.style.border = "none";
                                                 }
 
                                                 // Set the current selection's border
@@ -2383,11 +2403,58 @@ function spawnTaskAdditionalMenu(){
 
                                         }
 
-                                    }
+                                    } else if (validGIFs.length == 1) {
 
+                                        // Expand the size of the white screen background for the GIF previews
+
+                                        document.getElementById("whiteScreen").style.paddingBottom = "164px";
+
+                                        // Add only one GIF
+
+                                        // Select the Div To Inject The GIF Into
+                                        divToInject = document.getElementById("GIF1_Preview");
+
+                                        // Create the image element (GIF container)
+                                        imageToInject = document.createElement("img");
+
+                                        // Set the source to be the valid GIFY url which we filtered through
+                                        imageToInject.src = validGIFs[0].url;
+
+                                        imageToInject.id = "GIF1"; // Set Image ID to identify it
+
+                                        divToInject.appendChild(imageToInject); // Actual GIF Injection
+
+                                        // Attach an event listener to the GIF to know what the current selection is
+                                        imageToInject.addEventListener("click", function() {
+
+                                            currentGIFSelectionID = this.id; // Set the current selection
+
+                                            // Reset any border selections
+
+                                            GIF1 = document.getElementById("GIF1");
+                                            GIF2 = document.getElementById("GIF2");
+
+                                            if (GIF1 != null){
+                                                // GIF1 Exists - Clear Border
+                                                GIF1.style.border = "none";
+                                            }
+                                            if (GIF2 != null){
+                                                // GIF2 Exists - Clear Border
+                                                GIF2.style.border = "none";
+                                            }
+
+                                            // Set the current selection's border
+
+                                            this.style.border = "solid";
+
+                                        });
+
+                                    }
+                                    
                                     // GIFs were Injected - Now Inject The Rest Of The Menu
 
-                                    injectMenuToDiv("gifSubmissionContainer", "gifSubmissionContainerTemplate");
+                                    injectMenuToDiv("gifSubmissionContainerText", "gifSubmissionContainerTextTemplate");
+                                    injectMenuToDiv("gifSubmissionContainerButton", "gifSubmissionContainerButtonTemplate");
 
                                     // Listen to the 'Confirm GIF' button
                                     document.getElementById("ConfirmGIF").addEventListener("click", function(){
@@ -2417,8 +2484,8 @@ function spawnTaskAdditionalMenu(){
                                             // Clear Out GIF Selection Menu Now That GIF Was Set
                                             document.getElementById("GIF1_Preview").innerHTML = "";
                                             document.getElementById("GIF2_Preview").innerHTML = "";
-                                            document.getElementById("GIF3_Preview").innerHTML = "";
-                                            document.getElementById("gifSubmissionContainer").innerHTML = "";
+                                            document.getElementById("gifSubmissionContainerText").innerHTML = "";
+                                            document.getElementById("gifSubmissionContainerButton").innerHTML = "";
                                             GIFSearchField.value = "";
 
                                             // Reset Selection
@@ -2464,6 +2531,9 @@ function spawnTaskAdditionalMenu(){
                                                     messageAdditionalMenu = document.getElementById("messageAdditionalMenu");
 
                                                     messageAdditionalMenu.textContent = "GIF Has Been Set!";
+
+                                                    // Reset whiteScreen expanded size
+                                                    document.getElementById("whiteScreen").style.paddingBottom = "0px";
                                                 }
                                             })
 
@@ -2616,25 +2686,4 @@ function spawnTaskAdditionalMenu(){
         })
 
     });
-}
-
-// Function which goes over cookies and returns the value of the found cookie (if it was found)
-function seekCookie(cookieToFind){
-
-    cookies = document.cookie; // Fetch the saved cookies
-
-    splitCookies = cookies.split(";"); // Seperate all the cookies
-
-    for (cookieIndex = 0; cookieIndex != splitCookies.length; cookieIndex++){
-
-        // Iterate through cookies to check if the cookie being sought is found
-
-        if (cookieToFind == splitCookies[cookieIndex]){
-
-            return true; // The cookie was found
-
-        }
-    }
-
-    return false; // The cookie was not found
 }
