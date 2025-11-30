@@ -2,6 +2,12 @@
 
 session_start(); # Starting the session
 
+if (empty($_SESSION['token'])) { // CSRF Token Check
+
+    $_SESSION['token'] = bin2hex(random_bytes(32)); // No Token was found, assign one
+    
+}
+
 require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
 require '../required/database-functions.php'; # Connection to database & database functions
@@ -17,6 +23,7 @@ if (checkSessionStatus() == "Valid") {
         "websiteName" => $websiteName,
         "username" => $_SESSION["username"],
         "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
+        "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
         
     ));
 
@@ -58,7 +65,8 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
             "websiteName" => $websiteName,
             "username" => $_POST["fusername_login"],
-            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
+            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
+            "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
         
         ));
 
@@ -98,7 +106,8 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
             "websiteName" => $websiteName,
             "username" => $_POST["fusername_signup"],
-            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"])
+            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
+            "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
         
         ));
 

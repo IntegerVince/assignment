@@ -14,4 +14,10 @@ if (mysqli_connect_error()) {
 
 # Good connection
 
+if (empty($_SESSION['token'])) { // CSRF Token Check
+
+    $_SESSION['token'] = bin2hex(random_bytes(32)); // No Token was found, assign one
+    
+}
+
 ?>

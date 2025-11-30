@@ -3,179 +3,209 @@ document.addEventListener("DOMContentLoaded", () => {
 
         buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
 
-        // Verify captcha data before putting additional load on the database through ajax checking
-        if (grecaptcha.getResponse() == ""){
+        // Validate the CSRF Token before anything else
+        fetch("../ajax/validate-csrfToken.php", { // Send a fetch request where to send the data in for validation
 
-            // Recaptcha field was left blank
+            "method": "POST", // Specify that the data will be passed as POST
 
-            errorMessage = document.getElementById("errorMessage");
+            "headers": {
 
-            errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
+                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-        } else {
+            },
 
-            // Can validate captcha information
+            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-            fetch("../ajax/verify-captcha.php", { // Send a fetch request where to send the data in for validation
+                // The actual data being passed [A JSON Object]
 
-                "method": "POST", // Specify that the data will be passed as POST
+                {
+                    "csrfToken": document.getElementById("csrfToken").value,
+                }
+            )
+        }).then(function(response){ // Catch the response
 
-                "headers": {
+            return response.text(); // Return the response
 
-                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+        }).then(function(csrfTokenData){ // Fetch the result and pass it into data
 
-                },
+            if (csrfTokenData == "Valid"){ // Token is valid so we can proceed
 
-                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                // Verify captcha data before putting additional load on the database through ajax checking
 
-                    // The actual data being passed [A JSON Object]
+                if (grecaptcha.getResponse() == ""){
 
-                    {
-                        "captchaToken": grecaptcha.getResponse()
-                    }
-                )
-            }).then(function(response){ // Catch the response
+                    // Recaptcha field was left blank
 
-                return response.text(); // Return the response
+                    errorMessage = document.getElementById("errorMessage");
 
-            }).then(function(data){ // Fetch the result and pass it into data
+                    errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
 
-                if (data == "Success"){
+                } else {
 
-                    // Successful captcha - can proceed with processing provided information
+                    // Can validate captcha information
 
-                    // Fetch the data from the input forms
-                    var username = document.getElementById("fname").value;
-                    var password = document.getElementById("fpass").value;
+                    fetch("../ajax/verify-captcha.php", { // Send a fetch request where to send the data in for validation
 
-                    if (username == "" && password == ""){
+                        "method": "POST", // Specify that the data will be passed as POST
 
-                        errorMessage = document.getElementById("errorMessage");
+                        "headers": {
 
-                        errorMessage.textContent = "Error! Username and Password cannot be left blank!";
+                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                    } else if (username == ""){
+                        },
 
-                        errorMessage = document.getElementById("errorMessage");
+                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                        errorMessage.textContent = "Error! Username cannot be left blank!";
+                            // The actual data being passed [A JSON Object]
 
-                    } else if (password == ""){
+                            {
+                                "captchaToken": grecaptcha.getResponse()
+                            }
+                        )
+                    }).then(function(response){ // Catch the response
 
-                        errorMessage = document.getElementById("errorMessage");
+                        return response.text(); // Return the response
 
-                        errorMessage.textContent = "Error! Password cannot be left blank!";
+                    }).then(function(data){ // Fetch the result and pass it into data
 
-                    } else { // No data was left blank
+                        if (data == "Success"){
 
-                        if (isValidInput(username)){
+                            // Successful captcha - can proceed with processing provided information
 
-                            // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
+                            // Fetch the data from the input forms
+                            var username = document.getElementById("fname").value;
+                            var password = document.getElementById("fpass").value;
 
-                            if (username.length <= 32){ // Username limit not exceeded
+                            if (username == "" && password == ""){
 
-                                if (password.length <= 32){ // Password limit not exceeded
+                                errorMessage = document.getElementById("errorMessage");
 
-                                    // All checks made - can procceed
+                                errorMessage.textContent = "Error! Username and Password cannot be left blank!";
 
-                                    fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
+                            } else if (username == ""){
 
-                                        "method": "POST", // Specify that the data will be passed as POST
+                                errorMessage = document.getElementById("errorMessage");
 
-                                        "headers": {
+                                errorMessage.textContent = "Error! Username cannot be left blank!";
 
-                                            "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                            } else if (password == ""){
 
-                                        },
+                                errorMessage = document.getElementById("errorMessage");
 
-                                        "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+                                errorMessage.textContent = "Error! Password cannot be left blank!";
 
-                                            // The actual data being passed [A JSON Object]
+                            } else { // No data was left blank
 
-                                            {
-                                                "username": username,
-                                                "password": password
-                                            }
-                                        )
-                                    }).then(function(response){ // Catch the response
+                                if (isValidInput(username)){
 
-                                        return response.text(); // Return the response
+                                    // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                                    }).then(function(data){ // Fetch the result and pass it into data
+                                    if (username.length <= 32){ // Username limit not exceeded
 
-                                        if (data == "InvalidUsername" || data == "NoAccounts"){ // Username is unique or no accounts in database, so we can proceed
+                                        if (password.length <= 32){ // Password limit not exceeded
 
-                                            // The username is unique so we can create an account for the user
+                                            // All checks made - can procceed
 
-                                            document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
+                                            fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
 
-                                            document.getElementById("signupForm").submit(); // Submit the form for login
+                                                "method": "POST", // Specify that the data will be passed as POST
 
-                                        } else if (data == "FormatFail"){
+                                                "headers": {
 
-                                            errorMessage = document.getElementById("errorMessage");
+                                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                                },
 
-                                        }  else if (data == "LengthFailUsername"){
+                                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                                            errorMessage = document.getElementById("errorMessage");
+                                                    // The actual data being passed [A JSON Object]
 
-                                            errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
+                                                    {
+                                                        "username": username,
+                                                        "password": password
+                                                    }
+                                                )
+                                            }).then(function(response){ // Catch the response
 
-                                        }  else if (data == "LengthFailPassword"){
+                                                return response.text(); // Return the response
 
-                                            errorMessage = document.getElementById("errorMessage");
+                                            }).then(function(data){ // Fetch the result and pass it into data
 
-                                            errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
+                                                if (data == "InvalidUsername" || data == "NoAccounts"){ // Username is unique or no accounts in database, so we can proceed
+
+                                                    // The username is unique so we can create an account for the user
+
+                                                    document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
+
+                                                    document.getElementById("signupForm").submit(); // Submit the form for login
+
+                                                } else if (data == "FormatFail"){
+
+                                                    errorMessage = document.getElementById("errorMessage");
+
+                                                    errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                                }  else if (data == "LengthFailUsername"){
+
+                                                    errorMessage = document.getElementById("errorMessage");
+
+                                                    errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
+
+                                                }  else if (data == "LengthFailPassword"){
+
+                                                    errorMessage = document.getElementById("errorMessage");
+
+                                                    errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
+
+                                                } else {
+
+                                                    errorMessage = document.getElementById("errorMessage");
+
+                                                    errorMessage.textContent = "Error! That username is not unique!";
+                                                    
+                                                }
+                                            })
 
                                         } else {
 
                                             errorMessage = document.getElementById("errorMessage");
 
-                                            errorMessage.textContent = "Error! That username is not unique!";
-                                            
+                                            errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
+
                                         }
-                                    })
+
+                                    } else {
+
+                                        errorMessage = document.getElementById("errorMessage");
+
+                                        errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
+
+                                    }
 
                                 } else {
 
                                     errorMessage = document.getElementById("errorMessage");
 
-                                    errorMessage.textContent = "Error! Password has exceeded character limit! Make sure it is 32 characters or less";
-
+                                    errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
                                 }
-
-                            } else {
-
-                                errorMessage = document.getElementById("errorMessage");
-
-                                errorMessage.textContent = "Error! Username has exceeded character limit! Make sure it is 32 characters or less";
-
                             }
 
                         } else {
 
                             errorMessage = document.getElementById("errorMessage");
 
-                            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                            errorMessage.textContent = "Error! Invalid Recaptcha! Please Try Again";
+
                         }
-                    }
+                    })
+                    
+                    // In all instances, the recaptcha needs to be reset after a check is done so the user can't spam the server
 
-                } else {
-
-                    errorMessage = document.getElementById("errorMessage");
-
-                    errorMessage.textContent = "Error! Invalid Recaptcha! Please Try Again";
+                    grecaptcha.reset();
 
                 }
-            })
-            
-            // In all instances, the recaptcha needs to be reset after a check is done so the user can't spam the server
-
-            grecaptcha.reset();
-
-        }
+            }
+        });
     });
 });
 

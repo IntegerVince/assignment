@@ -2,6 +2,12 @@
 
 session_start(); # Starting the session
 
+if (empty($_SESSION['token'])) { // CSRF Token Check
+
+    $_SESSION['token'] = bin2hex(random_bytes(32)); // No Token was found, assign one
+    
+}
+
 require '../required/twig-loader.php'; # Shortcut to load composer, twig & its templates
 
 require '../required/database-functions.php'; # Connection to database & database functions
@@ -28,7 +34,8 @@ if (checkSessionStatus() == "Valid") {
 echo $twig->render("signup-login-template.twig", array(
 
     "websiteName" => $websiteName,
-    "templateType" => "Login"
+    "templateType" => "Login",
+    "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
 
 ));
 

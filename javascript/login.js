@@ -3,51 +3,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
         buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
 
-        // Fetch the data from the input forms
-        var username = document.getElementById("fname").value;
-        var password = document.getElementById("fpass").value;
+        // Validate the CSRF Token before anything else
+        fetch("../ajax/validate-csrfToken.php", { // Send a fetch request where to send the data in for validation
 
-        if (grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
+            "method": "POST", // Specify that the data will be passed as POST
 
-            errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
-                        
-        } else {
+            "headers": {
 
-            // Can validate captcha information
+                "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-            fetch("../ajax/verify-captcha.php", { // Send a fetch request where to send the data in for validation
+            },
 
-                "method": "POST", // Specify that the data will be passed as POST
+            "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
 
-                "headers": {
+                // The actual data being passed [A JSON Object]
 
-                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
+                {
+                    "csrfToken": document.getElementById("csrfToken").value,
+                }
+            )
+        }).then(function(response){ // Catch the response
 
-                },
+            return response.text(); // Return the response
 
-                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+        }).then(function(csrfTokenData){ // Fetch the result and pass it into data
 
-                    // The actual data being passed [A JSON Object]
+            if (csrfTokenData == "Valid"){ // Token is valid so we can proceed
 
-                    {
-                        "captchaToken": grecaptcha.getResponse()
-                    }
-                )
-            }).then(function(response){ // Catch the response
+                // Fetch the data from the input forms
+                var username = document.getElementById("fname").value;
+                var password = document.getElementById("fpass").value;
 
-                return response.text(); // Return the response
+                if (grecaptcha.getResponse() == ""){ // Recaptcha field was left blank
 
-            }).then(function(data){ // Fetch the result and pass it into data
+                    errorMessage.textContent = "Error! Recaptcha is blank! Please fill it out before submitting";
+                                
+                } else {
 
-                if (data == "Success"){
+                    // Can validate captcha information
 
-                    // Successful captcha - can proceed with processing provided information
-
-                    if (isValidInput(username)){
-
-                    // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
-
-                    fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
+                    fetch("../ajax/verify-captcha.php", { // Send a fetch request where to send the data in for validation
 
                         "method": "POST", // Specify that the data will be passed as POST
 
@@ -62,74 +57,107 @@ document.addEventListener("DOMContentLoaded", () => {
                             // The actual data being passed [A JSON Object]
 
                             {
-                                "username": username,
-                                "password": password
+                                "captchaToken": grecaptcha.getResponse()
                             }
                         )
                     }).then(function(response){ // Catch the response
 
                         return response.text(); // Return the response
 
-                    }).then(function(data){ // // Fetch the result and pass it into data
+                    }).then(function(data){ // Fetch the result and pass it into data
 
-                        if (data != "Valid"){ // A login data was not valid
+                        if (data == "Success"){
 
-                            errorMessage = document.getElementById("errorMessage");
-                            
-                            if (data == "InvalidPassword"){
+                            // Successful captcha - can proceed with processing provided information
 
-                                errorMessage.textContent = "Error! That password is incorrect";
+                            if (isValidInput(username)){
 
-                            } else if (data == "InvalidUsername"){
+                            // Input was filtered & checked for invalid characters to prevent XSS attacks - no output escaping required
 
-                                errorMessage.textContent = "Error! That username does not exist";
+                            fetch("../ajax/login-signup-auth.php", { // Send a fetch request where to send the data in for validation
 
-                            } else if (data == "NoAccounts"){
+                                "method": "POST", // Specify that the data will be passed as POST
 
-                                errorMessage.textContent = "Error! No accounts currently exist in the database";
+                                "headers": {
 
-                            } else if (data == "FormatFail"){
+                                    "Content-Type": "application/json; charset=utf8" // Specify the type of data that will be passed
 
-                                errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                                },
 
-                            }
+                                "body": JSON.stringify( // Convert the JSON Object to a JSON string before passing
+
+                                    // The actual data being passed [A JSON Object]
+
+                                    {
+                                        "username": username,
+                                        "password": password
+                                    }
+                                )
+                            }).then(function(response){ // Catch the response
+
+                                return response.text(); // Return the response
+
+                            }).then(function(data){ // // Fetch the result and pass it into data
+
+                                if (data != "Valid"){ // A login data was not valid
+
+                                    errorMessage = document.getElementById("errorMessage");
+                                    
+                                    if (data == "InvalidPassword"){
+
+                                        errorMessage.textContent = "Error! That password is incorrect";
+
+                                    } else if (data == "InvalidUsername"){
+
+                                        errorMessage.textContent = "Error! That username does not exist";
+
+                                    } else if (data == "NoAccounts"){
+
+                                        errorMessage.textContent = "Error! No accounts currently exist in the database";
+
+                                    } else if (data == "FormatFail"){
+
+                                        errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+
+                                    }
+
+                                } else {
+
+                                    // The login credentials were valid
+
+                                    document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
+
+                                    document.getElementById("loginForm").submit(); // Submit the form for login
+
+                                }
+
+                            })
 
                         } else {
 
-                            // The login credentials were valid
+                            errorMessage = document.getElementById("errorMessage");
 
-                            document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
+                            errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
+                            
+                        }
 
-                            document.getElementById("loginForm").submit(); // Submit the form for login
+                        } else {
+
+                            errorMessage = document.getElementById("errorMessage");
+
+                            errorMessage.textContent = "Error! Invalid Recaptcha! Please Try Again";
 
                         }
 
                     })
 
-                } else {
+                    // In all instances, the recaptcha needs to be reset after a check is done so the user can't spam the server
 
-                    errorMessage = document.getElementById("errorMessage");
-
-                    errorMessage.textContent = "Error! Invalid characters! Make sure you only include letters, numbers, and \"-\" symbol";
-                    
-                }
-
-                } else {
-
-                    errorMessage = document.getElementById("errorMessage");
-
-                    errorMessage.textContent = "Error! Invalid Recaptcha! Please Try Again";
+                    grecaptcha.reset();
 
                 }
-
-            })
-
-            // In all instances, the recaptcha needs to be reset after a check is done so the user can't spam the server
-
-            grecaptcha.reset();
-
-        }
-
+            }
+        });
     });
 });
 

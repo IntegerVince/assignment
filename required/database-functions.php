@@ -2,7 +2,11 @@
 
 # session_start(); is not included here because the caller script already does this
 
+if (empty($_SESSION['token'])) { // CSRF Token Check
 
+    $_SESSION['token'] = bin2hex(random_bytes(32)); // No Token was found, assign one
+    
+}
 
 # Checks the status of the current sessions for username and password (if set) and returns a status
 #

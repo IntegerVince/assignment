@@ -141,6 +141,7 @@
                 <input type="text" id="ftask" name="ftask_add" placeholder="exampleTask" required>
                 <label for="fdate">Due Date:</label>
                 <input type="date" id="fdate" name="fdate_add">
+                <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
                 <input class="button" type="submit" value="Add Task">
             </form>
         </template>
@@ -160,6 +161,7 @@
                 <div id="modifyTypeContainer"> <!-- Stores a menu (injected through javascript) depending on menu type. Default of Task Desc -->
                     <label for="taskDescription">Change to:</label>
                     <input type='text' id="taskDescription" name='taskDescription' value="" required>
+                    <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
                     <input class="button" type="submit" value="Modify Selected Task">
                 </div>
             </form>
@@ -170,7 +172,8 @@
             <p class="currentSelection">Current Selection:</p>
             <p class="selection" id="selection">[None]</p>
             <form id="submitForm">
-                <input type='hidden' id="taskID" name='taskID' value=""> 
+                <input type='hidden' id="taskID" name='taskID' value="">
+                <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
                 <input class="button" type="submit" value="Delete Selected Task">
             </form>
         </template>
@@ -178,6 +181,7 @@
         <template id="modifyTypeContainer-taskDescription">
             <label for="taskDescription">Change to:</label>
             <input type='text' id="taskDescription" name='taskDescription' value="" required>
+            <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
             <input class="button" type="submit" value="Modify Selected Task">
         </template>
 
@@ -185,11 +189,13 @@
             <label for="taskDueDate">Change to:</label>
             <input type='hidden' id="taskDueDateModification" name='taskDueDateModification' value="true"> <!-- In case date is left blank -->
             <input type='date' id="taskDueDate" name='taskDueDate' value="">
+            <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
             <input class="button" type="submit" value="Modify Selected Task">
         </template>
 
         <template id="modifyTypeContainer-status">
             <input type='hidden' id="taskStatusAction" name='taskStatusAction' value="true">
+            <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
             <input class="button" type="submit" value="Change Status">
         </template>
 
@@ -242,6 +248,7 @@
         </template>
 
         <template id="gifSubmissionContainerButtonTemplate">
+            <input type="hidden" id="csrfToken" name="csrfToken" value="{{ csrfToken }}">
             <button class="button displayBlockCenter" id="ConfirmGIF">Confirm Selection</button>
         </template>
     </body>
