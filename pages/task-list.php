@@ -90,30 +90,34 @@ if (isset($_POST["fusername_login"]) and isset($_POST["fpassword_login"])){
 
         # Invalid username status means that the username does not exist, so we can proceed
 
-        # Outcome 1 - Username Unique! Create account
+        if (isValidInput($_POST["fusername_signup"])){ // Validate that the username does not have any invalid formatting prior to accepting it
 
-        # Save the data to sessions so that the user will stay logged in with this new account
-        $_SESSION["username"] = $_POST["fusername_signup"];
-        $_SESSION["password"] = $_POST["fpassword_signup"];
+            # Outcome 1 - Username Unique! Create account
 
-        // Hash the password for the user
-        $hashedPassword = password_hash($_POST["fpassword_signup"], PASSWORD_DEFAULT);
+            # Save the data to sessions so that the user will stay logged in with this new account
+            $_SESSION["username"] = $_POST["fusername_signup"];
+            $_SESSION["password"] = $_POST["fpassword_signup"];
 
-        // Create New User
-        createNewUser($_POST["fusername_signup"], $hashedPassword);
+            // Hash the password for the user
+            $hashedPassword = password_hash($_POST["fpassword_signup"], PASSWORD_DEFAULT);
 
-        # Perform Render of task-list as logged in user
+            // Create New User
+            createNewUser($_POST["fusername_signup"], $hashedPassword);
 
-        echo $twig->render("task-list-template.twig", array(
+            # Perform Render of task-list as logged in user
 
-            "websiteName" => $websiteName,
-            "username" => $_POST["fusername_signup"],
-            "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
-            "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
-        
-        ));
+            echo $twig->render("task-list-template.twig", array(
 
-        die(); # Logged in - kill the PHP script
+                "websiteName" => $websiteName,
+                "username" => $_POST["fusername_signup"],
+                "taskList" => fetchTasks($_SESSION["username"],$_SESSION["password"]),
+                "csrfToken" => $_SESSION['token'] // Pass on the generated session csrf token
+            
+            ));
+
+            die(); # Logged in - kill the PHP script
+
+        }
 
     } # Other scenarios (Invalid password, etc.. are checked in the signup/login pages, not here)
 }
