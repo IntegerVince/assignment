@@ -1213,8 +1213,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                                                         currentTaskName = newTaskName; // Update the current selection name information
 
-                                                        document.getElementById("taskAdditionalMenu-TaskName").textContent = newTaskName; // Update the field here too
-
                                                     } else {
 
                                                         // No Longer matches the task name filter criteria - delete the task

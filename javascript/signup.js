@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
     document.getElementById("signupForm").addEventListener("submit", function (buttonEvent){
 
         buttonEvent.preventDefault(); // Prevent the button from automatically redirecting
