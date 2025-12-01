@@ -125,8 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     // The login credentials were valid
 
-                                    document.cookie = "newUser"; // Set the cookie to be that the user just signed up / logged in
-
                                     document.getElementById("loginForm").submit(); // Submit the form for login
 
                                 }
