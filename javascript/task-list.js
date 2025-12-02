@@ -993,12 +993,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                                         this.style.backgroundColor = "#73d41e"; // Set current selection to green
 
-                                                        if (currentIndexSelection == getTableIndexFromTaskID(currentTaskID)){
-                                                            // Same task was clicked again
-                                                    
-                                                            spawnTaskAdditionalMenuPopup();
-                                                        }
-
                                                         currentTaskName = this.childNodes[0].textContent; // childNodes[0] is the task name row
 
                                                         currentTaskID = this.childNodes[3].textContent; // childNodes[3] is the taskID hidden table value
