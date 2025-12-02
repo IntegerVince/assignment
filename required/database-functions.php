@@ -868,7 +868,7 @@ function modifyTaskDate($accountUsername, $accountPassword, $taskIndex, $date){
 // (rejects special characters)
 function isValidInput($input){
 
-    $allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890-"; // Stores allowed characters - reject other characters to prevent any XSS attacks
+    $allowedCharacters = "abcdefghijklmnopqrstuvwxyz1234567890- "; // Stores allowed characters - reject other characters to prevent any XSS attacks
     $characterAllowed = false;
 
     for ($x = 0; $x != strlen($input); $x++){  // Iterate through input characters
