@@ -2336,7 +2336,7 @@ function spawnTaskAdditionalMenuPopup(){
                         
                         // API request parameters
 
-                        key = "M3ovqZCwLMdqIuYAB3LysHRyzeNhbuKx"; // This is a development key - in prod, there isn't a rate limit
+                        key = "giphy_secret_key_goes_here"; // This is a development key - in prod, there isn't a rate limit
                         query = searchFieldText;
                         limit = 25;
                         offset = 0;
